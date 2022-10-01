@@ -41,7 +41,11 @@ public class ConvertServlet extends HttpServlet {
         
         String jythonCode;
         try {
-            jythonCode = Convert.doConvert(code);
+            if (code==null ) {
+                jythonCode = Convert.doConvert(code);
+            } else {
+                jythonCode = "";
+            }
         } catch (ParseException ex) {
             jythonCode = "*** "+ex.getMessage()+" ***";
         }
