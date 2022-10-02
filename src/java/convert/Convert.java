@@ -208,6 +208,9 @@ public class Convert {
     }
     
     private static String doConvert( String indent, Node n ) {
+        if ( n.getBeginLine()>89 ) {
+            System.err.println("here line 89");
+        }
         String simpleName= n.getClass().getSimpleName();
         switch ( simpleName ) {
             case "foo":
@@ -294,7 +297,7 @@ public class Convert {
         StringBuilder result= new StringBuilder();
         List<Statement> statements= blockStmt.getStmts();
         if ( statements==null ) {
-            return indent + "continue # empty line 296";
+            return indent + "continue\n";
         }
         for ( Statement s: statements ) {
             result.append(doConvert(indent,s));
@@ -317,6 +320,23 @@ public class Convert {
         return b.toString();
     }
 
+    private static String specialConvertElifStmt( String indent, IfStmt ifStmt ) {
+        StringBuilder b= new StringBuilder();
+        b.append(indent).append("elif ");
+        b.append( doConvert("", ifStmt.getCondition() ) );
+        b.append(":\n");
+        b.append( doConvert(indent,ifStmt.getThenStmt() ) );
+        if ( ifStmt.getElseStmt()!=null ) {
+            if ( ifStmt.getElseStmt() instanceof IfStmt ) {
+                specialConvertElifStmt( indent, (IfStmt)ifStmt.getElseStmt() );
+            } else {
+                b.append(indent).append("else:\n");
+                b.append( doConvert(indent,ifStmt.getElseStmt()) );
+            }
+        }
+        return b.toString();        
+    }
+    
     private static String doConvertIfStmt(String indent, IfStmt ifStmt) {
         StringBuilder b= new StringBuilder();
         b.append(indent).append("if ");
@@ -324,8 +344,12 @@ public class Convert {
         b.append(":\n");
         b.append( doConvert(indent,ifStmt.getThenStmt() ) );
         if ( ifStmt.getElseStmt()!=null ) {
-            b.append(indent).append("else:\n");
-            b.append( doConvert(indent,ifStmt.getElseStmt()) );
+            if ( ifStmt.getElseStmt() instanceof IfStmt ) {
+                b.append( specialConvertElifStmt( indent, (IfStmt)ifStmt.getElseStmt() ) );
+            } else {
+                b.append(indent).append("else:\n");
+                b.append( doConvert(indent,ifStmt.getElseStmt()) );
+            }
         }
         return b.toString();
     }
