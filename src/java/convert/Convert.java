@@ -28,7 +28,9 @@ import japa.parser.ast.comments.Comment;
 import japa.parser.ast.expr.ArrayAccessExpr;
 import japa.parser.ast.expr.ArrayCreationExpr;
 import japa.parser.ast.expr.ArrayInitializerExpr;
+import japa.parser.ast.expr.BooleanLiteralExpr;
 import japa.parser.ast.expr.CharLiteralExpr;
+import japa.parser.ast.expr.ConditionalExpr;
 import japa.parser.ast.expr.EnclosedExpr;
 import japa.parser.ast.expr.FieldAccessExpr;
 import japa.parser.ast.expr.NullLiteralExpr;
@@ -188,6 +190,8 @@ public class Convert {
         List<Expression> args= methodCallExpr.getArgs();
         if ( name.equals("pow") && clas instanceof NameExpr && ((NameExpr)clas).getName().equals("Math") ) {
             return doConvert(indent,args.get(0)) + "**"+ doConvert(indent,args.get(1));
+        } else if ( name.equals("length") && args==null ) {
+            return "len("+ doConvert(indent,clas)+")";
         } else if ( name.equals("subString") ) {
             return doConvert(indent,clas)+".substring("+ utilFormatExprList(args) +")";
         } else if ( name.equals("startsWith") ) {
@@ -208,9 +212,6 @@ public class Convert {
     }
     
     private static String doConvert( String indent, Node n ) {
-        if ( n.getBeginLine()>89 ) {
-            System.err.println("here line 89");
-        }
         String simpleName= n.getClass().getSimpleName();
         switch ( simpleName ) {
             case "foo":
@@ -227,6 +228,8 @@ public class Convert {
                 return "(" + doConvert( "", ((EnclosedExpr)n).getInner() ) + ")";
             case "NullLiteralExpr":
                 return "None";
+            case "BooleanLiteralExpr":
+                return ((BooleanLiteralExpr)n).getValue() ? "True" : "False";
             case "IntegerLiteralExpr":
                 return ((IntegerLiteralExpr)n).getValue();
             case "CharLiteralExpr":
@@ -235,6 +238,8 @@ public class Convert {
                 return doConvertMethodCallExpr(indent,(MethodCallExpr)n);
             case "StringLiteralExpr":
                 return doConvertStringLiteralExpr(indent,(StringLiteralExpr)n);
+            case "ConditionalExpr":
+                return doConvertConditionalExpr(indent,(ConditionalExpr)n);
             case "UnaryExpr":
                 return doConvertUnaryExpr(indent,(UnaryExpr)n);
             case "BodyDeclaration":
@@ -341,14 +346,25 @@ public class Convert {
         StringBuilder b= new StringBuilder();
         b.append(indent).append("if ");
         b.append( doConvert("", ifStmt.getCondition() ) );
-        b.append(":\n");
-        b.append( doConvert(indent,ifStmt.getThenStmt() ) );
+        if ( ifStmt.getThenStmt() instanceof BlockStmt ) {
+            b.append(":\n");
+            b.append( doConvert(indent,ifStmt.getThenStmt() ) );
+        } else {
+            b.append(": ");
+            b.append( doConvert("",ifStmt.getThenStmt() ) ).append("\n");
+        }
         if ( ifStmt.getElseStmt()!=null ) {
             if ( ifStmt.getElseStmt() instanceof IfStmt ) {
                 b.append( specialConvertElifStmt( indent, (IfStmt)ifStmt.getElseStmt() ) );
             } else {
-                b.append(indent).append("else:\n");
-                b.append( doConvert(indent,ifStmt.getElseStmt()) );
+                b.append(indent).append("else");
+                if ( ifStmt.getElseStmt() instanceof BlockStmt ) {
+                    b.append(":\n");
+                    b.append( doConvert(indent,ifStmt.getElseStmt()) );
+                } else {
+                    b.append(": ");
+                    b.append( doConvert("",ifStmt.getThenStmt() ) ).append("\n");
+                }
             }
         }
         return b.toString();
@@ -565,6 +581,18 @@ public class Convert {
                 .append("(").append(utilFormatParameterList( constructorDeclaration.getParameters() )).append("):\n");
         sb.append(indent).append( doConvert(indent,constructorDeclaration.getBlock()) );
         return sb.toString();
+    }
+
+    private static String doConvertConditionalExpr(String indent, ConditionalExpr conditionalExpr) {
+        //StringBuilder sb= new StringBuilder();
+        //sb.append(indent).append("# ConditionalExpr: ").append(conditionalExpr.toString());
+        //sb.append(indent).append("if ").append( doConvert("",conditionalExpr.getCondition()) ).append(": ");
+        //sb.append(s4).append(indent).append("ce_=").append(doConvert("",conditionalExpr.getThenExpr()));
+        //sb.append(indent).append("if ").append( doConvert("",conditionalExpr.getCondition()) ).append(": ");
+        //sb.append(s4).append(indent).append("ce_=").append(doConvert("",conditionalExpr.getElseExpr()));
+        return indent + doConvert("",conditionalExpr.getThenExpr())
+                + " if " + doConvert("",conditionalExpr.getCondition())
+                + " else " +  doConvert("",conditionalExpr.getElseExpr());
     }
 
 }
