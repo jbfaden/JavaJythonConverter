@@ -223,7 +223,7 @@ public class Convert {
             return doConvert(indent,clas)+".endswith("+ utilFormatExprList(args) +")";
         } else {
             if ( clas==null ) {
-                return name + "("+ utilFormatExprList(args) +")";
+                return indent + name + "("+ utilFormatExprList(args) +")";
             } else {
                 return indent + doConvert("",clas)+"."+name + "("+ utilFormatExprList(args) +")";
             }
@@ -235,9 +235,6 @@ public class Convert {
     }
     
     private static String doConvert( String indent, Node n ) {
-        if ( n.toString().contains("needT")) {
-            System.err.println("here");
-        }
         String simpleName= n.getClass().getSimpleName();
         switch ( simpleName ) {
             case "foo":
@@ -338,7 +335,7 @@ public class Convert {
         StringBuilder result= new StringBuilder();
         List<Statement> statements= blockStmt.getStmts();
         if ( statements==null ) {
-            return indent + "continue\n";
+            return indent + "pass\n";
         }
         for ( Statement s: statements ) {
             result.append(doConvert(indent,s));
@@ -586,13 +583,24 @@ public class Convert {
                 sb.append(indent).append("elif ").append(selector).append("==").append(ses.getLabel()).append(":\n");
             }
             List<Statement> statements= ses.getStmts();
-            for ( Statement s: statements ) {
-                sb.append(doConvert(s4+indent, s )).append("\n");
-            }
             if ( !( ( statements.get(statements.size()-1) instanceof BreakStmt ) ||
                     ( statements.get(statements.size()-1) instanceof ReturnStmt ) ||
                     ( statements.get(statements.size()-1) instanceof ThrowStmt ) ) ) {
                 sb.append(s4).append(indent).append("### Switch Fall Through Not Implemented ###");
+                for ( Statement s: statements.subList(0,statements.size()-1) ) {
+                    sb.append("#").append(doConvert(s4+indent, s )).append("\n");
+                }
+            } else {
+                if ( statements.get(statements.size()-1) instanceof BreakStmt ) {
+                    for ( Statement s: statements.subList(0,statements.size()-1) ) {
+                        sb.append(doConvert(s4+indent, s )).append("\n");
+                    }
+                } else {
+                    for ( Statement s: statements ) {
+                        sb.append(doConvert(s4+indent, s )).append("\n");
+                    }
+                }
+
             }
         }
         return sb.toString();
@@ -625,7 +633,7 @@ public class Convert {
         StringBuilder sb= new StringBuilder();
         sb.append(indent).append("def __init__")
                 .append("(").append(utilFormatParameterList( constructorDeclaration.getParameters() )).append("):\n");
-        sb.append(indent).append( doConvert(indent,constructorDeclaration.getBlock()) );
+        sb.append( doConvert(indent,constructorDeclaration.getBlock()) );
         return sb.toString();
     }
 
