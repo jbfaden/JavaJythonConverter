@@ -207,8 +207,14 @@ public class Convert {
         List<Expression> args= methodCallExpr.getArgs();
         if ( name.equals("pow") && clas instanceof NameExpr && ((NameExpr)clas).getName().equals("Math") ) {
             return doConvert(indent,args.get(0)) + "**"+ doConvert(indent,args.get(1));
+        } else if ( name.equals("format") && clas instanceof NameExpr && ((NameExpr)clas).getName().equals("String") ) {
+            StringBuilder sb= new StringBuilder();
+            sb.append(indent).append(args.get(0)).append(" % (");
+            sb.append( utilFormatExprList( args.subList(1, args.size() ) ) );
+            sb.append(" )");
+            return sb.toString();
         } else if ( name.equals("length") && args==null ) {
-            return "len("+ doConvert(indent,clas)+")";
+            return indent + "len("+ doConvert("",clas)+")";
         } else if ( name.equals("subString") ) {
             return doConvert(indent,clas)+".substring("+ utilFormatExprList(args) +")";
         } else if ( name.equals("startsWith") ) {
@@ -219,16 +225,19 @@ public class Convert {
             if ( clas==null ) {
                 return name + "("+ utilFormatExprList(args) +")";
             } else {
-                return doConvert(indent,clas)+"."+name + "("+ utilFormatExprList(args) +")";
+                return indent + doConvert("",clas)+"."+name + "("+ utilFormatExprList(args) +")";
             }
         }
     }
 
     private static String doAssignExpr(String indent, AssignExpr assign ) {
-        return doConvert( "", assign.getTarget() ) + " = " + doConvert( "", assign.getValue() );
+        return indent + doConvert( "", assign.getTarget() ) + " = " + doConvert( "", assign.getValue() );
     }
     
     private static String doConvert( String indent, Node n ) {
+        if ( n.toString().contains("needT")) {
+            System.err.println("here");
+        }
         String simpleName= n.getClass().getSimpleName();
         switch ( simpleName ) {
             case "foo":
@@ -339,14 +348,24 @@ public class Convert {
     }
 
     private static String doConvertExpressionStmt(String indent, ExpressionStmt expressionStmt) {
-        return indent + doConvert("",expressionStmt.getExpression());
+        return doConvert(indent,expressionStmt.getExpression());
     }
 
     private static String doConvertVariableDeclarationExpr(String indent, VariableDeclarationExpr variableDeclarationExpr) {
         StringBuilder b= new StringBuilder();
         for ( VariableDeclarator v: variableDeclarationExpr.getVars() ) {
             if ( v.getInit()!=null ) {
-                b.append( indent ).append(v.getId().getName()).append(" = ").append(doConvert("",v.getInit()) );
+                if ( v.getInit() instanceof ConditionalExpr ) {
+                    ConditionalExpr cc  = (ConditionalExpr)v.getInit();
+                    b.append( indent ).append("if ").append(cc.getCondition()).append(":\n");
+                    b.append(s4).append(indent).append( v.getId().getName() );
+                    b.append("= ").append(doConvert("",cc.getThenExpr() )).append("\n");
+                    b.append( indent ).append("else:\n" );
+                    b.append(s4).append(indent).append( v.getId().getName() );
+                    b.append("= ").append(doConvert("",cc.getElseExpr() )).append("\n");
+                } else {
+                    b.append( indent ).append(v.getId().getName()).append(" = ").append(doConvert("",v.getInit()) );
+                }
             }
         }
         return b.toString();
