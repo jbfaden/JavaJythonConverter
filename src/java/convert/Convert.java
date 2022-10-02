@@ -29,11 +29,13 @@ import japa.parser.ast.expr.ArrayAccessExpr;
 import japa.parser.ast.expr.ArrayCreationExpr;
 import japa.parser.ast.expr.ArrayInitializerExpr;
 import japa.parser.ast.expr.BooleanLiteralExpr;
+import japa.parser.ast.expr.CastExpr;
+import japa.parser.ast.type.Type;
 import japa.parser.ast.expr.CharLiteralExpr;
 import japa.parser.ast.expr.ConditionalExpr;
+import japa.parser.ast.expr.DoubleLiteralExpr;
 import japa.parser.ast.expr.EnclosedExpr;
 import japa.parser.ast.expr.FieldAccessExpr;
-import japa.parser.ast.expr.NullLiteralExpr;
 import japa.parser.ast.expr.ObjectCreationExpr;
 import japa.parser.ast.expr.QualifiedNameExpr;
 import japa.parser.ast.expr.UnaryExpr;
@@ -232,8 +234,12 @@ public class Convert {
                 return ((BooleanLiteralExpr)n).getValue() ? "True" : "False";
             case "IntegerLiteralExpr":
                 return ((IntegerLiteralExpr)n).getValue();
+            case "DoubleLiteralExpr":
+                return ((DoubleLiteralExpr)n).getValue();
             case "CharLiteralExpr":
                 return "'" + ((CharLiteralExpr)n).getValue() +"'";
+            case "CastExpr":
+                return doConvertCastExpr(indent,(CastExpr)n);
             case "MethodCallExpr":
                 return doConvertMethodCallExpr(indent,(MethodCallExpr)n);
             case "StringLiteralExpr":
@@ -593,6 +599,16 @@ public class Convert {
         return indent + doConvert("",conditionalExpr.getThenExpr())
                 + " if " + doConvert("",conditionalExpr.getCondition())
                 + " else " +  doConvert("",conditionalExpr.getElseExpr());
+    }
+
+    private static String doConvertCastExpr(String indent, CastExpr castExpr) {
+        String type= castExpr.getType().toString();
+        if ( type.equals("String") ) {
+            type= "str";
+        } else if ( type.equals("char") ) {
+            type= "str";
+        }
+        return type + "(" + doConvert("", castExpr.getExpr() ) + ")";
     }
 
 }
