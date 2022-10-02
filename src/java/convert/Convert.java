@@ -11,6 +11,7 @@ import japa.parser.ast.body.ConstructorDeclaration;
 import japa.parser.ast.body.FieldDeclaration;
 import japa.parser.ast.body.MethodDeclaration;
 import japa.parser.ast.body.ModifierSet;
+import japa.parser.ast.body.MultiTypeParameter;
 import japa.parser.ast.body.Parameter;
 import japa.parser.ast.expr.AssignExpr;
 import japa.parser.ast.expr.BinaryExpr;
@@ -40,14 +41,17 @@ import japa.parser.ast.expr.ObjectCreationExpr;
 import japa.parser.ast.expr.QualifiedNameExpr;
 import japa.parser.ast.expr.UnaryExpr;
 import japa.parser.ast.stmt.BreakStmt;
+import japa.parser.ast.stmt.CatchClause;
 import japa.parser.ast.stmt.ForStmt;
 import japa.parser.ast.stmt.IfStmt;
 import japa.parser.ast.stmt.ReturnStmt;
 import japa.parser.ast.stmt.SwitchEntryStmt;
 import japa.parser.ast.stmt.SwitchStmt;
 import japa.parser.ast.stmt.ThrowStmt;
+import japa.parser.ast.stmt.TryStmt;
 import japa.parser.ast.stmt.WhileStmt;
 import japa.parser.ast.type.ClassOrInterfaceType;
+import japa.parser.ast.type.ReferenceType;
 import java.io.ByteArrayInputStream;
 import java.nio.charset.Charset;
 import java.util.List;
@@ -100,7 +104,18 @@ public class Convert {
         }
         return b.toString();
     }
-    
+
+    private static String utilFormatTypeList(List<Type> l) {
+        if ( l==null ) return "";
+        if ( l.isEmpty() ) return "";
+        StringBuilder b= new StringBuilder( doConvert("",l.get(0)) );
+        for ( int i=1; i<l.size(); i++ ) {
+            b.append(",");
+            b.append(doConvert("",l.get(i)));
+        }
+        return b.toString();
+    }
+
     private static String s4="    ";
     
     public static String doConvert( String javasrc ) throws ParseException {
@@ -268,6 +283,12 @@ public class Convert {
                 return doConvertReturnStmt(indent,(ReturnStmt)n);
             case "BreakStmt":
                 return indent + "break";
+            case "TryStmt":
+                return doConvertTryStmt(indent,(TryStmt)n);
+            case "ReferenceType":
+                return doConvertReferenceType(indent,(ReferenceType)n);
+            case "MultiTypeParameter":
+                return doMultiTypeParameter(indent,(MultiTypeParameter)n);
             case "ThrowStmt":
                 return doConvertThrowStmt(indent,(ThrowStmt)n);
             case "ArrayCreationExpr":
@@ -609,6 +630,41 @@ public class Convert {
             type= "str";
         }
         return type + "(" + doConvert("", castExpr.getExpr() ) + ")";
+    }
+
+    private static String doConvertTryStmt(String indent, TryStmt tryStmt) {
+        StringBuilder sb= new StringBuilder();
+        sb.append( indent ).append( "try:\n");
+        sb.append( doConvert( indent, tryStmt.getTryBlock() ) );
+        for ( CatchClause cc: tryStmt.getCatchs() ) {
+            sb.append(indent).append("except ").append(doConvert( "",cc.getExcept() )).append(":\n");
+            sb.append( doConvert( indent, cc.getCatchBlock() ) );
+        }
+        if ( tryStmt.getFinallyBlock()!=null ) {
+            sb.append( indent ).append( "finally:\n");
+            sb.append( doConvert( indent, tryStmt.getFinallyBlock() ) );
+        }
+        return sb.toString();
+    }
+
+    private static String doMultiTypeParameter(String indent, MultiTypeParameter multiTypeParameter) {
+        return utilFormatTypeList( multiTypeParameter.getTypes() );
+    }
+
+    private static String doConvertReferenceType(String indent, ReferenceType referenceType) {
+        switch (referenceType.getArrayCount()) {
+            case 0:
+                return referenceType.getType().toString();
+            case 1:
+                return referenceType.getType().toString()+"[]";
+            case 2:
+                return referenceType.getType().toString()+"[][]";
+            case 3:
+                return referenceType.getType().toString()+"[][][]";
+            default:
+                return "***" + referenceType.toString() +"***";
+        }
+        
     }
 
 }
