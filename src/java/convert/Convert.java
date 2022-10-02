@@ -7,6 +7,7 @@ import japa.parser.ast.ImportDeclaration;
 import japa.parser.ast.Node;
 import japa.parser.ast.body.BodyDeclaration;
 import japa.parser.ast.body.ClassOrInterfaceDeclaration;
+import japa.parser.ast.body.ConstructorDeclaration;
 import japa.parser.ast.body.FieldDeclaration;
 import japa.parser.ast.body.MethodDeclaration;
 import japa.parser.ast.body.ModifierSet;
@@ -23,6 +24,7 @@ import japa.parser.ast.stmt.BlockStmt;
 import japa.parser.ast.stmt.ExpressionStmt;
 import japa.parser.ast.stmt.Statement;
 import japa.parser.ast.body.VariableDeclarator;
+import japa.parser.ast.comments.Comment;
 import japa.parser.ast.expr.ArrayAccessExpr;
 import japa.parser.ast.expr.ArrayCreationExpr;
 import japa.parser.ast.expr.ArrayInitializerExpr;
@@ -30,6 +32,7 @@ import japa.parser.ast.expr.CharLiteralExpr;
 import japa.parser.ast.expr.EnclosedExpr;
 import japa.parser.ast.expr.FieldAccessExpr;
 import japa.parser.ast.expr.NullLiteralExpr;
+import japa.parser.ast.expr.ObjectCreationExpr;
 import japa.parser.ast.expr.QualifiedNameExpr;
 import japa.parser.ast.expr.UnaryExpr;
 import japa.parser.ast.stmt.BreakStmt;
@@ -40,6 +43,7 @@ import japa.parser.ast.stmt.SwitchEntryStmt;
 import japa.parser.ast.stmt.SwitchStmt;
 import japa.parser.ast.stmt.ThrowStmt;
 import japa.parser.ast.stmt.WhileStmt;
+import japa.parser.ast.type.ClassOrInterfaceType;
 import java.io.ByteArrayInputStream;
 import java.nio.charset.Charset;
 import java.util.List;
@@ -81,7 +85,18 @@ public class Convert {
         }
         return b.toString();
     }
-        
+
+    private static String utilFormatParameterList( List<Parameter> l ) {
+        if ( l==null ) return "";
+        if ( l.isEmpty() ) return "";
+        StringBuilder b= new StringBuilder( doConvert("",l.get(0)) );
+        for ( int i=1; i<l.size(); i++ ) {
+            b.append(",");
+            b.append(doConvert("",l.get(i)));
+        }
+        return b.toString();
+    }
+    
     private static String s4="    ";
     
     public static String doConvert( String javasrc ) throws ParseException {
@@ -259,6 +274,12 @@ public class Convert {
                 return doConvertMethodDeclaration(indent,(MethodDeclaration)n);
             case "ClassOrInterfaceDeclaration":
                 return doConvertClassOrInterfaceDeclaration(indent,(ClassOrInterfaceDeclaration)n);
+            case "ClassOrTypeInterfaceType":
+                return doConvertClassOrInterfaceType(indent,(ClassOrInterfaceType)n);
+            case "ConstructorDeclaration":
+                return doConvertConstructorDeclaration(indent,(ConstructorDeclaration)n);
+            case "ObjectCreationExpr":
+                return doConvertObjectCreationExpr(indent,(ObjectCreationExpr)n);
             default:
                 return indent + "*** "+simpleName + "*** " + n.toString() + "*** end "+simpleName + "****";
         }
@@ -272,6 +293,9 @@ public class Convert {
     private static String doConvertBlockStmt(String indent,BlockStmt blockStmt) {
         StringBuilder result= new StringBuilder();
         List<Statement> statements= blockStmt.getStmts();
+        if ( statements==null ) {
+            return indent + "continue # empty line 296";
+        }
         for ( Statement s: statements ) {
             result.append(doConvert(indent,s));
             result.append("\n");
@@ -405,6 +429,8 @@ public class Convert {
 
     private static String doConvertClassOrInterfaceDeclaration(String indent, ClassOrInterfaceDeclaration classOrInterfaceDeclaration) {
         StringBuilder sb= new StringBuilder();
+        String comments= utilRewriteComments(indent, classOrInterfaceDeclaration.getComment() );
+        sb.append( comments );
         sb.append( indent ).append("class " ).append( classOrInterfaceDeclaration.getName() ).append(":\n");
         classOrInterfaceDeclaration.getChildrenNodes().forEach((n) -> {
             sb.append( doConvert(s4+indent,n) ).append("\n");
@@ -414,6 +440,8 @@ public class Convert {
 
     private static String doConvertMethodDeclaration(String indent, MethodDeclaration methodDeclaration) {
         StringBuilder sb= new StringBuilder();
+        String comments= utilRewriteComments( indent, methodDeclaration.getComment() );
+        sb.append( comments );
         sb.append( indent ).append( "def " ).append( methodDeclaration.getName() ) .append("(");
         boolean comma= false; 
         if ( methodDeclaration.getParameters()!=null ) {
@@ -481,6 +509,37 @@ public class Convert {
                 sb.append(s4).append(indent).append("### Switch Fall Through Not Implemented ###");
             }
         }
+        return sb.toString();
+    }
+
+    private static String utilRewriteComments(String indent, Comment comments) {
+        if ( comments==null ) return "";
+        StringBuilder b= new StringBuilder();
+        String[] ss= comments.getContent().split("\n");
+        for ( String s : ss ) {
+            int i= s.indexOf("*");
+            if ( i>-1 && s.substring(0,i).trim().length()==0 ) {
+                s= s.substring(i+1);
+            }
+            b.append(indent).append("#").append(s).append("\n");
+        }
+        return b.toString();
+    }
+
+    private static String doConvertClassOrInterfaceType(String indent, ClassOrInterfaceType classOrInterfaceType) {
+        //classOrInterfaceType
+        return "";
+    }
+
+    private static String doConvertObjectCreationExpr(String indent, ObjectCreationExpr objectCreationExpr) {
+        return indent + objectCreationExpr.getType() + "("+ utilFormatExprList(objectCreationExpr.getArgs())+ ")";
+    }
+
+    private static String doConvertConstructorDeclaration(String indent, ConstructorDeclaration constructorDeclaration) {
+        StringBuilder sb= new StringBuilder();
+        sb.append(indent).append("def __init__")
+                .append("(").append(utilFormatParameterList( constructorDeclaration.getParameters() )).append("):\n");
+        sb.append(indent).append( doConvert(indent,constructorDeclaration.getBlock()) );
         return sb.toString();
     }
 
