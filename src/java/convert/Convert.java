@@ -215,8 +215,12 @@ public class Convert {
             return sb.toString();
         } else if ( name.equals("length") && args==null ) {
             return indent + "len("+ doConvert("",clas)+")";
-        } else if ( name.equals("subString") ) {
-            return doConvert(indent,clas)+".substring("+ utilFormatExprList(args) +")";
+        } else if ( name.equals("substring") ) {
+            if ( args.size()==2 ) {
+                return doConvert(indent,clas)+"["+ doConvert("",args.get(0)) + ":"+ doConvert("",args.get(1)) +"]";
+            } else {
+                return doConvert(indent,clas)+"["+ doConvert("",args.get(0)) +"]";
+            }
         } else if ( name.equals("startsWith") ) {
             return doConvert(indent,clas)+".startswith("+ utilFormatExprList(args) +")";
         } else if ( name.equals("endsWith") ) {
