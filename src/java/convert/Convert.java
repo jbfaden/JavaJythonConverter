@@ -554,7 +554,16 @@ public class Convert {
         List<VariableDeclarator> vv= fieldDeclaration.getVariables();
         if ( vv!=null ) {
             for ( VariableDeclarator v: vv ) {
-                sb.append( indent ) .append( v.getId() ).append("=").append( doConvert( "",v.getInit() ) ).append("\n");
+                if ( v.getInit() instanceof ConditionalExpr ) {
+                    ConditionalExpr ce= (ConditionalExpr)v.getInit();
+                    sb.append( indent ).append("if ").append(doConvert( "",ce.getCondition() )).append(":\n");
+                    sb.append(s4).append(indent).append( v.getId()).append("=").append( doConvert( "",ce.getThenExpr() ) ).append("\n");
+                    sb.append( indent ).append( "else:\n");
+                    sb.append(s4).append(indent).append( v.getId()).append("=").append( doConvert( "",ce.getElseExpr() ) ).append("\n");
+                    
+                } else {
+                    sb.append( indent ) .append( v.getId() ).append("=").append( doConvert( "",v.getInit() ) ).append("\n");
+                }
             }
         }
         return sb.toString();
