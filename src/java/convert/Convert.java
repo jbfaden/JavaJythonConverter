@@ -219,8 +219,10 @@ public class Convert {
             if ( args.size()==2 ) {
                 return doConvert(indent,clas)+"["+ doConvert("",args.get(0)) + ":"+ doConvert("",args.get(1)) +"]";
             } else {
-                return doConvert(indent,clas)+"["+ doConvert("",args.get(0)) +"]";
+                return doConvert(indent,clas)+"["+ doConvert("",args.get(0)) +":]";
             }
+        } else if ( name.equals("charAt") ) {
+            return doConvert(indent,clas)+"["+ doConvert("",args.get(0)) +"]";
         } else if ( name.equals("startsWith") ) {
             return doConvert(indent,clas)+".startswith("+ utilFormatExprList(args) +")";
         } else if ( name.equals("endsWith") ) {
