@@ -123,13 +123,36 @@ public class Convert {
 
     private static String s4="    ";
     
+    /**
+     * wrap the methods in a dummy class to see if it compiles
+     * @param javasrc
+     * @return
+     * @throws ParseException 
+     */
+    public String utilMakeClass( String javasrc ) throws ParseException {
+        String modSrc= "class Foo {\n"+javasrc + "}\n";
+        return modSrc;
+    }
+    
     public String doConvert( String javasrc ) throws ParseException {
+        Exception throwMe= null;
         try {
             ByteArrayInputStream ins= new ByteArrayInputStream( javasrc.getBytes(Charset.forName("UTF-8")) );
             CompilationUnit unit= japa.parser.JavaParser.parse(ins,"UTF-8");
             return doConvert( "", unit );
         } catch ( ParseException ex ) {
-            try {
+            throwMe= ex;
+        }
+        
+        try {
+            ByteArrayInputStream ins= new ByteArrayInputStream( utilMakeClass(javasrc).getBytes(Charset.forName("UTF-8")) );
+            CompilationUnit unit= japa.parser.JavaParser.parse(ins,"UTF-8");
+            return doConvert( "", unit );
+        } catch ( ParseException ex ) {
+            throwMe= ex;
+        }
+        
+        try {
                 String[] lines= javasrc.split("\n");
                 int offset=0;
                 Expression parseExpression = japa.parser.JavaParser.parseExpression(javasrc);
@@ -153,21 +176,25 @@ public class Convert {
                 
                 return bb.toString();
             
-            } catch (ParseException ex1) {
-                try {
-                    Statement parsed = japa.parser.JavaParser.parseStatement(javasrc);
-                    return doConvert("", parsed);
-                } catch (ParseException ex2) {
-                    try {
-                        BodyDeclaration parsed = japa.parser.JavaParser.parseBodyDeclaration(javasrc);
-                        return doConvert("", parsed);
-                    } catch (ParseException ex3 ) {
-                        Statement parsed = japa.parser.JavaParser.parseBlock(javasrc);
-                        return doConvert("", parsed);
-                    }
-                }
-            }
+        } catch (ParseException ex1) {
+            throwMe= ex1;
         }
+        
+        try {
+            Statement parsed = japa.parser.JavaParser.parseStatement(javasrc);
+            return doConvert("", parsed);
+        } catch (ParseException ex2) {
+            throwMe= ex2;
+        }
+        
+        try {
+            BodyDeclaration parsed = japa.parser.JavaParser.parseBodyDeclaration(javasrc);
+            return doConvert("", parsed);
+        } catch (ParseException ex3 ) {
+            Statement parsed = japa.parser.JavaParser.parseBlock(javasrc);
+            return doConvert("", parsed);
+        }
+
     }
     
     private String doConvertBinaryExpr(String indent,BinaryExpr b) {
@@ -216,7 +243,7 @@ public class Convert {
                 ((FieldAccessExpr)clas).getField().equals("err") ) {
             StringBuilder sb= new StringBuilder();
             if (  methodCallExpr.getArgs().get(0) instanceof StringLiteralExpr ) {
-                String s= doConvert( "", methodCallExpr.getArgs().get(0) ) );
+                String s= doConvert( "", methodCallExpr.getArgs().get(0) );
                 sb.append(indent).append( "sys.stderr.write(" ).append( s.substring(0,s.length()-1) ).append( "\\n')" );
             } else {
                 sb.append(indent).append( "sys.stderr.write(" ).append( doConvert( "", methodCallExpr.getArgs().get(0) ) ).append( "+'\\n')" );
@@ -226,7 +253,7 @@ public class Convert {
                 ((FieldAccessExpr)clas).getField().equals("out") ) {
             StringBuilder sb= new StringBuilder();
             if (  methodCallExpr.getArgs().get(0) instanceof StringLiteralExpr ) {
-                String s= doConvert( "", methodCallExpr.getArgs().get(0) ) );
+                String s= doConvert( "", methodCallExpr.getArgs().get(0) );
                 sb.append(indent).append( "print(" ).append( s.substring(0,s.length()-1) ).append( "\\n')" );
             } else {
                 sb.append(indent).append( "print(" ).append( doConvert( "", methodCallExpr.getArgs().get(0) ) ).append( "+'\\n')" );
