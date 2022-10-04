@@ -84,6 +84,10 @@ public class Convert {
         System.err.println("----");        
     }
 
+    public enum PythonTarget { jython_2_2, python_3 }
+    
+    private PythonTarget target = PythonTarget.jython_2_2;
+    
     private String utilFormatExprList( List<Expression> l ) {
         if ( l==null ) return "";
         if ( l.isEmpty() ) return "";
@@ -532,6 +536,9 @@ public class Convert {
         StringBuilder sb= new StringBuilder();
         String comments= utilRewriteComments( indent, methodDeclaration.getComment() );
         sb.append( comments );
+        if ( target==PythonTarget.python_3 && ModifierSet.isStatic(methodDeclaration.getModifiers() ) ) {
+            sb.append( indent ).append( "@staticmethod\n" );
+        }
         sb.append( indent ).append( "def " ).append( methodDeclaration.getName() ) .append("(");
         boolean comma= false; 
         if ( methodDeclaration.getParameters()!=null ) {
@@ -546,7 +553,9 @@ public class Convert {
         }
         sb.append( "):\n" );
         sb.append( doConvert( indent, methodDeclaration.getBody() ) );
-        sb.append( indent + methodDeclaration.getName() + " = staticmethod("+methodDeclaration.getName()+")" );
+        if ( target==PythonTarget.jython_2_2 && ModifierSet.isStatic(methodDeclaration.getModifiers() ) ) {
+            sb.append( indent + methodDeclaration.getName() + " = staticmethod("+methodDeclaration.getName()+")" );
+        }
         return sb.toString();
     }
 
