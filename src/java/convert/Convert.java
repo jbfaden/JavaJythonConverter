@@ -63,27 +63,28 @@ import java.util.List;
 public class Convert {
     
     public static void main(String[] args ) throws ParseException {
+        Convert c= new Convert();
         System.err.println("----");
-        System.err.println(doConvert("{ int x= Math.pow(3,5); }"));
-        System.err.println("----");
-        System.err.println("----");
-        System.err.println(doConvert("{ int x=0; if (x>0) y=0; }"));
+        System.err.println(c.doConvert("{ int x= Math.pow(3,5); }"));
         System.err.println("----");
         System.err.println("----");
-        System.err.println(doConvert("x=3"));
+        System.err.println(c.doConvert("{ int x=0; if (x>0) y=0; }"));
         System.err.println("----");
         System.err.println("----");
-        System.err.println(doConvert("Math.pow(3,c)"));
+        System.err.println(c.doConvert("x=3"));
         System.err.println("----");
         System.err.println("----");
-        System.err.println(doConvert("3*c"));
+        System.err.println(c.doConvert("Math.pow(3,c)"));
         System.err.println("----");
         System.err.println("----");
-        System.err.println(doConvert("\"apple\".subString(3)"));
+        System.err.println(c.doConvert("3*c"));
+        System.err.println("----");
+        System.err.println("----");
+        System.err.println(c.doConvert("\"apple\".subString(3)"));
         System.err.println("----");        
     }
 
-    private static String utilFormatExprList( List<Expression> l ) {
+    private String utilFormatExprList( List<Expression> l ) {
         if ( l==null ) return "";
         if ( l.isEmpty() ) return "";
         StringBuilder b= new StringBuilder( doConvert("",l.get(0)) );
@@ -94,7 +95,7 @@ public class Convert {
         return b.toString();
     }
 
-    private static String utilFormatParameterList( List<Parameter> l ) {
+    private String utilFormatParameterList( List<Parameter> l ) {
         if ( l==null ) return "";
         if ( l.isEmpty() ) return "";
         StringBuilder b= new StringBuilder( doConvert("",l.get(0)) );
@@ -105,7 +106,7 @@ public class Convert {
         return b.toString();
     }
 
-    private static String utilFormatTypeList(List<Type> l) {
+    private String utilFormatTypeList(List<Type> l) {
         if ( l==null ) return "";
         if ( l.isEmpty() ) return "";
         StringBuilder b= new StringBuilder( doConvert("",l.get(0)) );
@@ -118,7 +119,7 @@ public class Convert {
 
     private static String s4="    ";
     
-    public static String doConvert( String javasrc ) throws ParseException {
+    public String doConvert( String javasrc ) throws ParseException {
         try {
             ByteArrayInputStream ins= new ByteArrayInputStream( javasrc.getBytes(Charset.forName("UTF-8")) );
             CompilationUnit unit= japa.parser.JavaParser.parse(ins,"UTF-8");
@@ -165,7 +166,7 @@ public class Convert {
         }
     }
     
-    private static String doConvertBinaryExpr(String indent,BinaryExpr b) {
+    private String doConvertBinaryExpr(String indent,BinaryExpr b) {
         String left= doConvert(indent,b.getLeft());
         String right= doConvert(indent,b.getRight());
         BinaryExpr.Operator op= b.getOperator();
@@ -201,7 +202,7 @@ public class Convert {
         }
     }
     
-    private static String doConvertMethodCallExpr(String indent,MethodCallExpr methodCallExpr) {
+    private String doConvertMethodCallExpr(String indent,MethodCallExpr methodCallExpr) {
         Expression clas= methodCallExpr.getScope();
         String name= methodCallExpr.getName();
         List<Expression> args= methodCallExpr.getArgs();
@@ -236,11 +237,11 @@ public class Convert {
         }
     }
 
-    private static String doAssignExpr(String indent, AssignExpr assign ) {
+    private String doAssignExpr(String indent, AssignExpr assign ) {
         return indent + doConvert( "", assign.getTarget() ) + " = " + doConvert( "", assign.getValue() );
     }
     
-    private static String doConvert( String indent, Node n ) {
+    private String doConvert( String indent, Node n ) {
         String simpleName= n.getClass().getSimpleName();
         switch ( simpleName ) {
             case "foo":
@@ -333,11 +334,11 @@ public class Convert {
     }
     
 
-    private static String doConvertStringLiteralExpr(String indent,StringLiteralExpr stringLiteralExpr) {
+    private String doConvertStringLiteralExpr(String indent,StringLiteralExpr stringLiteralExpr) {
         return "'" + stringLiteralExpr.getValue() + "'";
     }
 
-    private static String doConvertBlockStmt(String indent,BlockStmt blockStmt) {
+    private String doConvertBlockStmt(String indent,BlockStmt blockStmt) {
         StringBuilder result= new StringBuilder();
         List<Statement> statements= blockStmt.getStmts();
         if ( statements==null ) {
@@ -350,11 +351,11 @@ public class Convert {
         return result.toString();
     }
 
-    private static String doConvertExpressionStmt(String indent, ExpressionStmt expressionStmt) {
+    private String doConvertExpressionStmt(String indent, ExpressionStmt expressionStmt) {
         return doConvert(indent,expressionStmt.getExpression());
     }
 
-    private static String doConvertVariableDeclarationExpr(String indent, VariableDeclarationExpr variableDeclarationExpr) {
+    private String doConvertVariableDeclarationExpr(String indent, VariableDeclarationExpr variableDeclarationExpr) {
         StringBuilder b= new StringBuilder();
         for ( VariableDeclarator v: variableDeclarationExpr.getVars() ) {
             if ( v.getInit()!=null ) {
@@ -374,7 +375,7 @@ public class Convert {
         return b.toString();
     }
 
-    private static String specialConvertElifStmt( String indent, IfStmt ifStmt ) {
+    private String specialConvertElifStmt( String indent, IfStmt ifStmt ) {
         StringBuilder b= new StringBuilder();
         b.append(indent).append("elif ");
         b.append( doConvert("", ifStmt.getCondition() ) );
@@ -391,7 +392,7 @@ public class Convert {
         return b.toString();        
     }
     
-    private static String doConvertIfStmt(String indent, IfStmt ifStmt) {
+    private String doConvertIfStmt(String indent, IfStmt ifStmt) {
         StringBuilder b= new StringBuilder();
         b.append(indent).append("if ");
         b.append( doConvert("", ifStmt.getCondition() ) );
@@ -419,7 +420,7 @@ public class Convert {
         return b.toString();
     }
 
-    private static String doConvertForStmt(String indent, ForStmt forStmt) {
+    private String doConvertForStmt(String indent, ForStmt forStmt) {
         StringBuilder b= new StringBuilder();
         forStmt.getInit().forEach((e) -> {
             b.append(indent).append( doConvert( "", e ) ).append( "\n" );
@@ -432,7 +433,7 @@ public class Convert {
         return b.toString();
     }
     
-    private static String doConvertImportDeclaration( String indent, ImportDeclaration d ) {
+    private String doConvertImportDeclaration( String indent, ImportDeclaration d ) {
         StringBuilder sb= new StringBuilder();
         NameExpr n= d.getName();
         if ( n instanceof QualifiedNameExpr ) {
@@ -446,7 +447,7 @@ public class Convert {
         return sb.toString();
     }
 
-    private static String doConvertCompilationUnit(String indent, CompilationUnit compilationUnit) {
+    private String doConvertCompilationUnit(String indent, CompilationUnit compilationUnit) {
         StringBuilder sb= new StringBuilder();
         
         List<Node> nodes= compilationUnit.getChildrenNodes();
@@ -461,7 +462,7 @@ public class Convert {
         return sb.toString();
     }
 
-    private static String doConvertReturnStmt(String indent, ReturnStmt returnStmt) {
+    private String doConvertReturnStmt(String indent, ReturnStmt returnStmt) {
         if ( returnStmt.getExpr()==null ) {
             return indent + "return";
         } else {
@@ -469,7 +470,7 @@ public class Convert {
         }
     }
 
-    private static String doConvertArrayCreationExpr(String indent, ArrayCreationExpr arrayCreationExpr) {
+    private String doConvertArrayCreationExpr(String indent, ArrayCreationExpr arrayCreationExpr) {
         if ( arrayCreationExpr.getInitializer()!=null ) {
             ArrayInitializerExpr ap= arrayCreationExpr.getInitializer();
             StringBuilder sb= new StringBuilder();
@@ -479,15 +480,15 @@ public class Convert {
         }
     }
 
-    private static String doConvertFieldAccessExpr(String indent, FieldAccessExpr fieldAccessExpr) {
+    private String doConvertFieldAccessExpr(String indent, FieldAccessExpr fieldAccessExpr) {
         return doConvert( "", fieldAccessExpr.getScope() ) + "." + fieldAccessExpr.getField();
     }
 
-    private static String doConvertArrayAccessExpr(String indent, ArrayAccessExpr arrayAccessExpr) {
+    private String doConvertArrayAccessExpr(String indent, ArrayAccessExpr arrayAccessExpr) {
         return doConvert("",arrayAccessExpr.getName()) + "["+doConvert("",arrayAccessExpr.getIndex())+"]";
     }
 
-    private static String doConvertUnaryExpr(String indent, UnaryExpr unaryExpr) {
+    private String doConvertUnaryExpr(String indent, UnaryExpr unaryExpr) {
         if ( null==unaryExpr.getOperator() ) {
             throw new IllegalArgumentException("not supported: "+unaryExpr);
         } else switch (unaryExpr.getOperator()) {
@@ -516,7 +517,7 @@ public class Convert {
         }
     }
 
-    private static String doConvertClassOrInterfaceDeclaration(String indent, ClassOrInterfaceDeclaration classOrInterfaceDeclaration) {
+    private String doConvertClassOrInterfaceDeclaration(String indent, ClassOrInterfaceDeclaration classOrInterfaceDeclaration) {
         StringBuilder sb= new StringBuilder();
         String comments= utilRewriteComments(indent, classOrInterfaceDeclaration.getComment() );
         sb.append( comments );
@@ -527,7 +528,7 @@ public class Convert {
         return sb.toString();
     }
 
-    private static String doConvertMethodDeclaration(String indent, MethodDeclaration methodDeclaration) {
+    private String doConvertMethodDeclaration(String indent, MethodDeclaration methodDeclaration) {
         StringBuilder sb= new StringBuilder();
         String comments= utilRewriteComments( indent, methodDeclaration.getComment() );
         sb.append( comments );
@@ -548,7 +549,7 @@ public class Convert {
         return sb.toString();
     }
 
-    private static String doConvertFieldDeclaration(String indent, FieldDeclaration fieldDeclaration) {
+    private String doConvertFieldDeclaration(String indent, FieldDeclaration fieldDeclaration) {
         StringBuilder sb= new StringBuilder();
         boolean s= ModifierSet.isStatic( fieldDeclaration.getModifiers() );
         List<VariableDeclarator> vv= fieldDeclaration.getVariables();
@@ -569,11 +570,11 @@ public class Convert {
         return sb.toString();
     }
 
-    private static String doConvertThrowStmt(String indent, ThrowStmt throwStmt) {
+    private String doConvertThrowStmt(String indent, ThrowStmt throwStmt) {
         return indent + "raise "+ doConvert("",throwStmt.getExpr());
     }
 
-    private static String doConvertWhileStmt(String indent, WhileStmt whileStmt) {
+    private String doConvertWhileStmt(String indent, WhileStmt whileStmt) {
         StringBuilder sb= new StringBuilder(indent);
         sb.append( "while ");
         sb.append( doConvert( "", whileStmt.getCondition() ) );
@@ -582,11 +583,11 @@ public class Convert {
         return sb.toString();
     }
 
-    private static String doConvertArrayInitializerExpr(String indent, ArrayInitializerExpr arrayInitializerExpr) {
+    private String doConvertArrayInitializerExpr(String indent, ArrayInitializerExpr arrayInitializerExpr) {
         return indent + "[" + utilFormatExprList( arrayInitializerExpr.getValues() ) + "]";
     }
 
-    private static String doSwitchStmt(String indent, SwitchStmt switchStmt) {
+    private String doSwitchStmt(String indent, SwitchStmt switchStmt) {
         String selector= doConvert( "",switchStmt.getSelector() );
         StringBuilder sb= new StringBuilder();
         boolean iff= true;
@@ -635,16 +636,16 @@ public class Convert {
         return b.toString();
     }
 
-    private static String doConvertClassOrInterfaceType(String indent, ClassOrInterfaceType classOrInterfaceType) {
+    private String doConvertClassOrInterfaceType(String indent, ClassOrInterfaceType classOrInterfaceType) {
         //classOrInterfaceType
         return "";
     }
 
-    private static String doConvertObjectCreationExpr(String indent, ObjectCreationExpr objectCreationExpr) {
+    private String doConvertObjectCreationExpr(String indent, ObjectCreationExpr objectCreationExpr) {
         return indent + objectCreationExpr.getType() + "("+ utilFormatExprList(objectCreationExpr.getArgs())+ ")";
     }
 
-    private static String doConvertConstructorDeclaration(String indent, ConstructorDeclaration constructorDeclaration) {
+    private String doConvertConstructorDeclaration(String indent, ConstructorDeclaration constructorDeclaration) {
         StringBuilder sb= new StringBuilder();
         sb.append(indent).append("def __init__")
                 .append("(").append(utilFormatParameterList( constructorDeclaration.getParameters() )).append("):\n");
@@ -652,7 +653,7 @@ public class Convert {
         return sb.toString();
     }
 
-    private static String doConvertConditionalExpr(String indent, ConditionalExpr conditionalExpr) {
+    private String doConvertConditionalExpr(String indent, ConditionalExpr conditionalExpr) {
         //StringBuilder sb= new StringBuilder();
         //sb.append(indent).append("# ConditionalExpr: ").append(conditionalExpr.toString());
         //sb.append(indent).append("if ").append( doConvert("",conditionalExpr.getCondition()) ).append(": ");
@@ -664,7 +665,7 @@ public class Convert {
                 + " else " +  doConvert("",conditionalExpr.getElseExpr());
     }
 
-    private static String doConvertCastExpr(String indent, CastExpr castExpr) {
+    private String doConvertCastExpr(String indent, CastExpr castExpr) {
         String type= castExpr.getType().toString();
         if ( type.equals("String") ) {
             type= "str";
@@ -674,7 +675,7 @@ public class Convert {
         return type + "(" + doConvert("", castExpr.getExpr() ) + ")";
     }
 
-    private static String doConvertTryStmt(String indent, TryStmt tryStmt) {
+    private String doConvertTryStmt(String indent, TryStmt tryStmt) {
         StringBuilder sb= new StringBuilder();
         sb.append( indent ).append( "try:\n");
         sb.append( doConvert( indent, tryStmt.getTryBlock() ) );
@@ -689,11 +690,11 @@ public class Convert {
         return sb.toString();
     }
 
-    private static String doMultiTypeParameter(String indent, MultiTypeParameter multiTypeParameter) {
+    private String doMultiTypeParameter(String indent, MultiTypeParameter multiTypeParameter) {
         return utilFormatTypeList( multiTypeParameter.getTypes() );
     }
 
-    private static String doConvertReferenceType(String indent, ReferenceType referenceType) {
+    private String doConvertReferenceType(String indent, ReferenceType referenceType) {
         switch (referenceType.getArrayCount()) {
             case 0:
                 return referenceType.getType().toString();

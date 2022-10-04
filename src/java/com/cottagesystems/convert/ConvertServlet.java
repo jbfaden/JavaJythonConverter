@@ -42,7 +42,7 @@ public class ConvertServlet extends HttpServlet {
         String jythonCode;
         try {
             if (code!=null ) {
-                jythonCode = Convert.doConvert(code);
+                jythonCode = new Convert().doConvert(code);
             } else {
                 jythonCode = "";
                 code= "";
