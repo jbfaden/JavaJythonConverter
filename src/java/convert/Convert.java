@@ -546,6 +546,7 @@ public class Convert {
         }
         sb.append( "):\n" );
         sb.append( doConvert( indent, methodDeclaration.getBody() ) );
+        sb.append( indent + methodDeclaration.getName() + " = staticmethod("+methodDeclaration.getName()+")" );
         return sb.toString();
     }
 
