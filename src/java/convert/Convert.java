@@ -212,6 +212,26 @@ public class Convert {
         List<Expression> args= methodCallExpr.getArgs();
         if ( name.equals("pow") && clas instanceof NameExpr && ((NameExpr)clas).getName().equals("Math") ) {
             return doConvert(indent,args.get(0)) + "**"+ doConvert(indent,args.get(1));
+        } else if ( name.equals("println") && clas instanceof FieldAccessExpr &&
+                ((FieldAccessExpr)clas).getField().equals("err") ) {
+            StringBuilder sb= new StringBuilder();
+            if (  methodCallExpr.getArgs().get(0) instanceof StringLiteralExpr ) {
+                String s= doConvert( "", methodCallExpr.getArgs().get(0) ) );
+                sb.append(indent).append( "sys.stderr.write(" ).append( s.substring(0,s.length()-1) ).append( "\\n')" );
+            } else {
+                sb.append(indent).append( "sys.stderr.write(" ).append( doConvert( "", methodCallExpr.getArgs().get(0) ) ).append( "+'\\n')" );
+            }
+            return sb.toString();
+        } else if ( name.equals("println") && clas instanceof FieldAccessExpr &&
+                ((FieldAccessExpr)clas).getField().equals("out") ) {
+            StringBuilder sb= new StringBuilder();
+            if (  methodCallExpr.getArgs().get(0) instanceof StringLiteralExpr ) {
+                String s= doConvert( "", methodCallExpr.getArgs().get(0) ) );
+                sb.append(indent).append( "print(" ).append( s.substring(0,s.length()-1) ).append( "\\n')" );
+            } else {
+                sb.append(indent).append( "print(" ).append( doConvert( "", methodCallExpr.getArgs().get(0) ) ).append( "+'\\n')" );
+            }    
+            return sb.toString();
         } else if ( name.equals("format") && clas instanceof NameExpr && ((NameExpr)clas).getName().equals("String") ) {
             StringBuilder sb= new StringBuilder();
             sb.append(indent).append(args.get(0)).append(" % (");
@@ -552,7 +572,9 @@ public class Convert {
             }
         }
         sb.append( "):\n" );
+        
         sb.append( doConvert( indent, methodDeclaration.getBody() ) );
+        
         if ( target==PythonTarget.jython_2_2 && ModifierSet.isStatic(methodDeclaration.getModifiers() ) ) {
             sb.append( indent + methodDeclaration.getName() + " = staticmethod("+methodDeclaration.getName()+")" );
         }
@@ -561,7 +583,7 @@ public class Convert {
 
     private String doConvertFieldDeclaration(String indent, FieldDeclaration fieldDeclaration) {
         StringBuilder sb= new StringBuilder();
-        boolean s= ModifierSet.isStatic( fieldDeclaration.getModifiers() );
+        boolean s= ModifierSet.isStatic( fieldDeclaration.getModifiers() ); // TODO: static fields
         List<VariableDeclarator> vv= fieldDeclaration.getVariables();
         if ( vv!=null ) {
             for ( VariableDeclarator v: vv ) {
