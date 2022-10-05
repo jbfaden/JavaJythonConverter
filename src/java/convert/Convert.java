@@ -55,6 +55,7 @@ import japa.parser.ast.type.ClassOrInterfaceType;
 import japa.parser.ast.type.ReferenceType;
 import java.io.ByteArrayInputStream;
 import java.nio.charset.Charset;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -625,6 +626,7 @@ public class Convert {
     private String doConvertClassOrInterfaceDeclaration(String indent, ClassOrInterfaceDeclaration classOrInterfaceDeclaration) {
         StringBuilder sb= new StringBuilder();
         String comments= utilRewriteComments(indent, classOrInterfaceDeclaration.getComment() );
+        sb.append( "\n" );
         sb.append( comments );
         sb.append( indent ).append("class " ).append( classOrInterfaceDeclaration.getName() ).append(":\n");
         classOrInterfaceDeclaration.getChildrenNodes().forEach((n) -> {
@@ -658,6 +660,7 @@ public class Convert {
         
         if ( target==PythonTarget.jython_2_2 && ModifierSet.isStatic(methodDeclaration.getModifiers() ) ) {
             sb.append(indent).append(methodDeclaration.getName()).append(" = staticmethod(").append(methodDeclaration.getName()).append(")");
+            sb.append(indent).append("\n");
         }
         return sb.toString();
     }
@@ -679,6 +682,7 @@ public class Convert {
         StringBuilder sb= new StringBuilder();
         boolean s= ModifierSet.isStatic( fieldDeclaration.getModifiers() ); // TODO: static fields
         List<VariableDeclarator> vv= fieldDeclaration.getVariables();
+        sb.append( utilRewriteComments( indent, fieldDeclaration.getComment() ) );
         if ( vv!=null ) {
             for ( VariableDeclarator v: vv ) {
                 Map<String,Type> currentScope= getCurrentScope();
@@ -757,6 +761,12 @@ public class Convert {
         if ( comments==null ) return "";
         StringBuilder b= new StringBuilder();
         String[] ss= comments.getContent().split("\n");
+        if ( ss[0].trim().length()==0 ) {
+            ss= Arrays.copyOfRange( ss, 1, ss.length );
+        }
+        if ( ss[ss.length-1].trim().length()==0 ) {
+            ss= Arrays.copyOfRange( ss, 0, ss.length-1 );
+        }
         for ( String s : ss ) {
             int i= s.indexOf("*");
             if ( i>-1 && s.substring(0,i).trim().length()==0 ) {
