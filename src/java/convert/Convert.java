@@ -9,6 +9,7 @@ import japa.parser.ast.body.BodyDeclaration;
 import japa.parser.ast.body.ClassOrInterfaceDeclaration;
 import japa.parser.ast.body.ConstructorDeclaration;
 import japa.parser.ast.body.FieldDeclaration;
+import japa.parser.ast.body.InitializerDeclaration;
 import japa.parser.ast.body.MethodDeclaration;
 import japa.parser.ast.body.ModifierSet;
 import japa.parser.ast.body.MultiTypeParameter;
@@ -66,24 +67,24 @@ public class Convert {
     
     public static void main(String[] args ) throws ParseException {
         Convert c= new Convert();
-        System.err.println("----");
-        System.err.println(c.doConvert("{ int x= Math.pow(3,5); }"));
-        System.err.println("----");
-        System.err.println("----");
-        System.err.println(c.doConvert("{ int x=0; if (x>0) y=0; }"));
-        System.err.println("----");
-        System.err.println("----");
-        System.err.println(c.doConvert("x=3"));
-        System.err.println("----");
-        System.err.println("----");
-        System.err.println(c.doConvert("Math.pow(3,c)"));
-        System.err.println("----");
-        System.err.println("----");
-        System.err.println(c.doConvert("3*c"));
-        System.err.println("----");
-        System.err.println("----");
-        System.err.println(c.doConvert("\"apple\".subString(3)"));
-        System.err.println("----");
+//        System.err.println("----");
+//        System.err.println(c.doConvert("{ int x= Math.pow(3,5); }"));
+//        System.err.println("----");
+//        System.err.println("----");
+//        System.err.println(c.doConvert("{ int x=0; if (x>0) y=0; }"));
+//        System.err.println("----");
+//        System.err.println("----");
+//        System.err.println(c.doConvert("x=3"));
+//        System.err.println("----");
+//        System.err.println("----");
+//        System.err.println(c.doConvert("Math.pow(3,c)"));
+//        System.err.println("----");
+//        System.err.println("----");
+//        System.err.println(c.doConvert("3*c"));
+//        System.err.println("----");
+//        System.err.println("----");
+//        System.err.println(c.doConvert("\"apple\".subString(3)"));
+//        System.err.println("----");
         String p= "private static int parseInt(String s) {\n" +
 "        int result;\n" +
 "        int len= s.length();\n" +
@@ -109,6 +110,10 @@ public class Convert {
 "        }\n" +
 "    }";
         System.err.println( c.doConvert(p) );
+    }
+
+    private String doConvertInitializerDeclaration(String indent, InitializerDeclaration initializerDeclaration) {
+        return doConvert(indent,initializerDeclaration.getBlock());
     }
 
     public enum PythonTarget { jython_2_2, python_3 }
@@ -331,19 +336,24 @@ public class Convert {
             case "BinaryExpr":
                 return doConvertBinaryExpr(indent,(BinaryExpr)n);
             case "NameExpr":
-                return ((NameExpr)n).getName();
+                String s= ((NameExpr)n).getName();
+                if ( nameMapForward.containsKey(s) ) {
+                    return indent + nameMapForward.get(s);
+                } else {
+                    return indent + s;
+                }
             case "EnclosedExpr":
-                return "(" + doConvert( "", ((EnclosedExpr)n).getInner() ) + ")";
+                return indent + "(" + doConvert( "", ((EnclosedExpr)n).getInner() ) + ")";
             case "NullLiteralExpr":
-                return "None";
+                return indent + "None";
             case "BooleanLiteralExpr":
-                return ((BooleanLiteralExpr)n).getValue() ? "True" : "False";
+                return indent + ( ((BooleanLiteralExpr)n).getValue() ? "True" : "False" );
             case "IntegerLiteralExpr":
-                return ((IntegerLiteralExpr)n).getValue();
+                return indent + ((IntegerLiteralExpr)n).getValue();
             case "DoubleLiteralExpr":
-                return ((DoubleLiteralExpr)n).getValue();
+                return indent + ((DoubleLiteralExpr)n).getValue();
             case "CharLiteralExpr":
-                return "'" + ((CharLiteralExpr)n).getValue() +"'";
+                return indent + "'" + ((CharLiteralExpr)n).getValue() +"'";
             case "CastExpr":
                 return doConvertCastExpr(indent,(CastExpr)n);
             case "MethodCallExpr":
@@ -404,6 +414,8 @@ public class Convert {
                 return doConvertClassOrInterfaceType(indent,(ClassOrInterfaceType)n);
             case "ConstructorDeclaration":
                 return doConvertConstructorDeclaration(indent,(ConstructorDeclaration)n);
+            case "InitializerDeclaration":
+                return doConvertInitializerDeclaration(indent,(InitializerDeclaration)n);
             case "ObjectCreationExpr":
                 return doConvertObjectCreationExpr(indent,(ObjectCreationExpr)n);
             default:
@@ -423,6 +435,8 @@ public class Convert {
             return indent + "pass\n";
         }
         for ( Statement s: statements ) {
+            String aline= doConvert(indent,s);
+            if ( aline.trim().length()==0 ) continue;
             result.append(doConvert(indent,s));
             result.append("\n");
         }
@@ -436,20 +450,27 @@ public class Convert {
     private String doConvertVariableDeclarationExpr(String indent, VariableDeclarationExpr variableDeclarationExpr) {
         StringBuilder b= new StringBuilder();
         for ( VariableDeclarator v: variableDeclarationExpr.getVars() ) {
+            String s= v.getId().getName();
+            if ( s.equals("len") ) {
+                String news= "llen_446";
+                nameMapForward.put( s, news );
+                nameMapReverse.put( news, s );
+                s= news;
+            }
+            getCurrentScope().put( s, variableDeclarationExpr.getType() );
             if ( v.getInit()!=null ) {
                 if ( v.getInit() instanceof ConditionalExpr ) {
                     ConditionalExpr cc  = (ConditionalExpr)v.getInit();
                     b.append( indent ).append("if ").append(cc.getCondition()).append(":\n");
-                    b.append(s4).append(indent).append( v.getId().getName() );
-                    b.append("= ").append(doConvert("",cc.getThenExpr() )).append("\n");
+                    b.append(s4).append(indent).append( s );
+                    b.append(" = ").append(doConvert("",cc.getThenExpr() )).append("\n");
                     b.append( indent ).append("else:\n" );
-                    b.append(s4).append(indent).append( v.getId().getName() );
-                    b.append("= ").append(doConvert("",cc.getElseExpr() )).append("\n");
+                    b.append(s4).append(indent).append( s );
+                    b.append(" = ").append(doConvert("",cc.getElseExpr() )).append("\n");
                 } else {
-                    b.append( indent ).append(v.getId().getName()).append(" = ").append(doConvert("",v.getInit()) );
+                    b.append( indent ).append(s).append(" = ").append(doConvert("",v.getInit()) );
                 }
             }
-            getCurrentScope().put( v.getId().getName(), variableDeclarationExpr.getType() );
         }
         return b.toString();
     }
@@ -560,11 +581,11 @@ public class Convert {
     }
 
     private String doConvertFieldAccessExpr(String indent, FieldAccessExpr fieldAccessExpr) {
-        return doConvert( "", fieldAccessExpr.getScope() ) + "." + fieldAccessExpr.getField();
+        return doConvert( indent, fieldAccessExpr.getScope() ) + "." + fieldAccessExpr.getField();
     }
 
     private String doConvertArrayAccessExpr(String indent, ArrayAccessExpr arrayAccessExpr) {
-        return doConvert("",arrayAccessExpr.getName()) + "["+doConvert("",arrayAccessExpr.getIndex())+"]";
+        return doConvert( indent,arrayAccessExpr.getName()) + "["+doConvert("",arrayAccessExpr.getIndex())+"]";
     }
 
     private String doConvertUnaryExpr(String indent, UnaryExpr unaryExpr) {
@@ -631,12 +652,14 @@ public class Convert {
         sb.append( doConvert( indent, methodDeclaration.getBody() ) );
         
         if ( target==PythonTarget.jython_2_2 && ModifierSet.isStatic(methodDeclaration.getModifiers() ) ) {
-            sb.append( indent + methodDeclaration.getName() + " = staticmethod("+methodDeclaration.getName()+")" );
+            sb.append(indent).append(methodDeclaration.getName()).append(" = staticmethod(").append(methodDeclaration.getName()).append(")");
         }
         return sb.toString();
     }
 
     Map<String,Type> scope= new HashMap<>();
+    Map<String,String> nameMapForward= new HashMap<>();
+    Map<String,String> nameMapReverse= new HashMap<>();
     
     /**
      * return the current scope, which includes local variables.  Presently this just uses one scope,
@@ -653,17 +676,20 @@ public class Convert {
         List<VariableDeclarator> vv= fieldDeclaration.getVariables();
         if ( vv!=null ) {
             for ( VariableDeclarator v: vv ) {
-                if ( v.getInit() instanceof ConditionalExpr ) {
+                Map<String,Type> currentScope= getCurrentScope();
+                currentScope.put( v.getId().getName(),fieldDeclaration.getType() );
+                if ( v.getInit()==null ) {
+                    
+                } else if ( v.getInit() instanceof ConditionalExpr ) {
                     ConditionalExpr ce= (ConditionalExpr)v.getInit();
                     sb.append( indent ).append("if ").append(doConvert( "",ce.getCondition() )).append(":\n");
                     sb.append(s4).append(indent).append( v.getId()).append("=").append( doConvert( "",ce.getThenExpr() ) ).append("\n");
                     sb.append( indent ).append( "else:\n");
                     sb.append(s4).append(indent).append( v.getId()).append("=").append( doConvert( "",ce.getElseExpr() ) ).append("\n");
-                    scope.put( v.getId().getName(),fieldDeclaration.getType() );
+                    
                 } else {
                     sb.append( indent ) .append( v.getId() ).append("=").append( doConvert( "",v.getInit() ) ).append("\n");
-                    Map<String,Type> scope= getCurrentScope();
-                    scope.put( v.getId().getName(),fieldDeclaration.getType() );
+                    
                 }
             }
         }
