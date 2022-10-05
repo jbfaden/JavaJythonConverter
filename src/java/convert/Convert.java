@@ -121,6 +121,32 @@ public class Convert {
     
     private PythonTarget target = PythonTarget.jython_2_2;
     
+    private boolean onlyStatic = true;
+
+    /**
+     * record the name of the class (e.g. TimeUtil) so that internal references can be corrected.
+     */
+    private String staticClassName;
+    
+    public static final String PROP_ONLYSTATIC = "onlyStatic";
+
+    /**
+     * true indicates that only static methods are to be pulled out of the class.
+     * @return 
+     */
+    public boolean isOnlyStatic() {
+        return onlyStatic;
+    }
+
+    /**
+     * true indicates that only static methods are to be pulled out of the class.
+     * @param onlyStatic 
+     */
+    public void setOnlyStatic(boolean onlyStatic) {
+        this.onlyStatic = onlyStatic;
+    }
+
+    
     private String utilFormatExprList( List<Expression> l ) {
         if ( l==null ) return "";
         if ( l.isEmpty() ) return "";
@@ -321,7 +347,12 @@ public class Convert {
             if ( clas==null ) {
                 return indent + name + "("+ utilFormatExprList(args) +")";
             } else {
-                return indent + doConvert("",clas)+"."+name + "("+ utilFormatExprList(args) +")";
+                String clasName = doConvert("",clas);
+                if ( onlyStatic && clasName.equals(staticClassName) )  {
+                    return indent            + name + "("+ utilFormatExprList(args) +")";
+                } else {
+                    return indent + clasName +"."+name + "("+ utilFormatExprList(args) +")";
+                }
             }
         }
     }
@@ -625,21 +656,34 @@ public class Convert {
 
     private String doConvertClassOrInterfaceDeclaration(String indent, ClassOrInterfaceDeclaration classOrInterfaceDeclaration) {
         StringBuilder sb= new StringBuilder();
-        String comments= utilRewriteComments(indent, classOrInterfaceDeclaration.getComment() );
-        sb.append( "\n" );
-        sb.append( comments );
-        sb.append( indent ).append("class " ).append( classOrInterfaceDeclaration.getName() ).append(":\n");
-        classOrInterfaceDeclaration.getChildrenNodes().forEach((n) -> {
-            sb.append( doConvert(s4+indent,n) ).append("\n");
-        });
+        if ( onlyStatic ) {
+            staticClassName= classOrInterfaceDeclaration.getName();
+            classOrInterfaceDeclaration.getChildrenNodes().forEach((n) -> {
+                sb.append( doConvert(indent,n) ).append("\n");
+            });
+        } else {
+            String comments= utilRewriteComments(indent, classOrInterfaceDeclaration.getComment() );
+            sb.append( "\n" );
+            sb.append( comments );
+            sb.append( indent ).append("class " ).append( classOrInterfaceDeclaration.getName() ).append(":\n");
+            classOrInterfaceDeclaration.getChildrenNodes().forEach((n) -> {
+                sb.append( doConvert(s4+indent,n) ).append("\n");
+            });
+        }
         return sb.toString();
     }
 
     private String doConvertMethodDeclaration(String indent, MethodDeclaration methodDeclaration) {
+        boolean isStatic= ModifierSet.isStatic(methodDeclaration.getModifiers() );
+        
+        if ( onlyStatic && !isStatic ) {
+            return "";
+        }
+        
         StringBuilder sb= new StringBuilder();
         String comments= utilRewriteComments( indent, methodDeclaration.getComment() );
         sb.append( comments );
-        if ( target==PythonTarget.python_3 && ModifierSet.isStatic(methodDeclaration.getModifiers() ) ) {
+        if ( target==PythonTarget.python_3 && isStatic  && !onlyStatic ) {
             sb.append( indent ).append( "@staticmethod\n" );
         }
         sb.append( indent ).append( "def " ).append( methodDeclaration.getName() ) .append("(");
@@ -658,7 +702,7 @@ public class Convert {
         
         sb.append( doConvert( indent, methodDeclaration.getBody() ) );
         
-        if ( target==PythonTarget.jython_2_2 && ModifierSet.isStatic(methodDeclaration.getModifiers() ) ) {
+        if ( target==PythonTarget.jython_2_2 && isStatic && !onlyStatic ) {
             sb.append(indent).append(methodDeclaration.getName()).append(" = staticmethod(").append(methodDeclaration.getName()).append(")");
             sb.append(indent).append("\n");
         }
@@ -679,8 +723,14 @@ public class Convert {
     }
     
     private String doConvertFieldDeclaration(String indent, FieldDeclaration fieldDeclaration) {
-        StringBuilder sb= new StringBuilder();
         boolean s= ModifierSet.isStatic( fieldDeclaration.getModifiers() ); // TODO: static fields
+        
+        if ( onlyStatic && !s ) {
+            return "";
+        }
+
+        StringBuilder sb= new StringBuilder();
+        
         List<VariableDeclarator> vv= fieldDeclaration.getVariables();
         sb.append( utilRewriteComments( indent, fieldDeclaration.getComment() ) );
         if ( vv!=null ) {
