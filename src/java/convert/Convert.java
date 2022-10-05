@@ -531,7 +531,7 @@ public class Convert {
         b.append( doConvert(indent,ifStmt.getThenStmt() ) );
         if ( ifStmt.getElseStmt()!=null ) {
             if ( ifStmt.getElseStmt() instanceof IfStmt ) {
-                specialConvertElifStmt( indent, (IfStmt)ifStmt.getElseStmt() );
+                b.append( specialConvertElifStmt( indent, (IfStmt)ifStmt.getElseStmt() ) );
             } else {
                 b.append(indent).append("else:\n");
                 b.append( doConvert(indent,ifStmt.getElseStmt()) );
