@@ -805,7 +805,7 @@ public class Convert {
                 
             }
             List<Statement> statements= ses.getStmts();
-            if ( !( ( statements.get(statements.size()-1) instanceof BreakStmt ) ||
+            if ( ses.getLabel()!=null && !( ( statements.get(statements.size()-1) instanceof BreakStmt ) ||
                     ( statements.get(statements.size()-1) instanceof ReturnStmt ) ||
                     ( statements.get(statements.size()-1) instanceof ThrowStmt ) ) ) {
                 sb.append(s4).append(indent).append("### Switch Fall Through Not Implemented ###");
