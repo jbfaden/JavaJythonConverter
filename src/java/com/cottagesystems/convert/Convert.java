@@ -797,7 +797,12 @@ public class Convert {
                 sb.append(indent).append("if ").append(selector).append("==").append(ses.getLabel()).append(":\n");
                 iff=false;
             } else {
-                sb.append(indent).append("elif ").append(selector).append("==").append(ses.getLabel()).append(":\n");
+                if ( ses.getLabel()!=null ) {
+                    sb.append(indent).append("elif ").append(selector).append("==").append(ses.getLabel()).append(":\n");
+                } else {
+                    sb.append(indent).append("else:\n");
+                }
+                
             }
             List<Statement> statements= ses.getStmts();
             if ( !( ( statements.get(statements.size()-1) instanceof BreakStmt ) ||
