@@ -54,7 +54,9 @@ import japa.parser.ast.type.ClassOrInterfaceType;
 import japa.parser.ast.type.ReferenceType;
 import java.io.ByteArrayInputStream;
 import java.nio.charset.Charset;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Class for converting Java to Jython using an AST.
@@ -81,7 +83,32 @@ public class Convert {
         System.err.println("----");
         System.err.println("----");
         System.err.println(c.doConvert("\"apple\".subString(3)"));
-        System.err.println("----");        
+        System.err.println("----");
+        String p= "private static int parseInt(String s) {\n" +
+"        int result;\n" +
+"        int len= s.length();\n" +
+"        for (int i = 0; i < len; i++) {\n" +
+"            char c = s.charAt(i);\n" +
+"            if (c < 48 || c >= 58) {\n" +
+"                throw new IllegalArgumentException(\"only digits are allowed in string\");\n" +
+"            }\n" +
+"        }\n" +
+"        switch (len) {\n" +
+"            case 2:\n" +
+"                result = 10 * (s.charAt(0) - 48) + (s.charAt(1) - 48);\n" +
+"                return result;\n" +
+"            case 3:\n" +
+"                result = 100 * (s.charAt(0) - 48) + 10 * (s.charAt(1) - 48) + (s.charAt(2) - 48);\n" +
+"                return result;\n" +
+"            default:\n" +
+"                result = 0;\n" +
+"                for (int i = 0; i < s.length(); i++) {\n" +
+"                    result = 10 * result + (s.charAt(i) - 48);\n" +
+"                }\n" +
+"                return result;\n" +
+"        }\n" +
+"    }";
+        System.err.println( c.doConvert(p) );
     }
 
     public enum PythonTarget { jython_2_2, python_3 }
@@ -274,7 +301,7 @@ public class Convert {
                 return doConvert(indent,clas)+"["+ doConvert("",args.get(0)) +":]";
             }
         } else if ( name.equals("charAt") ) {
-            return doConvert(indent,clas)+"["+ doConvert("",args.get(0)) +"]";
+            return "ord(" + doConvert(indent,clas)+"["+ doConvert("",args.get(0)) +"])";
         } else if ( name.equals("startsWith") ) {
             return doConvert(indent,clas)+".startswith("+ utilFormatExprList(args) +")";
         } else if ( name.equals("endsWith") ) {
@@ -422,6 +449,7 @@ public class Convert {
                     b.append( indent ).append(v.getId().getName()).append(" = ").append(doConvert("",v.getInit()) );
                 }
             }
+            getCurrentScope().put( v.getId().getName(), variableDeclarationExpr.getType() );
         }
         return b.toString();
     }
@@ -608,6 +636,17 @@ public class Convert {
         return sb.toString();
     }
 
+    Map<String,Type> scope= new HashMap<>();
+    
+    /**
+     * return the current scope, which includes local variables.  Presently this just uses one scope,
+     * but this should check for code blocks, etc.
+     * @return 
+     */
+    private Map<String,Type> getCurrentScope() {
+        return scope;
+    }
+    
     private String doConvertFieldDeclaration(String indent, FieldDeclaration fieldDeclaration) {
         StringBuilder sb= new StringBuilder();
         boolean s= ModifierSet.isStatic( fieldDeclaration.getModifiers() ); // TODO: static fields
@@ -620,9 +659,11 @@ public class Convert {
                     sb.append(s4).append(indent).append( v.getId()).append("=").append( doConvert( "",ce.getThenExpr() ) ).append("\n");
                     sb.append( indent ).append( "else:\n");
                     sb.append(s4).append(indent).append( v.getId()).append("=").append( doConvert( "",ce.getElseExpr() ) ).append("\n");
-                    
+                    scope.put( v.getId().getName(),fieldDeclaration.getType() );
                 } else {
                     sb.append( indent ) .append( v.getId() ).append("=").append( doConvert( "",v.getInit() ) ).append("\n");
+                    Map<String,Type> scope= getCurrentScope();
+                    scope.put( v.getId().getName(),fieldDeclaration.getType() );
                 }
             }
         }
