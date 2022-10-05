@@ -629,7 +629,12 @@ public class Convert {
     }
 
     private String doConvertFieldAccessExpr(String indent, FieldAccessExpr fieldAccessExpr) {
-        return doConvert( indent, fieldAccessExpr.getScope() ) + "." + fieldAccessExpr.getField();
+        String s= doConvert( indent, fieldAccessExpr.getScope() );
+        if ( onlyStatic && s.equals(staticClassName) ) {
+            return fieldAccessExpr.getField();
+        } else {
+            return s + "." + fieldAccessExpr.getField();
+        }
     }
 
     private String doConvertArrayAccessExpr(String indent, ArrayAccessExpr arrayAccessExpr) {
