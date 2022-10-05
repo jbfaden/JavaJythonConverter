@@ -270,7 +270,12 @@ public class Convert {
         String name= methodCallExpr.getName();
         List<Expression> args= methodCallExpr.getArgs();
         if ( name.equals("pow") && clas instanceof NameExpr && ((NameExpr)clas).getName().equals("Math") ) {
-            return doConvert(indent,args.get(0)) + "**"+ doConvert(indent,args.get(1));
+            if ( args.get(1) instanceof IntegerLiteralExpr ) {
+                return doConvert(indent,args.get(0)) + "**"+ doConvert(indent,args.get(1));
+            } else {
+                return doConvert(indent,args.get(0)) + "**("+ doConvert(indent,args.get(1))+")";
+            }
+            
         } else if ( name.equals("println") && clas instanceof FieldAccessExpr &&
                 ((FieldAccessExpr)clas).getField().equals("err") ) {
             StringBuilder sb= new StringBuilder();
@@ -452,7 +457,7 @@ public class Convert {
         for ( VariableDeclarator v: variableDeclarationExpr.getVars() ) {
             String s= v.getId().getName();
             if ( s.equals("len") ) {
-                String news= "llen_446";
+                String news= "llen446";
                 nameMapForward.put( s, news );
                 nameMapReverse.put( news, s );
                 s= news;
