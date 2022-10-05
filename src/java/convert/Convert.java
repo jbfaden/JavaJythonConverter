@@ -117,10 +117,21 @@ public class Convert {
         return doConvert(indent,initializerDeclaration.getBlock());
     }
 
-    public enum PythonTarget { jython_2_2, python_3 }
-    
-    private PythonTarget target = PythonTarget.jython_2_2;
-    
+    public enum PythonTarget { jython_2_2, python_3_6 }
+        
+    private PythonTarget pythonTarget = PythonTarget.jython_2_2;
+
+    public static final String PROP_PYTHONTARGET = "pythonTarget";
+
+    public PythonTarget getPythonTarget() {
+        return pythonTarget;
+    }
+
+    public void setPythonTarget(PythonTarget pythonTarget) {
+        PythonTarget oldPythonTarget = this.pythonTarget;
+        this.pythonTarget = pythonTarget;
+    }
+
     private boolean onlyStatic = true;
 
     /**
@@ -683,7 +694,7 @@ public class Convert {
         StringBuilder sb= new StringBuilder();
         String comments= utilRewriteComments( indent, methodDeclaration.getComment() );
         sb.append( comments );
-        if ( target==PythonTarget.python_3 && isStatic  && !onlyStatic ) {
+        if ( pythonTarget==PythonTarget.python_3_6 && isStatic  && !onlyStatic ) {
             sb.append( indent ).append( "@staticmethod\n" );
         }
         sb.append( indent ).append( "def " ).append( methodDeclaration.getName() ) .append("(");
@@ -702,7 +713,7 @@ public class Convert {
         
         sb.append( doConvert( indent, methodDeclaration.getBody() ) );
         
-        if ( target==PythonTarget.jython_2_2 && isStatic && !onlyStatic ) {
+        if ( pythonTarget==PythonTarget.jython_2_2 && isStatic && !onlyStatic ) {
             sb.append(indent).append(methodDeclaration.getName()).append(" = staticmethod(").append(methodDeclaration.getName()).append(")");
             sb.append(indent).append("\n");
         }

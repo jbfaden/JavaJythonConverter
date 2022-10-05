@@ -37,12 +37,21 @@ public class ConvertServlet extends HttpServlet {
         
         String code= request.getParameter("code");
         
+        boolean onlyStatic = "true".equals( request.getParameter("onlyStatic") );
+        
+        String pythonVersion = request.getParameter("pythonTarget");
+        if ( pythonVersion==null ) pythonVersion= Convert.PythonTarget.jython_2_2.toString();
+                
         response.setContentType("text/html;charset=UTF-8");
+
+        Convert convert= new Convert();
+        convert.setOnlyStatic(onlyStatic);
+        convert.setPythonTarget(Convert.PythonTarget.valueOf(pythonVersion));
         
         String jythonCode;
         try {
             if (code!=null ) {
-                jythonCode = new Convert().doConvert(code);
+                jythonCode = convert.doConvert(code);
             } else {
                 jythonCode = "";
                 code= "";
@@ -70,6 +79,14 @@ public class ConvertServlet extends HttpServlet {
             out.println("<textarea rows=\"40\" cols=\"132\">"+jythonCode+"</textarea>");
             out.println("</td>");
             out.println("</tr></table>");
+            out.println( String.format( "<input type=\"checkbox\" id=\"onlyStatic\" name=\"onlyStatic\" value=\"true\" %s>Only Static Parts</input>",
+                    convert.isOnlyStatic() ? "checked" : "" ) );
+            //out.println("<select name=\"jythonVersion\" id=\"jythonVersion\">");
+            //out.println(String.format( "    <option value=\"jython_2_2\" %s>Jython 2.2</option>", 
+            //        convert.getPythonTarget()==Convert.PythonTarget.jython_2_2 ? "selected=1" : ""  ) );
+            //out.println(String.format( "    <option value=\"python_3_6\" %s>Python 3.6</option>", 
+            //        convert.getPythonTarget()==Convert.PythonTarget.python_3_6 ? "selected=1" : ""  ) );
+            //out.println("</select>");
             out.println("<input type=\"submit\" value=\"submit\"></input>");
             out.println("</form action=\"ConvertServlet\" method=\"post\">");            
             out.println("</body>");
