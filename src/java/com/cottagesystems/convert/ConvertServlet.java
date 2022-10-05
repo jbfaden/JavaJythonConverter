@@ -5,7 +5,6 @@
  */
 package com.cottagesystems.convert;
 
-import convert.Convert;
 import japa.parser.ParseException;
 import java.io.IOException;
 import java.io.PrintWriter;
