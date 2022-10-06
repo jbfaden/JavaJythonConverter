@@ -872,8 +872,10 @@ public class Convert {
 
     private String doConvertConstructorDeclaration(String indent, ConstructorDeclaration constructorDeclaration) {
         StringBuilder sb= new StringBuilder();
-        sb.append(indent).append("def __init__")
-                .append("(").append(utilFormatParameterList( constructorDeclaration.getParameters() )).append("):\n");
+        String params= utilFormatParameterList( constructorDeclaration.getParameters() );
+        sb.append(indent).append("def __init__(self");
+        if ( params.trim().length()>0 ) sb.append(",").append(params);
+        sb.append("):\n");
         sb.append( doConvert(indent,constructorDeclaration.getBlock()) );
         return sb.toString();
     }
