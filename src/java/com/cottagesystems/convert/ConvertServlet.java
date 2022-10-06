@@ -33,13 +33,13 @@ public class ConvertServlet extends HttpServlet {
         boolean onlyStatic = "true".equals( request.getParameter("onlyStatic") );
         
         String pythonVersion = request.getParameter("pythonTarget");
-        if ( pythonVersion==null ) pythonVersion= Convert.PythonTarget.jython_2_2.toString();
+        if ( pythonVersion==null ) pythonVersion= PythonTarget.jython_2_2.toString();
                 
         response.setContentType("text/html;charset=UTF-8");
 
         Convert convert= new Convert();
         convert.setOnlyStatic(onlyStatic);
-        convert.setPythonTarget(Convert.PythonTarget.valueOf(pythonVersion));
+        convert.setPythonTarget(PythonTarget.valueOf(pythonVersion));
         
         String jythonCode;
         try {
