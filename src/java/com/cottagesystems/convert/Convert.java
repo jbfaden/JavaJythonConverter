@@ -67,53 +67,6 @@ import java.util.Map;
  */
 public class Convert {
     
-    public static void main(String[] args ) throws ParseException {
-        Convert c= new Convert();
-//        System.err.println("----");
-//        System.err.println(c.doConvert("{ int x= Math.pow(3,5); }"));
-//        System.err.println("----");
-//        System.err.println("----");
-//        System.err.println(c.doConvert("{ int x=0; if (x>0) y=0; }"));
-//        System.err.println("----");
-//        System.err.println("----");
-//        System.err.println(c.doConvert("x=3"));
-//        System.err.println("----");
-//        System.err.println("----");
-//        System.err.println(c.doConvert("Math.pow(3,c)"));
-//        System.err.println("----");
-//        System.err.println("----");
-//        System.err.println(c.doConvert("3*c"));
-//        System.err.println("----");
-//        System.err.println("----");
-//        System.err.println(c.doConvert("\"apple\".subString(3)"));
-//        System.err.println("----");
-        String p= "private static int parseInt(String s) {\n" +
-"        int result;\n" +
-"        int len= s.length();\n" +
-"        for (int i = 0; i < len; i++) {\n" +
-"            char c = s.charAt(i);\n" +
-"            if (c < 48 || c >= 58) {\n" +
-"                throw new IllegalArgumentException(\"only digits are allowed in string\");\n" +
-"            }\n" +
-"        }\n" +
-"        switch (len) {\n" +
-"            case 2:\n" +
-"                result = 10 * (s.charAt(0) - 48) + (s.charAt(1) - 48);\n" +
-"                return result;\n" +
-"            case 3:\n" +
-"                result = 100 * (s.charAt(0) - 48) + 10 * (s.charAt(1) - 48) + (s.charAt(2) - 48);\n" +
-"                return result;\n" +
-"            default:\n" +
-"                result = 0;\n" +
-"                for (int i = 0; i < s.length(); i++) {\n" +
-"                    result = 10 * result + (s.charAt(i) - 48);\n" +
-"                }\n" +
-"                return result;\n" +
-"        }\n" +
-"    }";
-        System.err.println( c.doConvert(p) );
-    }
-
     private String doConvertInitializerDeclaration(String indent, InitializerDeclaration initializerDeclaration) {
         return doConvert(indent,initializerDeclaration.getBlock());
     }
@@ -132,11 +85,6 @@ public class Convert {
     }
 
     private boolean onlyStatic = true;
-
-    /**
-     * record the name of the class (e.g. TimeUtil) so that internal references can be corrected.
-     */
-    private String staticClassName;
     
     public static final String PROP_ONLYSTATIC = "onlyStatic";
 
@@ -156,7 +104,30 @@ public class Convert {
         this.onlyStatic = onlyStatic;
     }
 
+    /*** internal parsing state ***/
     
+    /**
+     * record the name of the class (e.g. TimeUtil) so that internal references can be corrected.
+     */
+    private String staticClassName;
+    
+    /**
+     * record the method names, since Python will need to refer to "self" to call methods but Java does not.
+     */
+    private Map<String,ClassOrInterfaceDeclaration> classMethods = new HashMap<>();
+    
+    /**
+     * return imported class names.
+     */
+    private Map<String,Object> importedClasses = new HashMap<>();
+     
+    /**
+     * return imported methods, from star imports.
+     */
+    private Map<String,Object> importedMethods = new HashMap<>();
+    
+    /*** end, internal parsing state ***/
+
     private String utilFormatExprList( List<Expression> l ) {
         if ( l==null ) return "";
         if ( l.isEmpty() ) return "";
@@ -190,7 +161,10 @@ public class Convert {
         return b.toString();
     }
 
-    private static String s4="    ";
+    /**
+     * the indent level.
+     */
+    private static final String s4="    ";
     
     /**
      * wrap the methods in a dummy class to see if it compiles
@@ -355,7 +329,12 @@ public class Convert {
             return doConvert(indent,clas)+".endswith("+ utilFormatExprList(args) +")";
         } else {
             if ( clas==null ) {
-                return indent + name + "("+ utilFormatExprList(args) +")";
+                ClassOrInterfaceDeclaration m= classMethods.get(name);
+                if ( m!=null ) {
+                    return indent + m.getName() + "." + name + "("+ utilFormatExprList(args) +")";
+                } else {
+                    return indent + name + "("+ utilFormatExprList(args) +")";
+                }                
             } else {
                 String clasName = doConvert("",clas);
                 if ( onlyStatic && clasName.equals(staticClassName) )  {
@@ -460,13 +439,15 @@ public class Convert {
             case "ClassOrInterfaceDeclaration":
                 return doConvertClassOrInterfaceDeclaration(indent,(ClassOrInterfaceDeclaration)n);
             case "ClassOrTypeInterfaceType":
-                return doConvertClassOrInterfaceType(indent,(ClassOrInterfaceType)n);
+                return doConvertClassOrInterfaceType(indent,(ClassOrInterfaceType)n); // TODO: this looks suspicious
             case "ConstructorDeclaration":
                 return doConvertConstructorDeclaration(indent,(ConstructorDeclaration)n);
             case "InitializerDeclaration":
                 return doConvertInitializerDeclaration(indent,(InitializerDeclaration)n);
             case "ObjectCreationExpr":
                 return doConvertObjectCreationExpr(indent,(ObjectCreationExpr)n);
+            case "ClassOrInterfaceType":
+                return doConvertClassOrInterfaceType(indent,(ClassOrInterfaceType)n);
             default:
                 return indent + "*** "+simpleName + "*** " + n.toString() + "*** end "+simpleName + "****";
         }
@@ -682,9 +663,22 @@ public class Convert {
             String comments= utilRewriteComments(indent, classOrInterfaceDeclaration.getComment() );
             sb.append( "\n" );
             sb.append( comments );
-            sb.append( indent ).append("class " ).append( classOrInterfaceDeclaration.getName() ).append(":\n");
+            
+            if ( classOrInterfaceDeclaration.getExtends()!=null && classOrInterfaceDeclaration.getExtends().size()==1 ) {  //TODO: multiple
+                String extendName= doConvert( "", classOrInterfaceDeclaration.getExtends().get(0) );
+                sb.append( indent ).append("class " ).append( classOrInterfaceDeclaration.getName() ).append("(" ).append(extendName).append(")").append(":\n");
+            } else {
+                sb.append( indent ).append("class " ).append( classOrInterfaceDeclaration.getName() ).append(":\n");
+            }
+
             classOrInterfaceDeclaration.getChildrenNodes().forEach((n) -> {
-                sb.append( doConvert(s4+indent,n) ).append("\n");
+                if ( n instanceof MethodDeclaration ) {
+                    classMethods.put( ((MethodDeclaration) n).getName(), classOrInterfaceDeclaration );
+                }
+            });
+            
+            classOrInterfaceDeclaration.getChildrenNodes().forEach((n) -> {
+                sb.append( doConvert( s4+indent, n ) ).append("\n");
             });
         }
         return sb.toString();
@@ -863,7 +857,7 @@ public class Convert {
 
     private String doConvertClassOrInterfaceType(String indent, ClassOrInterfaceType classOrInterfaceType) {
         //classOrInterfaceType
-        return "";
+        return indent + classOrInterfaceType.getName();
     }
 
     private String doConvertObjectCreationExpr(String indent, ObjectCreationExpr objectCreationExpr) {
@@ -937,4 +931,51 @@ public class Convert {
         
     }
 
+    public static void main(String[] args ) throws ParseException {
+        Convert c= new Convert();
+//        System.err.println("----");
+//        System.err.println(c.doConvert("{ int x= Math.pow(3,5); }"));
+//        System.err.println("----");
+//        System.err.println("----");
+//        System.err.println(c.doConvert("{ int x=0; if (x>0) y=0; }"));
+//        System.err.println("----");
+//        System.err.println("----");
+//        System.err.println(c.doConvert("x=3"));
+//        System.err.println("----");
+//        System.err.println("----");
+//        System.err.println(c.doConvert("Math.pow(3,c)"));
+//        System.err.println("----");
+//        System.err.println("----");
+//        System.err.println(c.doConvert("3*c"));
+//        System.err.println("----");
+//        System.err.println("----");
+//        System.err.println(c.doConvert("\"apple\".subString(3)"));
+//        System.err.println("----");
+        String p= "private static int parseInt(String s) {\n" +
+"        int result;\n" +
+"        int len= s.length();\n" +
+"        for (int i = 0; i < len; i++) {\n" +
+"            char c = s.charAt(i);\n" +
+"            if (c < 48 || c >= 58) {\n" +
+"                throw new IllegalArgumentException(\"only digits are allowed in string\");\n" +
+"            }\n" +
+"        }\n" +
+"        switch (len) {\n" +
+"            case 2:\n" +
+"                result = 10 * (s.charAt(0) - 48) + (s.charAt(1) - 48);\n" +
+"                return result;\n" +
+"            case 3:\n" +
+"                result = 100 * (s.charAt(0) - 48) + 10 * (s.charAt(1) - 48) + (s.charAt(2) - 48);\n" +
+"                return result;\n" +
+"            default:\n" +
+"                result = 0;\n" +
+"                for (int i = 0; i < s.length(); i++) {\n" +
+"                    result = 10 * result + (s.charAt(i) - 48);\n" +
+"                }\n" +
+"                return result;\n" +
+"        }\n" +
+"    }";
+        System.err.println( c.doConvert(p) );
+    }
+    
 }
