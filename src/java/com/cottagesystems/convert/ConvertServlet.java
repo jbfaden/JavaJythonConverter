@@ -82,7 +82,7 @@ public class ConvertServlet extends HttpServlet {
             //out.println("</select>");
             out.println("<input type=\"submit\" value=\"submit\"></input>");
             out.println("</form action=\"ConvertServlet\" method=\"post\">");            
-            out.println("<small>Version 20221005b</small>");
+            out.println("<small>Version 20221006a</small>");
             out.println("</body>");
             out.println("</html>");
         }
