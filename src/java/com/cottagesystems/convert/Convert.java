@@ -38,6 +38,7 @@ import japa.parser.ast.expr.ConditionalExpr;
 import japa.parser.ast.expr.DoubleLiteralExpr;
 import japa.parser.ast.expr.EnclosedExpr;
 import japa.parser.ast.expr.FieldAccessExpr;
+import japa.parser.ast.expr.LongLiteralExpr;
 import japa.parser.ast.expr.ObjectCreationExpr;
 import japa.parser.ast.expr.QualifiedNameExpr;
 import japa.parser.ast.expr.UnaryExpr;
@@ -390,12 +391,14 @@ public class Convert {
                 } else {
                     return indent + s;
                 }
-            case "EnclosedExpr":
+            case "EnclosedExpr": 
                 return indent + "(" + doConvert( "", ((EnclosedExpr)n).getInner() ) + ")";
             case "NullLiteralExpr":
                 return indent + "None";
             case "BooleanLiteralExpr":
                 return indent + ( ((BooleanLiteralExpr)n).getValue() ? "True" : "False" );
+            case "LongLiteralExpr":
+                return indent + ((LongLiteralExpr)n).getValue();
             case "IntegerLiteralExpr":
                 return indent + ((IntegerLiteralExpr)n).getValue();
             case "DoubleLiteralExpr":
