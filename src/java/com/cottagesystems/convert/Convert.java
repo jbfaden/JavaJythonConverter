@@ -707,10 +707,10 @@ public class Convert {
         boolean comma; 
         
         if ( !isStatic ) {
-            sb.append("self,");
-            comma= false;
+            sb.append("self");
+            comma= true;
         } else {
-            comma = true;
+            comma = false;
         }
         if ( methodDeclaration.getParameters()!=null ) {
             for ( Parameter p: methodDeclaration.getParameters() ) { 
