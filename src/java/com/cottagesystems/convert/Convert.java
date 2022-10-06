@@ -117,8 +117,6 @@ public class Convert {
     private String doConvertInitializerDeclaration(String indent, InitializerDeclaration initializerDeclaration) {
         return doConvert(indent,initializerDeclaration.getBlock());
     }
-
-    public enum PythonTarget { jython_2_2, python_3_6 }
         
     private PythonTarget pythonTarget = PythonTarget.jython_2_2;
 
@@ -706,7 +704,14 @@ public class Convert {
             sb.append( indent ).append( "@staticmethod\n" );
         }
         sb.append( indent ).append( "def " ).append( methodDeclaration.getName() ) .append("(");
-        boolean comma= false; 
+        boolean comma; 
+        
+        if ( !isStatic ) {
+            sb.append("self,");
+            comma= false;
+        } else {
+            comma = true;
+        }
         if ( methodDeclaration.getParameters()!=null ) {
             for ( Parameter p: methodDeclaration.getParameters() ) { 
                 if ( comma ) {
