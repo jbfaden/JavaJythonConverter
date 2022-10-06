@@ -66,7 +66,7 @@ public class ConvertServlet extends HttpServlet {
             out.println("<table>");
             out.println("<tr>");
             out.println("<td>Java Code:<br>");
-            out.println("<textarea rows=\"40\" cols=\"80\" name=\"code\">"+code+"</textarea>");            
+            out.println("<textarea rows=\"40\" cols=\"80\" id=\"code\" name=\"code\">"+code+"</textarea>");            
             out.println("</td>");
             out.println("<td>Jython Code:<br>");
             out.println("<textarea rows=\"40\" cols=\"132\">"+jythonCode+"</textarea>");
@@ -80,6 +80,7 @@ public class ConvertServlet extends HttpServlet {
             //out.println(String.format( "    <option value=\"python_3_6\" %s>Python 3.6</option>", 
             //        convert.getPythonTarget()==Convert.PythonTarget.python_3_6 ? "selected=1" : ""  ) );
             //out.println("</select>");
+            out.println("<button id=\"clear\" value=\"clear\" onclick=\"javascript:document.getElementById('code').value=''\">Clear</button>");
             out.println("<input type=\"submit\" value=\"submit\"></input>");
             out.println("</form action=\"ConvertServlet\" method=\"post\">");            
             out.println("<small>Version 20221006b</small>");
