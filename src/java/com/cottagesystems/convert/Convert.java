@@ -792,7 +792,9 @@ public class Convert {
         String selector= doConvert( "",switchStmt.getSelector() );
         StringBuilder sb= new StringBuilder();
         boolean iff= true;
-        for ( SwitchEntryStmt ses: switchStmt.getEntries() ) {
+        int nses= switchStmt.getEntries().size();
+        for ( int ises = 0; ises<nses; ises++ ) {
+            SwitchEntryStmt ses = switchStmt.getEntries().get(ises);
             if ( iff ) {
                 sb.append(indent).append("if ").append(selector).append("==").append(ses.getLabel()).append(":\n");
                 iff=false;
@@ -801,8 +803,11 @@ public class Convert {
                     sb.append(indent).append("elif ").append(selector).append("==").append(ses.getLabel()).append(":\n");
                 } else {
                     sb.append(indent).append("else:\n");
-                }
-                
+                }   
+            }
+            
+            if ( ses.getLabel()==null && ises!=(nses-1) ) {
+                throw new IllegalArgumentException("default must be last of switch statement");
             }
             List<Statement> statements= ses.getStmts();
             if ( ses.getLabel()!=null && !( ( statements.get(statements.size()-1) instanceof BreakStmt ) ||
