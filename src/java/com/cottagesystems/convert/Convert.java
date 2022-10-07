@@ -297,6 +297,26 @@ public class Convert {
     private String doConvertBinaryExpr(String indent,BinaryExpr b) {
         String left= doConvert(indent,b.getLeft());
         String right= doConvert(indent,b.getRight());
+        if ( b.getRight() instanceof IntegerLiteralExpr && b.getLeft() instanceof MethodCallExpr ) {
+            MethodCallExpr mce= (MethodCallExpr)b.getLeft();
+            if ( mce.getName().equals("compareTo") 
+                    && ((IntegerLiteralExpr)b.getRight()).toString().equals("0") ) {
+                if ( null!=b.getOperator() ) switch (b.getOperator()) {
+                    case greater:
+                        return doConvert("",mce.getScope()) + ">" + doConvert("",mce.getArgs().get(0));
+                    case greaterEquals:
+                        return doConvert("",mce.getScope()) + ">=" + doConvert("",mce.getArgs().get(0));
+                    case less:
+                        return doConvert("",mce.getScope()) + "<" + doConvert("",mce.getArgs().get(0));
+                    case lessEquals:
+                        return doConvert("",mce.getScope()) + "<=" + doConvert("",mce.getArgs().get(0));
+                    case equals:                    
+                        return doConvert("",mce.getScope()) + "==" + doConvert("",mce.getArgs().get(0));
+                    default:
+                        break;
+                }
+            }
+        }
         BinaryExpr.Operator op= b.getOperator();
         if ( b.getRight() instanceof CharLiteralExpr && left.startsWith("ord(") && left.endsWith(")") ) {
             left= left.substring(4,left.length()-1);
@@ -772,8 +792,15 @@ public class Convert {
             
             if ( unittest ) {
                 sb.append( "\n# cheesy unittest temporary\n");
-                sb.append( "def assertEquals(a,b):\n    if ( not a==b ): raise Exception('a!=b')\n");
-                sb.append( "def assertArrayEquals(a,b):\n    if ( len(a)==len(b) or not a==b ): raise Exception('a!=b')\n");
+                sb.append( "def assertEquals(a,b):\n    print a\n    print b\n    if ( not a==b ): raise Exception('a!=b')\n");
+                sb.append( "def assertArrayEquals(a,b):\n");
+                sb.append( "    for a1 in a: print a1, \n");
+                sb.append( "    print ' '+str(len(a)) \n");
+                sb.append( "    for b1 in b: print b1, \n");
+                sb.append( "    print ' '+str(len(b)) \n");
+                sb.append( "    if ( len(a)==len(b) ): \n");
+                sb.append( "        for i in xrange(len(a)): \n");
+                sb.append( "            if ( a[i]!=b[i] ): raise Exception('a[%d]!=b[%d]'%(i,i))\n" );
             }
             String comments= utilRewriteComments(indent, classOrInterfaceDeclaration.getComment() );
             sb.append( "\n" );
