@@ -128,12 +128,17 @@ public class Convert {
     /**
      * record the name of the class (e.g. TimeUtil) so that internal references can be corrected.
      */
-    private String staticClassName;
+    private String theClassName;
     
     /**
      * record the method names, since Python will need to refer to "self" to call methods but Java does not.
      */
     private Map<String,ClassOrInterfaceDeclaration> classMethods = new HashMap<>();
+    
+    /**
+     * record the class fields.
+     */
+    private Map<String,FieldDeclaration> classFields = new HashMap<>();
     
     /**
      * return imported class names.
@@ -359,7 +364,7 @@ public class Convert {
                 }                
             } else {
                 String clasName = doConvert("",clas);
-                if ( onlyStatic && clasName.equals(staticClassName) )  {
+                if ( onlyStatic && clasName.equals(theClassName) )  {
                     return indent            + name + "("+ utilFormatExprList(args) +")";
                 } else {
                     return indent + clasName +"."+name + "("+ utilFormatExprList(args) +")";
@@ -385,10 +390,18 @@ public class Convert {
                 return doConvertBinaryExpr(indent,(BinaryExpr)n);
             case "NameExpr":
                 String s= ((NameExpr)n).getName();
-                if ( nameMapForward.containsKey(s) ) {
-                    return indent + nameMapForward.get(s);
+                if ( classFields.containsKey(s) ) {
+                    if ( nameMapForward.containsKey(s) ) {
+                        return indent + theClassName + "." + nameMapForward.get(s);
+                    } else {
+                        return indent + theClassName + "." + s;
+                    }
                 } else {
-                    return indent + s;
+                    if ( nameMapForward.containsKey(s) ) {
+                        return indent + nameMapForward.get(s);
+                    } else {
+                        return indent + s;
+                    }
                 }
             case "EnclosedExpr": 
                 return indent + "(" + doConvert( "", ((EnclosedExpr)n).getInner() ) + ")";
@@ -513,7 +526,7 @@ public class Convert {
             if ( v.getInit()!=null ) {
                 if ( v.getInit() instanceof ConditionalExpr ) {
                     ConditionalExpr cc  = (ConditionalExpr)v.getInit();
-                    b.append( indent ).append("if ").append(cc.getCondition()).append(":\n");
+                    b.append( indent ).append("if ").append(doConvert("",cc.getCondition())).append(":\n");
                     b.append(s4).append(indent).append( s );
                     b.append(" = ").append(doConvert("",cc.getThenExpr() )).append("\n");
                     b.append( indent ).append("else:\n" );
@@ -643,7 +656,7 @@ public class Convert {
 
     private String doConvertFieldAccessExpr(String indent, FieldAccessExpr fieldAccessExpr) {
         String s= doConvert( indent, fieldAccessExpr.getScope() );
-        if ( onlyStatic && s.equals(staticClassName) ) {
+        if ( onlyStatic && s.equals(theClassName) ) {
             return fieldAccessExpr.getField();
         } else {
             return s + "." + fieldAccessExpr.getField();
@@ -685,8 +698,8 @@ public class Convert {
 
     private String doConvertClassOrInterfaceDeclaration(String indent, ClassOrInterfaceDeclaration classOrInterfaceDeclaration) {
         StringBuilder sb= new StringBuilder();
+        theClassName= classOrInterfaceDeclaration.getName();
         if ( onlyStatic ) {
-            staticClassName= classOrInterfaceDeclaration.getName();
             classOrInterfaceDeclaration.getChildrenNodes().forEach((n) -> {
                 sb.append( doConvert(indent,n) ).append("\n");
             });
@@ -743,6 +756,9 @@ public class Convert {
             return "";
         }
         
+        if ( methodDeclaration.getName().equals("dayOfYear") ) {
+            System.err.println("here stop");
+        }
         StringBuilder sb= new StringBuilder();
         String comments= utilRewriteComments( indent, methodDeclaration.getComment() );
         sb.append( comments );
@@ -805,6 +821,9 @@ public class Convert {
         sb.append( utilRewriteComments( indent, fieldDeclaration.getComment() ) );
         if ( vv!=null ) {
             for ( VariableDeclarator v: vv ) {
+                if ( s ) {
+                    classFields.put( v.getId().getName(),fieldDeclaration );
+                }
                 Map<String,Type> currentScope= getCurrentScope();
                 currentScope.put( v.getId().getName(),fieldDeclaration.getType() );
                 if ( v.getInit()==null ) {
