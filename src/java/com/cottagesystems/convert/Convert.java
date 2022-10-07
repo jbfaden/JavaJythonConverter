@@ -30,6 +30,7 @@ import japa.parser.ast.comments.Comment;
 import japa.parser.ast.expr.ArrayAccessExpr;
 import japa.parser.ast.expr.ArrayCreationExpr;
 import japa.parser.ast.expr.ArrayInitializerExpr;
+import japa.parser.ast.expr.AssignExpr.Operator;
 import japa.parser.ast.expr.BooleanLiteralExpr;
 import japa.parser.ast.expr.CastExpr;
 import japa.parser.ast.type.Type;
@@ -418,7 +419,27 @@ public class Convert {
     }
 
     private String doAssignExpr(String indent, AssignExpr assign ) {
-        return indent + doConvert( "", assign.getTarget() ) + " = " + doConvert( "", assign.getValue() );
+        String target= doConvert( "", assign.getTarget() );
+        Operator operator= assign.getOperator();
+        
+        if ( null==operator ) {
+            return indent + target + " = " + doConvert( "", assign.getValue() );
+        } else switch (operator) {
+            case minus:
+                return indent +target + " -= " + doConvert( "", assign.getValue() );
+            case plus:
+                return indent + target + " += " + doConvert( "", assign.getValue() );
+            case star:
+                return indent + target + " *= " + doConvert( "", assign.getValue() );
+            case slash:
+                return indent + target + " /= " + doConvert( "", assign.getValue() );
+            case or:
+                return indent + target + " |= " + doConvert( "", assign.getValue() );
+            case and:
+                return indent + target + " &= " + doConvert( "", assign.getValue() );
+            default:
+                return indent + target + " = " + doConvert( "", assign.getValue() );
+        }
     }
     
     private String doConvert( String indent, Node n ) {
@@ -800,9 +821,9 @@ public class Convert {
             return "";
         }
         
-        if ( methodDeclaration.getName().equals("dayOfYear") ) {
-            System.err.println("here stop");
-        }
+        //if ( methodDeclaration.getName().equals("dayOfYear") ) {
+        //    System.err.println("here stop");
+        //}
         StringBuilder sb= new StringBuilder();
         String comments= utilRewriteComments( indent, methodDeclaration.getComment() );
         sb.append( comments );
