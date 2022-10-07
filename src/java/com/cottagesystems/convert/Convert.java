@@ -953,6 +953,7 @@ public class Convert {
         return indent + "[" + utilFormatExprList( arrayInitializerExpr.getValues() ) + "]";
     }
 
+    
     private String doSwitchStmt(String indent, SwitchStmt switchStmt) {
         String selector= doConvert( "",switchStmt.getSelector() );
         StringBuilder sb= new StringBuilder();
