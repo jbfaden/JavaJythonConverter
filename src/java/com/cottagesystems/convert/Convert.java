@@ -104,6 +104,24 @@ public class Convert {
         this.onlyStatic = onlyStatic;
     }
 
+    private boolean unittest = true;
+
+    /**
+     * true indicates this should write additional code to make a unittest suite
+     * @return 
+     */
+    public boolean isUnittest() {
+        return unittest;
+    }
+
+    /**
+     * true indicates this should write additional code to make a unittest suite
+     * @param unittest 
+     */
+    public void setUnittest(boolean unittest) {
+        this.unittest = unittest;
+    }
+    
     /*** internal parsing state ***/
     
     /**
@@ -582,7 +600,16 @@ public class Convert {
         
         List<Node> nodes= compilationUnit.getChildrenNodes();
         for ( int i=0; i<nodes.size(); i++ ) {
-            sb.append( doConvert( "", nodes.get(i) ) ).append("\n");
+            Node n = nodes.get(i);
+            if ( unittest && n instanceof ImportDeclaration ) {
+                if ( ((ImportDeclaration)n).toString().startsWith("import org.junit") ) { // TODO: cheesy
+                    continue;
+                }
+                if ( ((ImportDeclaration)n).toString().startsWith("import static org.junit") ) { // TODO: also cheesy
+                    continue;
+                }
+            }
+            sb.append( doConvert( "", n ) ).append("\n");
         }
         
         //for ( Comment c: compilationUnit.getComments() ) {
@@ -660,6 +687,12 @@ public class Convert {
                 sb.append( doConvert(indent,n) ).append("\n");
             });
         } else {
+            
+            if ( unittest ) {
+                sb.append( "\n# cheesy unittest temporary\n");
+                sb.append( "def assertEquals(a,b):\n    if ( not a==b ): raise Exception('a!=b')\n");
+                sb.append( "def assertArrayEquals(a,b):\n    if ( len(a)==len(b) or not a==b ): raise Exception('a!=b')\n");
+            }
             String comments= utilRewriteComments(indent, classOrInterfaceDeclaration.getComment() );
             sb.append( "\n" );
             sb.append( comments );
@@ -684,6 +717,17 @@ public class Convert {
                     sb.append( doConvert( s4+indent, n ) ).append("\n");
                 }
             });
+            
+            if ( unittest ) {
+                sb.append("test=").append(classOrInterfaceDeclaration.getName()).append("()\n");
+                for ( Node n : classOrInterfaceDeclaration.getChildrenNodes() ) {
+                    if ( n instanceof MethodDeclaration ) {
+                        sb.append("test.").append(((MethodDeclaration) n).getName()).append("()\n");
+                    }
+                }
+            }
+            
+        
         }
         return sb.toString();
     }

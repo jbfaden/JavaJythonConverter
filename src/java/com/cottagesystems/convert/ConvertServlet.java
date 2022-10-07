@@ -40,7 +40,7 @@ public class ConvertServlet extends HttpServlet {
         Convert convert= new Convert();
         convert.setOnlyStatic(onlyStatic);
         convert.setPythonTarget(PythonTarget.valueOf(pythonVersion));
-        
+        convert.setUnittest( "true".equals( request.getParameter("unittest") ) );
         String jythonCode;
         try {
             if (code!=null ) {
@@ -74,6 +74,8 @@ public class ConvertServlet extends HttpServlet {
             out.println("</tr></table>");
             out.println( String.format( "<input type=\"checkbox\" id=\"onlyStatic\" name=\"onlyStatic\" value=\"true\" %s>Only Static Parts</input>",
                     convert.isOnlyStatic() ? "checked" : "" ) );
+            out.println( String.format( "<input type=\"checkbox\" id=\"unittest\" name=\"unittest\" value=\"true\" %s>Unit Test</input>",
+                    convert.isUnittest() ? "checked" : "" ) );
             //out.println("<select name=\"jythonVersion\" id=\"jythonVersion\">");
             //out.println(String.format( "    <option value=\"jython_2_2\" %s>Jython 2.2</option>", 
             //        convert.getPythonTarget()==Convert.PythonTarget.jython_2_2 ? "selected=1" : ""  ) );
