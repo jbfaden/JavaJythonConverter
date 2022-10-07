@@ -368,7 +368,10 @@ public class Convert {
             } else {
                 return doConvert(indent,args.get(0)) + "**("+ doConvert(indent,args.get(1))+")";
             }
-            
+        } else if ( name.equals("max") && clas instanceof NameExpr && ((NameExpr)clas).getName().equals("Math") ) {
+            return name + "(" + doConvert(indent,args.get(0)) + ","+ doConvert(indent,args.get(1))+")";
+        } else if ( name.equals("min") && clas instanceof NameExpr && ((NameExpr)clas).getName().equals("Math") ) {
+            return name + "(" + doConvert(indent,args.get(0)) + ","+ doConvert(indent,args.get(1))+")";
         } else if ( name.equals("println") && clas instanceof FieldAccessExpr &&
                 ((FieldAccessExpr)clas).getField().equals("err") ) {
             StringBuilder sb= new StringBuilder();
