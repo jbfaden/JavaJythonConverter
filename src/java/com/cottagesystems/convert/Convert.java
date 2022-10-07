@@ -354,6 +354,16 @@ public class Convert {
             return doConvert(indent,clas)+".startswith("+ utilFormatExprList(args) +")";
         } else if ( name.equals("endsWith") ) {
             return doConvert(indent,clas)+".endswith("+ utilFormatExprList(args) +")";
+        } else if ( name.equals("equals") ) {
+            return doConvert(indent,clas)+"=="+ utilFormatExprList(args) +"";
+        } else if ( name.equals("equalsIgnoreCase") ) {
+            return doConvert(indent,clas)+".lower()=="+ utilFormatExprList(args) +".lower()";
+        } else if ( name.equals("isDigit") ) {
+            String s= doConvert( "",args.get(0) );
+            if ( s.startsWith("ord(") && s.endsWith(")") ) {
+                s= s.substring(4,s.length()-1);
+            }
+            return s + ".isdigit()"; // TODO: cheesy
         } else {
             if ( clas==null ) {
                 ClassOrInterfaceDeclaration m= classMethods.get(name);
