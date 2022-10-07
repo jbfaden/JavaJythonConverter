@@ -56,6 +56,7 @@ import japa.parser.ast.type.ClassOrInterfaceType;
 import japa.parser.ast.type.ReferenceType;
 import java.io.ByteArrayInputStream;
 import java.nio.charset.Charset;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -257,11 +258,14 @@ public class Convert {
         }
 
     }
-    
+
     private String doConvertBinaryExpr(String indent,BinaryExpr b) {
         String left= doConvert(indent,b.getLeft());
         String right= doConvert(indent,b.getRight());
         BinaryExpr.Operator op= b.getOperator();
+        if ( b.getRight() instanceof CharLiteralExpr && left.startsWith("ord(") && left.endsWith(")") ) {
+            left= left.substring(4,left.length()-1);
+        }
         switch (op) {
             case plus:
                 return left + "+" + right;
@@ -843,28 +847,52 @@ public class Convert {
         StringBuilder sb= new StringBuilder();
         boolean iff= true;
         int nses= switchStmt.getEntries().size();
+        List<Expression> labels= new ArrayList<>();
         for ( int ises = 0; ises<nses; ises++ ) {
             SwitchEntryStmt ses = switchStmt.getEntries().get(ises);
+            List<Statement> statements= ses.getStmts();
+            if ( statements==null ) {
+                // fall-through not supported
+                //sb.append("# fall through not supported, need or in if test\n");
+                labels.add(ses.getLabel());
+                continue;
+            }
+            
             if ( iff ) {
-                sb.append(indent).append("if ").append(selector).append("==").append(ses.getLabel()).append(":\n");
+                StringBuilder cb= new StringBuilder();
+                for ( Expression l : labels ) {
+                    cb.append(selector).append("==").append(doConvert("",l)).append(" or ");
+                }
+                cb.append(selector).append("==").append(ses.getLabel());
+                sb.append(indent).append("if ").append(cb.toString()).append(":\n");
                 iff=false;
             } else {
+                StringBuilder cb= new StringBuilder();
+                for ( Expression l : labels ) {
+                    cb.append(selector).append("==").append(doConvert("",l)).append(" or ");
+                }
                 if ( ses.getLabel()!=null ) {
-                    sb.append(indent).append("elif ").append(selector).append("==").append(ses.getLabel()).append(":\n");
+                    cb.append(selector).append("==").append(ses.getLabel());
+                    sb.append(indent).append("elif ").append(cb.toString()).append(":\n");
                 } else {
-                    sb.append(indent).append("else:\n");
+                    if ( labels.size()>0 ) {
+                        sb.append(indent).append("elif ").append(cb.substring(0,cb.length()-4)).append(":\n");
+                    } else {
+                        sb.append(indent).append("else:\n");
+                    }
                 }   
             }
+            
+            labels.clear();
             
             if ( ses.getLabel()==null && ises!=(nses-1) ) {
                 throw new IllegalArgumentException("default must be last of switch statement");
             }
-            List<Statement> statements= ses.getStmts();
             if ( ses.getLabel()!=null && !( ( statements.get(statements.size()-1) instanceof BreakStmt ) ||
                     ( statements.get(statements.size()-1) instanceof ReturnStmt ) ||
                     ( statements.get(statements.size()-1) instanceof ThrowStmt ) ) ) {
-                sb.append(s4).append(indent).append("### Switch Fall Through Not Implemented ###");
-                for ( Statement s: statements.subList(0,statements.size()-1) ) {
+                sb.append(s4).append(indent).append("### Switch Fall Through Not Implemented ###\n");
+                for ( Statement s: statements ) {
                     sb.append("#").append(doConvert(s4+indent, s )).append("\n");
                 }
             } else {
