@@ -150,6 +150,8 @@ public class Convert {
      */
     private Map<String,Object> importedMethods = new HashMap<>();
     
+    private List<String> additionalImports = new ArrayList<>();
+    
     /*** end, internal parsing state ***/
 
     private String utilFormatExprList( List<Expression> l ) {
@@ -206,7 +208,16 @@ public class Convert {
         try {
             ByteArrayInputStream ins= new ByteArrayInputStream( javasrc.getBytes(Charset.forName("UTF-8")) );
             CompilationUnit unit= japa.parser.JavaParser.parse(ins,"UTF-8");
-            return doConvert( "", unit );
+            String src= doConvert( "", unit );
+            if ( additionalImports!=null ) {
+                StringBuilder sb= new StringBuilder();
+                for ( String s: additionalImports ) {
+                    sb.append(s);
+                }
+                sb.append(src);
+                src= sb.toString();
+            }
+            return src;
         } catch ( ParseException ex ) {
             throwMe= ex;
         }
@@ -214,7 +225,16 @@ public class Convert {
         try {
             ByteArrayInputStream ins= new ByteArrayInputStream( utilMakeClass(javasrc).getBytes(Charset.forName("UTF-8")) );
             CompilationUnit unit= japa.parser.JavaParser.parse(ins,"UTF-8");
-            return doConvert( "", unit );
+            String src= doConvert( "", unit );
+            if ( additionalImports!=null ) {
+                StringBuilder sb= new StringBuilder();
+                for ( String s: additionalImports ) {
+                    sb.append(s);
+                }
+                sb.append(src);
+                src= sb.toString();
+            }
+            return src;
         } catch ( ParseException ex ) {
             throwMe= ex;
         }
@@ -240,8 +260,17 @@ public class Convert {
                     parseExpression = japa.parser.JavaParser.parseExpression(javasrc.substring(offset));
                     bb.append( "\n" ).append( doConvert( "", parseExpression ) );
                 }
-                
-                return bb.toString();
+                String src= bb.toString();
+                if ( additionalImports!=null ) {
+                    StringBuilder sb= new StringBuilder();
+                    for ( String s: additionalImports ) {
+                        sb.append(s);
+                    }
+                    sb.append(src);
+                    src= sb.toString();
+                }
+
+                return src;
             
         } catch (ParseException ex1) {
             throwMe= ex1;
@@ -307,6 +336,11 @@ public class Convert {
         Expression clas= methodCallExpr.getScope();
         String name= methodCallExpr.getName();
         List<Expression> args= methodCallExpr.getArgs();
+        
+        if ( clas instanceof NameExpr && ((NameExpr)clas).getName().equals("System") && name.equals("currentTimeMillis") ) {
+            additionalImports.add("from java.lang import System\n");
+        }
+        
         if ( name.equals("pow") && clas instanceof NameExpr && ((NameExpr)clas).getName().equals("Math") ) {
             if ( args.get(1) instanceof IntegerLiteralExpr ) {
                 return doConvert(indent,args.get(0)) + "**"+ doConvert(indent,args.get(1));
