@@ -678,7 +678,11 @@ public class Convert {
             });
             
             classOrInterfaceDeclaration.getChildrenNodes().forEach((n) -> {
-                sb.append( doConvert( s4+indent, n ) ).append("\n");
+                if ( n instanceof ClassOrInterfaceType ) {
+                    // skip this strange node
+                } else {
+                    sb.append( doConvert( s4+indent, n ) ).append("\n");
+                }
             });
         }
         return sb.toString();
