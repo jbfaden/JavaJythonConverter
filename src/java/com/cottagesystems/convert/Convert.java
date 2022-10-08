@@ -374,8 +374,13 @@ public class Convert {
         stringMethods.add("startsWith");
         stringMethods.add("endsWith");
         stringMethods.add("equalsIgnoreCase");
-        stringMethods.add("isDigit");
-                
+
+        HashSet characterMethods= new HashSet();
+        characterMethods.add("isDigit");
+        characterMethods.add("isSpace");
+        characterMethods.add("isWhitespace");
+        characterMethods.add("isLetter");
+        
         /**
          * try to identify the class of the scope, which could be either a static or non-static method.
          */
@@ -386,6 +391,8 @@ public class Convert {
                 clasType= clasName;
             } else if ( stringMethods.contains(name) ) {
                 clasType= "String";
+            } else if ( characterMethods.contains(name) ) {
+                clasType= "Character";
             }
         } else if ( clas instanceof StringLiteralExpr ) {
             clasType= "String";
@@ -442,13 +449,38 @@ public class Convert {
                     return doConvert(indent,clas)+".endswith("+ utilFormatExprList(args) +")";
                 case "equalsIgnoreCase":
                     return doConvert(indent,clas)+".lower()=="+ utilFormatExprList(args) +".lower()";
+                default:
+                    break;
+            }
+        }
+        if ( clasType.equals("Character") ) {
+            String s;
+            switch ( name ) {
                 case "isDigit":
-                    String s= doConvert( "",args.get(0) );
+                    s= doConvert( "",args.get(0) );
                     if ( s.startsWith("ord(") && s.endsWith(")") ) {
                         s= s.substring(4,s.length()-1);
                     }
                     return s + ".isdigit()"; // TODO: cheesy
-                default:
+                case "isSpace":
+                    s= doConvert( "",args.get(0) );
+                    if ( s.startsWith("ord(") && s.endsWith(")") ) {
+                        s= s.substring(4,s.length()-1);
+                    }
+                    return s + ".isspace()"; // TODO: cheesy
+                case "isWhitespace":
+                    s= doConvert( "",args.get(0) );
+                    if ( s.startsWith("ord(") && s.endsWith(")") ) {
+                        s= s.substring(4,s.length()-1);
+                    }
+                    return s + ".isspace()"; // TODO: cheesy
+                case "isLetter":
+                    s= doConvert( "",args.get(0) );
+                    if ( s.startsWith("ord(") && s.endsWith(")") ) {
+                        s= s.substring(4,s.length()-1);
+                    }
+                    return s + ".isalpha()"; // TODO: cheesy
+                default: 
                     break;
             }
         }
