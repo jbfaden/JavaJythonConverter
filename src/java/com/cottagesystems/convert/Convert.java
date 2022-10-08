@@ -465,7 +465,13 @@ public class Convert {
         } else if ( clas instanceof StringLiteralExpr ) {
             clasType= "String";
         } else if ( stringMethods.contains(name) ) {
-            clasType= "String";
+            if ( name.equals("format") ) {
+                if ( ASTHelper.createReferenceType("String", 0).equals(guessType( clas )) ) {
+                    clasType= "String";
+                }
+            } else {
+                clasType= "String";
+            }
         }
                 
         if ( clasType.equals("System") && name.equals("currentTimeMillis") ) {
