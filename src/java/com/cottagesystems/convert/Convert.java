@@ -358,21 +358,78 @@ public class Convert {
         String name= methodCallExpr.getName();
         List<Expression> args= methodCallExpr.getArgs();
         
-        if ( clas instanceof NameExpr && ((NameExpr)clas).getName().equals("System") && name.equals("currentTimeMillis") ) {
-            additionalImports.add("from java.lang import System\n");
+        if ( name==null ) {
+            throw new IllegalArgumentException("name is null but can't be");
         }
         
-        if ( name.equals("pow") && clas instanceof NameExpr && ((NameExpr)clas).getName().equals("Math") ) {
-            if ( args.get(1) instanceof IntegerLiteralExpr ) {
-                return doConvert(indent,args.get(0)) + "**"+ doConvert(indent,args.get(1));
-            } else {
-                return doConvert(indent,args.get(0)) + "**("+ doConvert(indent,args.get(1))+")";
+        /**
+         * try to identify the class of the scope.
+         */
+        String clasType=""; 
+        if ( clas instanceof NameExpr ) {
+            String clasName= ((NameExpr)clas).getName();
+            if ( Character.isUpperCase(clasName.charAt(0)) ) { // Yup, we're assuming that upper case refers to a class
+                clasType= clasName;
             }
-        } else if ( name.equals("max") && clas instanceof NameExpr && ((NameExpr)clas).getName().equals("Math") ) {
-            return name + "(" + doConvert(indent,args.get(0)) + ","+ doConvert(indent,args.get(1))+")";
-        } else if ( name.equals("min") && clas instanceof NameExpr && ((NameExpr)clas).getName().equals("Math") ) {
-            return name + "(" + doConvert(indent,args.get(0)) + ","+ doConvert(indent,args.get(1))+")";
-        } else if ( name.equals("println") && clas instanceof FieldAccessExpr &&
+        } else if ( clas instanceof StringLiteralExpr ) {
+            clasType= "String";
+        }
+                
+        if ( clasType.equals("System") && name.equals("currentTimeMillis") ) {
+            additionalImports.add("from java.lang import System\n");
+        }
+        if ( clasType.equals("Math") ) {
+            switch (name) {
+                case "pow":
+                    if ( args.get(1) instanceof IntegerLiteralExpr ) {
+                        return doConvert(indent,args.get(0)) + "**"+ doConvert(indent,args.get(1));
+                    } else {
+                        return doConvert(indent,args.get(0)) + "**("+ doConvert(indent,args.get(1))+")";
+                    }
+                case "max":
+                    return name + "(" + doConvert(indent,args.get(0)) + ","+ doConvert(indent,args.get(1))+")";
+                case "min":
+                    return name + "(" + doConvert(indent,args.get(0)) + ","+ doConvert(indent,args.get(1))+")";
+                default:
+                    break;
+            }
+        }
+        if ( clasType.equals("String") ) {
+            switch (name) {
+                case "format":
+                    StringBuilder sb= new StringBuilder();
+                    sb.append(indent).append(args.get(0)).append(" % (");
+                    sb.append( utilFormatExprList( args.subList(1, args.size() ) ) );
+                    sb.append(" )");
+                    return sb.toString();
+                case "substring":
+                    if ( args.size()==2 ) {
+                        return doConvert(indent,clas)+"["+ doConvert("",args.get(0)) + ":"+ doConvert("",args.get(1)) +"]";
+                    } else {
+                        return doConvert(indent,clas)+"["+ doConvert("",args.get(0)) +":]";
+                    }
+                case "charAt":
+                    return "ord(" + doConvert(indent,clas)+"["+ doConvert("",args.get(0)) +"])";
+                case "startsWith":
+                    return doConvert(indent,clas)+".startswith("+ utilFormatExprList(args) +")";
+                case "endsWith":
+                    return doConvert(indent,clas)+".endswith("+ utilFormatExprList(args) +")";
+                case "equals":
+                    return doConvert(indent,clas)+"=="+ utilFormatExprList(args) +"";
+                case "equalsIgnoreCase":
+                    return doConvert(indent,clas)+".lower()=="+ utilFormatExprList(args) +".lower()";
+                case "isDigit":
+                    String s= doConvert( "",args.get(0) );
+                    if ( s.startsWith("ord(") && s.endsWith(")") ) {
+                        s= s.substring(4,s.length()-1);
+                    }
+                    return s + ".isdigit()"; // TODO: cheesy
+                default:
+                    break;
+            }
+        }
+        
+        if ( name.equals("println") && clas instanceof FieldAccessExpr &&
                 ((FieldAccessExpr)clas).getField().equals("err") ) {
             StringBuilder sb= new StringBuilder();
             if (  methodCallExpr.getArgs().get(0) instanceof StringLiteralExpr ) {
@@ -392,36 +449,9 @@ public class Convert {
                 sb.append(indent).append( "print(" ).append( doConvert( "", methodCallExpr.getArgs().get(0) ) ).append( "+'\\n')" );
             }    
             return sb.toString();
-        } else if ( name.equals("format") && clas instanceof NameExpr && ((NameExpr)clas).getName().equals("String") ) {
-            StringBuilder sb= new StringBuilder();
-            sb.append(indent).append(args.get(0)).append(" % (");
-            sb.append( utilFormatExprList( args.subList(1, args.size() ) ) );
-            sb.append(" )");
-            return sb.toString();
         } else if ( name.equals("length") && args==null ) {
             return indent + "len("+ doConvert("",clas)+")";
-        } else if ( name.equals("substring") ) {
-            if ( args.size()==2 ) {
-                return doConvert(indent,clas)+"["+ doConvert("",args.get(0)) + ":"+ doConvert("",args.get(1)) +"]";
-            } else {
-                return doConvert(indent,clas)+"["+ doConvert("",args.get(0)) +":]";
-            }
-        } else if ( name.equals("charAt") ) {
-            return "ord(" + doConvert(indent,clas)+"["+ doConvert("",args.get(0)) +"])";
-        } else if ( name.equals("startsWith") ) {
-            return doConvert(indent,clas)+".startswith("+ utilFormatExprList(args) +")";
-        } else if ( name.equals("endsWith") ) {
-            return doConvert(indent,clas)+".endswith("+ utilFormatExprList(args) +")";
-        } else if ( name.equals("equals") ) {
-            return doConvert(indent,clas)+"=="+ utilFormatExprList(args) +"";
-        } else if ( name.equals("equalsIgnoreCase") ) {
-            return doConvert(indent,clas)+".lower()=="+ utilFormatExprList(args) +".lower()";
-        } else if ( name.equals("isDigit") ) {
-            String s= doConvert( "",args.get(0) );
-            if ( s.startsWith("ord(") && s.endsWith(")") ) {
-                s= s.substring(4,s.length()-1);
-            }
-            return s + ".isdigit()"; // TODO: cheesy
+        
         } else {
             if ( clas==null ) {
                 ClassOrInterfaceDeclaration m= classMethods.get(name);
