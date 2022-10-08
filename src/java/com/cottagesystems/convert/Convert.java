@@ -63,12 +63,18 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Stack;
 
 /**
  * Class for converting Java to Jython using an AST.
  * @author jbf
  */
 public class Convert {
+
+    public Convert() {
+        this.stack = new Stack<>();
+        this.stack.push( new HashMap<>() );
+    }
     
     private String doConvertInitializerDeclaration(String indent, InitializerDeclaration initializerDeclaration) {
         return doConvert(indent,initializerDeclaration.getBlock());
@@ -124,8 +130,21 @@ public class Convert {
     public void setUnittest(boolean unittest) {
         this.unittest = unittest;
     }
-    
     /*** internal parsing state ***/
+    
+    Stack<Map<String,Type>> stack;
+    
+    Map<String,String> nameMapForward= new HashMap<>();
+    Map<String,String> nameMapReverse= new HashMap<>();
+    
+    /**
+     * return the current scope, which includes local variables.  Presently this just uses one scope,
+     * but this should check for code blocks, etc.
+     * @return 
+     */
+    private Map<String,Type> getCurrentScope() {
+        return stack.peek();
+    }
     
     /**
      * record the name of the class (e.g. TimeUtil) so that internal references can be corrected.
@@ -384,7 +403,7 @@ public class Convert {
         /**
          * try to identify the class of the scope, which could be either a static or non-static method.
          */
-        String clasType="";  // I wonder where this will cause problems
+        String clasType="";  
         if ( clas instanceof NameExpr ) {
             String clasName= ((NameExpr)clas).getName();
             if ( Character.isUpperCase(clasName.charAt(0)) ) { // Yup, we're assuming that upper case refers to a class
@@ -393,6 +412,9 @@ public class Convert {
                 clasType= "String";
             } else if ( characterMethods.contains(name) ) {
                 clasType= "Character";
+            } else if ( getCurrentScope().containsKey(name) ) {
+                Type t= getCurrentScope().get(name);
+                System.err.println(t);
             }
         } else if ( clas instanceof StringLiteralExpr ) {
             clasType= "String";
@@ -442,7 +464,7 @@ public class Convert {
                 case "toLowerCase":
                     return doConvert(indent,clas) + ".lower()";
                 case "charAt":
-                    return indent + "ord(" + doConvert(indent,clas)+"["+ doConvert("",args.get(0)) +"])";
+                    return indent + doConvert(indent,clas)+"["+ doConvert("",args.get(0)) +"]";
                 case "startsWith":
                     return doConvert(indent,clas)+".startswith("+ utilFormatExprList(args) +")";
                 case "endsWith":
@@ -669,9 +691,13 @@ public class Convert {
     }
 
     private String doConvertBlockStmt(String indent,BlockStmt blockStmt) {
+        
+        stack.push( new HashMap<>(getCurrentScope()) );
+        
         StringBuilder result= new StringBuilder();
         List<Statement> statements= blockStmt.getStmts();
         if ( statements==null ) {
+            stack.pop( );
             return indent + "pass\n";
         }
         for ( Statement s: statements ) {
@@ -680,6 +706,7 @@ public class Convert {
             result.append(doConvert(indent,s));
             result.append("\n");
         }
+        stack.pop( );
         return result.toString();
     }
 
@@ -733,6 +760,7 @@ public class Convert {
     }
     
     private String doConvertIfStmt(String indent, IfStmt ifStmt) {
+        getCurrentScope();
         StringBuilder b= new StringBuilder();
         b.append(indent).append("if ");
         b.append( doConvert("", ifStmt.getCondition() ) );
@@ -788,6 +816,9 @@ public class Convert {
     }
 
     private String doConvertCompilationUnit(String indent, CompilationUnit compilationUnit) {
+        
+        this.stack.push( new HashMap<>(getCurrentScope()) );
+
         StringBuilder sb= new StringBuilder();
         
         List<Node> nodes= compilationUnit.getChildrenNodes();
@@ -807,6 +838,8 @@ public class Convert {
         //for ( Comment c: compilationUnit.getComments() ) {
         //    sb.append("# ").append(c.getContent()).append("\n");
         //}
+        
+        this.stack.pop();
         
         return sb.toString();
     }
@@ -956,38 +989,31 @@ public class Convert {
         } else {
             comma = false;
         }
+
+        stack.push( new HashMap<>(stack.peek()) );
+
         if ( methodDeclaration.getParameters()!=null ) {
             for ( Parameter p: methodDeclaration.getParameters() ) { 
+                String name= p.getId().getName();
                 if ( comma ) {
                     sb.append(", ");
                 } else {
                     comma = true;
                 }
-                sb.append( p.getId().getName() );
+                sb.append( name );
+                getCurrentScope().put( name, p.getType() );
             }
         }
         sb.append( "):\n" );
         
-        sb.append( doConvert( indent, methodDeclaration.getBody() ) );
+        sb.append( doConvert( indent, methodDeclaration.getBody() ) );  
+        stack.pop();
         
         if ( pythonTarget==PythonTarget.jython_2_2 && isStatic && !onlyStatic ) {
             sb.append(indent).append(methodDeclaration.getName()).append(" = staticmethod(").append(methodDeclaration.getName()).append(")");
             sb.append(indent).append("\n");
         }
         return sb.toString();
-    }
-
-    Map<String,Type> scope= new HashMap<>();
-    Map<String,String> nameMapForward= new HashMap<>();
-    Map<String,String> nameMapReverse= new HashMap<>();
-    
-    /**
-     * return the current scope, which includes local variables.  Presently this just uses one scope,
-     * but this should check for code blocks, etc.
-     * @return 
-     */
-    private Map<String,Type> getCurrentScope() {
-        return scope;
     }
     
     private String doConvertFieldDeclaration(String indent, FieldDeclaration fieldDeclaration) {
