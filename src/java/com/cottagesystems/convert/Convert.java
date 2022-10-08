@@ -1,6 +1,7 @@
 
 package com.cottagesystems.convert;
 
+import japa.parser.ASTHelper;
 import japa.parser.ParseException;
 import japa.parser.ast.CompilationUnit;
 import japa.parser.ast.ImportDeclaration;
@@ -54,6 +55,7 @@ import japa.parser.ast.stmt.ThrowStmt;
 import japa.parser.ast.stmt.TryStmt;
 import japa.parser.ast.stmt.WhileStmt;
 import japa.parser.ast.type.ClassOrInterfaceType;
+import japa.parser.ast.type.PrimitiveType;
 import japa.parser.ast.type.ReferenceType;
 import java.io.ByteArrayInputStream;
 import java.nio.charset.Charset;
@@ -317,6 +319,9 @@ public class Convert {
     private String doConvertBinaryExpr(String indent,BinaryExpr b) {
         String left= doConvert(indent,b.getLeft());
         String right= doConvert(indent,b.getRight());
+        Type leftType = guessType(b.getLeft());
+        Type rightType = guessType(b.getRight());
+        
         if ( b.getRight() instanceof IntegerLiteralExpr && b.getLeft() instanceof MethodCallExpr ) {
             MethodCallExpr mce= (MethodCallExpr)b.getLeft();
             if ( mce.getName().equals("compareTo") 
@@ -338,9 +343,19 @@ public class Convert {
             }
         }
         BinaryExpr.Operator op= b.getOperator();
-        if ( b.getRight() instanceof CharLiteralExpr && left.startsWith("ord(") && left.endsWith(")") ) {
+        if (  rightType!=null && rightType.equals(ASTHelper.CHAR_TYPE) && left.startsWith("ord(") && left.endsWith(")") ) {
             left= left.substring(4,left.length()-1);
         }
+        
+        if ( leftType!=null && rightType!=null ) {
+            if ( leftType.equals(ASTHelper.CHAR_TYPE) && rightType.equals(ASTHelper.INT_TYPE) ) {
+                left= "ord("+left+")";
+            }
+            if ( leftType.equals(ASTHelper.INT_TYPE) && rightType.equals(ASTHelper.CHAR_TYPE) ) {
+                left= "ord("+left+")";
+            }
+        }
+        
         switch (op) {
             case plus:
                 return left + "+" + right;
@@ -373,16 +388,34 @@ public class Convert {
         }
     }
     
-    private String doConvertMethodCallExpr(String indent,MethodCallExpr methodCallExpr) {
-        Expression clas= methodCallExpr.getScope();
-        String name= methodCallExpr.getName();
-        List<Expression> args= methodCallExpr.getArgs();
-            
-        if ( name==null ) {
-            name=""; // I don't think this happens
+    private Type guessType( Expression clas ) {
+        if ( clas instanceof NameExpr ) {
+            String clasName= ((NameExpr)clas).getName();
+            if ( Character.isUpperCase(clasName.charAt(0)) ) { // Yup, we're assuming that upper case refers to a class
+                return ASTHelper.createReferenceType( clasName,0 );
+            } else if ( getCurrentScope().containsKey(clasName) ) {
+                return getCurrentScope().get(clasName);
+            }
+        } else if ( clas instanceof IntegerLiteralExpr ) {
+            return ASTHelper.INT_TYPE;
+        } else if ( clas instanceof CharLiteralExpr ) {
+            return ASTHelper.CHAR_TYPE;
+        } else if ( clas instanceof LongLiteralExpr ) {
+            return ASTHelper.LONG_TYPE;
+        } else if ( clas instanceof MethodCallExpr ) {
+            MethodCallExpr mce= (MethodCallExpr)clas;
+            Type t= guessType( mce.getScope() );
+            switch ( mce.getName() ) { // TODO: consider t
+                case "charAt": return ASTHelper.CHAR_TYPE;
+            }
         }
+        return null;
+    }
+
+    static HashSet stringMethods= new HashSet();
+
+    static {
         
-        HashSet stringMethods= new HashSet();
         stringMethods.add("format");
         stringMethods.add("substring");
         stringMethods.add("indexOf");
@@ -393,13 +426,26 @@ public class Convert {
         stringMethods.add("startsWith");
         stringMethods.add("endsWith");
         stringMethods.add("equalsIgnoreCase");
+    }
 
-        HashSet characterMethods= new HashSet();
+    static HashSet characterMethods= new HashSet();
+    static {
         characterMethods.add("isDigit");
         characterMethods.add("isSpace");
         characterMethods.add("isWhitespace");
         characterMethods.add("isLetter");
-        
+    }
+
+            
+    private String doConvertMethodCallExpr(String indent,MethodCallExpr methodCallExpr) {
+        Expression clas= methodCallExpr.getScope();
+        String name= methodCallExpr.getName();
+        List<Expression> args= methodCallExpr.getArgs();
+            
+        if ( name==null ) {
+            name=""; // I don't think this happens
+        }
+                
         /**
          * try to identify the class of the scope, which could be either a static or non-static method.
          */
