@@ -60,6 +60,7 @@ import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
@@ -357,21 +358,38 @@ public class Convert {
         Expression clas= methodCallExpr.getScope();
         String name= methodCallExpr.getName();
         List<Expression> args= methodCallExpr.getArgs();
-        
+            
         if ( name==null ) {
-            throw new IllegalArgumentException("name is null but can't be");
+            name=""; // I don't think this happens
         }
         
+        HashSet stringMethods= new HashSet();
+        stringMethods.add("format");
+        stringMethods.add("substring");
+        stringMethods.add("indexOf");
+        stringMethods.add("contains");
+        stringMethods.add("toUpperCase");
+        stringMethods.add("toLowerCase"); 
+        stringMethods.add("charAt"); 
+        stringMethods.add("startsWith");
+        stringMethods.add("endsWith");
+        stringMethods.add("equalsIgnoreCase");
+        stringMethods.add("isDigit");
+                
         /**
-         * try to identify the class of the scope.
+         * try to identify the class of the scope, which could be either a static or non-static method.
          */
-        String clasType=""; 
+        String clasType="";  // I wonder where this will cause problems
         if ( clas instanceof NameExpr ) {
             String clasName= ((NameExpr)clas).getName();
             if ( Character.isUpperCase(clasName.charAt(0)) ) { // Yup, we're assuming that upper case refers to a class
                 clasType= clasName;
+            } else if ( stringMethods.contains(name) ) {
+                clasType= "String";
             }
         } else if ( clas instanceof StringLiteralExpr ) {
+            clasType= "String";
+        } else if ( stringMethods.contains(name) ) {
             clasType= "String";
         }
                 
@@ -408,14 +426,20 @@ public class Convert {
                     } else {
                         return doConvert(indent,clas)+"["+ doConvert("",args.get(0)) +":]";
                     }
+                case "indexOf":
+                    return doConvert(indent,clas)+".find("+ doConvert("",args.get(0)) + ")";
+                case "contains":
+                    return doConvert(indent,args.get(0)) + " in " + doConvert(indent,clas);
+                case "toUpperCase":
+                    return doConvert(indent,clas) + ".upper()";
+                case "toLowerCase":
+                    return doConvert(indent,clas) + ".lower()";
                 case "charAt":
-                    return "ord(" + doConvert(indent,clas)+"["+ doConvert("",args.get(0)) +"])";
+                    return indent + "ord(" + doConvert(indent,clas)+"["+ doConvert("",args.get(0)) +"])";
                 case "startsWith":
                     return doConvert(indent,clas)+".startswith("+ utilFormatExprList(args) +")";
                 case "endsWith":
                     return doConvert(indent,clas)+".endswith("+ utilFormatExprList(args) +")";
-                case "equals":
-                    return doConvert(indent,clas)+"=="+ utilFormatExprList(args) +"";
                 case "equalsIgnoreCase":
                     return doConvert(indent,clas)+".lower()=="+ utilFormatExprList(args) +".lower()";
                 case "isDigit":
@@ -451,7 +475,8 @@ public class Convert {
             return sb.toString();
         } else if ( name.equals("length") && args==null ) {
             return indent + "len("+ doConvert("",clas)+")";
-        
+        } else if ( name.equals("equals") ) {
+            return indent + doConvert(indent,clas)+"=="+ utilFormatExprList(args);
         } else {
             if ( clas==null ) {
                 ClassOrInterfaceDeclaration m= classMethods.get(name);
