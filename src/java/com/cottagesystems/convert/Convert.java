@@ -760,7 +760,6 @@ public class Convert {
     }
     
     private String doConvertIfStmt(String indent, IfStmt ifStmt) {
-        getCurrentScope();
         StringBuilder b= new StringBuilder();
         b.append(indent).append("if ");
         b.append( doConvert("", ifStmt.getCondition() ) );
