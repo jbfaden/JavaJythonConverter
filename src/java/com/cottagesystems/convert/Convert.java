@@ -216,14 +216,53 @@ public class Convert {
     private static final String s4="    ";
     
     /**
-     * wrap the methods in a dummy class to see if it compiles
+     * wrap the methods in a dummy class to see if it compiles.  There's a goofy
+     * this with this parser where I can't figure out how to get it to compile
+     * just one method, so I have to create a class around it to get it to compile.
+     * I'm sure I'm missing something, but for now this is my solution.
+     * 
+     * If the first line does not contain a brace, then the assumption is that 
+     * lines of code are to be wrapped to make a method.
      * @param javasrc
      * @return
      * @throws ParseException 
      */
     public String utilMakeClass( String javasrc ) throws ParseException {
-        String modSrc= "class Foo {\n"+javasrc + "}\n";
+        javasrc= javasrc.trim();
+        int i= javasrc.indexOf("\n");
+        String firstLine= javasrc.substring(0,i);
+        int ibrace= firstLine.indexOf("{");
+        if ( ibrace==-1 ) {
+            javasrc= "void foo99() {\n" + javasrc + "\n}";
+        }
+        String modSrc= "class Foo99 { \n"+javasrc + "}\n";
         return modSrc;
+    }
+    
+    /**
+     * remove the extra lines we added and unindent
+     * @param src
+     * @return 
+     */
+    public String utilUnMakeClass( String src ) {
+        // pop off the "class Foo" we added to make it into a class
+        src= src.trim();
+        int i= src.indexOf("\n");
+        src= src.substring(i+1);
+        i= src.indexOf("\n");
+        if ( src.substring(0,i).contains("def foo99(") ) {
+            src= src.substring(i+1);
+        }
+        String[] ss= src.split("\n");
+
+        String search= ss[0].trim().substring(0,1);
+        int indent= ss[0].indexOf(search);
+
+        StringBuilder sb= new StringBuilder();
+        for ( String s: ss ) {
+            sb.append( s.substring(indent) ).append("\n");
+        }
+        return sb.toString();
     }
     
     public String doConvert( String javasrc ) throws ParseException {
@@ -246,9 +285,12 @@ public class Convert {
         }
         
         try {
-            ByteArrayInputStream ins= new ByteArrayInputStream( utilMakeClass(javasrc).getBytes(Charset.forName("UTF-8")) );
+            String ssrc= utilMakeClass(javasrc);
+            ByteArrayInputStream ins= new ByteArrayInputStream( ssrc.getBytes(Charset.forName("UTF-8")) );
             CompilationUnit unit= japa.parser.JavaParser.parse(ins,"UTF-8");
             String src= doConvert( "", unit );
+            src= utilUnMakeClass(src);
+            
             if ( additionalImports!=null ) {
                 StringBuilder sb= new StringBuilder();
                 for ( String s: additionalImports ) {
