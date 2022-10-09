@@ -23,6 +23,7 @@ and well and this must be done unless the result is reviewed line-by-line.)
 # Mappings
 | name|  Java  	| Jython  	|
 |---	|---	|---	|
+| string function | .toUpperCase() | .upper() |
 | format  	| String.format(a,...)  	| a.format(...)  	| 
-|   	|   	|   	| 
-|   	|   	|   	| 
+|  stringbuilder 	|   	|   	| 
+|  regex 	|   	|   	| 
