@@ -915,6 +915,14 @@ public class Convert {
 
     private String doConvertFieldAccessExpr(String indent, FieldAccessExpr fieldAccessExpr) {
         String s= doConvert( indent, fieldAccessExpr.getScope() );
+        
+        // test to see if this is an array and "length" of the array is accessed.
+        if ( fieldAccessExpr.getField().equals("length") ) {
+            Type t= getCurrentScope().get(s);
+            if ( t!=null && t.toString().endsWith("[]") ) { //TODO: kludge
+                return indent + "len("+ s + ")";
+            }
+        }
         if ( onlyStatic && s.equals(theClassName) ) {
             return fieldAccessExpr.getField();
         } else {
