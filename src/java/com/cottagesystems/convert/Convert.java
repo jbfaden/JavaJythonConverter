@@ -914,19 +914,19 @@ public class Convert {
     }
 
     private String doConvertFieldAccessExpr(String indent, FieldAccessExpr fieldAccessExpr) {
-        String s= doConvert( indent, fieldAccessExpr.getScope() );
+        String s= doConvert( "", fieldAccessExpr.getScope() );
         
         // test to see if this is an array and "length" of the array is accessed.
         if ( fieldAccessExpr.getField().equals("length") ) {
             Type t= getCurrentScope().get(s);
-            if ( t!=null && t.toString().endsWith("[]") ) { //TODO: kludge
+            if ( t!=null && t instanceof ReferenceType && ((ReferenceType)t).getArrayCount()>0 ) { 
                 return indent + "len("+ s + ")";
             }
         }
         if ( onlyStatic && s.equals(theClassName) ) {
             return fieldAccessExpr.getField();
         } else {
-            return s + "." + fieldAccessExpr.getField();
+            return indent + s + "." + fieldAccessExpr.getField();
         }
     }
 
