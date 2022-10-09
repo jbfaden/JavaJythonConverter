@@ -539,6 +539,8 @@ public class Convert {
         if ( clasType.equals("StringBuilder") ) {
             if ( name.equals("append") ) {
                 return indent + doConvert("",clas) + "+= " + utilAssertStr(args.get(0)) ;
+            } else if ( name.equals("toString") ) {
+                return indent + doConvert("",clas);
             }
         }
         if ( clasType.equals("Math") ) {
