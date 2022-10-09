@@ -85,7 +85,7 @@ public class ConvertServlet extends HttpServlet {
             out.println("<button id=\"clear\" value=\"clear\" onclick=\"javascript:document.getElementById('code').value=''\">Clear</button>");
             out.println("<input type=\"submit\" value=\"submit\"></input>");
             out.println("</form action=\"ConvertServlet\" method=\"post\">");            
-            out.println("<small>Version 20221009a</small>");
+            out.println("<small>Version 20221009b</small>");
             out.println("</body>");
             out.println("</html>");
         }
