@@ -21,9 +21,10 @@ when a thorough set of unit tests have been written already.  (This will convert
 and well and this must be done unless the result is reviewed line-by-line.)
 
 # Mappings
-| name|  Java  	| Jython  	|
-|---	|---	|---	|
-| string function | .toUpperCase() | .upper() |
-| format  	| String.format(a,...)  	| a.format(...)  	| 
-|  stringbuilder 	|   	|   	| 
-|  regex 	|   	|   	| 
+| name|  Java  	| Jython  	| Notes |
+|---	|---	|---	|--- |
+| string function | .toUpperCase() | .upper() | many other string functions translate |
+| format  	| String.format(a,...)  	| a.format(...)  	| |
+|  stringbuilder 	|  sb.append() 	| sb+= | (note sources say this is no slower)  	|
+|  regex 	|   	|   	|  |
+| length | x.length | len(x) | The type of the object could be considered |
