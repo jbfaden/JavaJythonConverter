@@ -132,6 +132,10 @@ public class Convert {
     public void setUnittest(boolean unittest) {
         this.unittest = unittest;
     }
+    
+    // Constants
+    static final ReferenceType STRING_TYPE = ASTHelper.createReferenceType( "String", 0 );
+    
     /*** internal parsing state ***/
     
     Stack<Map<String,Type>> stack;
@@ -444,6 +448,10 @@ public class Convert {
             return ASTHelper.CHAR_TYPE;
         } else if ( clas instanceof LongLiteralExpr ) {
             return ASTHelper.LONG_TYPE;
+        } else if ( clas instanceof DoubleLiteralExpr ) {
+            return ASTHelper.DOUBLE_TYPE;
+        } else if ( clas instanceof StringLiteralExpr ) {
+            return STRING_TYPE;
         } else if ( clas instanceof MethodCallExpr ) {
             MethodCallExpr mce= (MethodCallExpr)clas;
             Type t= guessType( mce.getScope() );
@@ -493,16 +501,20 @@ public class Convert {
          */
         String clasType="";  
         if ( clas instanceof NameExpr ) {
-            String clasName= ((NameExpr)clas).getName();
-            if ( Character.isUpperCase(clasName.charAt(0)) ) { // Yup, we're assuming that upper case refers to a class
-                clasType= clasName;
+            String contextName= ((NameExpr)clas).getName(); // sb in sb.append, or String in String.format.
+            if ( Character.isUpperCase(contextName.charAt(0)) ) { // Yup, we're assuming that upper case refers to a class
+                clasType= contextName;
             } else if ( stringMethods.contains(name) ) {
                 clasType= "String";
             } else if ( characterMethods.contains(name) ) {
                 clasType= "Character";
-            } else if ( getCurrentScope().containsKey(name) ) {
-                Type t= getCurrentScope().get(name);
-                System.err.println(t);
+            } else if ( getCurrentScope().containsKey(contextName) ) {
+                Type t= getCurrentScope().get(contextName);
+                if ( t.toString().equals("StringBuilder") ) {
+                    clasType= "StringBuilder";
+                } else {
+                    System.err.println("don't know what to do with type: "+ t);
+                }
             }
         } else if ( clas instanceof StringLiteralExpr ) {
             clasType= "String";
@@ -518,6 +530,11 @@ public class Convert {
                 
         if ( clasType.equals("System") && name.equals("currentTimeMillis") ) {
             additionalImports.add("from java.lang import System\n");
+        }
+        if ( clasType.equals("StringBuilder") ) {
+            if ( name.equals("append") ) {
+                return indent + doConvert("",clas) + "+= " + utilAssertStr(args.get(0)) ;
+            }
         }
         if ( clasType.equals("Math") ) {
             switch (name) {
@@ -635,10 +652,15 @@ public class Convert {
                 }                
             } else {
                 String clasName = doConvert("",clas);
-                if ( onlyStatic && clasName.equals(theClassName) )  {
-                    return indent            + name + "("+ utilFormatExprList(args) +")";
+                if ( name.equals("append") && clas instanceof MethodCallExpr && args.size()==1 ) {
+                    return indent + clasName + " + " + utilAssertStr( args.get(0));
+                    
                 } else {
-                    return indent + clasName +"."+name + "("+ utilFormatExprList(args) +")";
+                    if ( onlyStatic && clasName.equals(theClassName) )  {
+                        return indent            + name + "("+ utilFormatExprList(args) +")";
+                    } else {
+                        return indent + clasName +"."+name + "("+ utilFormatExprList(args) +")";
+                    }
                 }
             }
         }
@@ -1266,7 +1288,20 @@ public class Convert {
     }
 
     private String doConvertObjectCreationExpr(String indent, ObjectCreationExpr objectCreationExpr) {
-        return indent + objectCreationExpr.getType() + "("+ utilFormatExprList(objectCreationExpr.getArgs())+ ")";
+        if ( objectCreationExpr.getType().toString().equals("StringBuilder") ) {
+            if ( objectCreationExpr.getArgs().size()==1 ) {
+                Expression e= objectCreationExpr.getArgs().get(0);
+                if ( "String".equals(guessType(e).toString()) ) {
+                    return indent + doConvert( "", e );
+                } else {
+                    return indent + "str(" + doConvert( "", e ) + ")";
+                }
+            } else {
+                return indent + "\"\"";
+            }
+        } else {
+            return indent + objectCreationExpr.getType() + "("+ utilFormatExprList(objectCreationExpr.getArgs())+ ")";
+        }
     }
 
     private String doConvertConstructorDeclaration(String indent, ConstructorDeclaration constructorDeclaration) {
@@ -1381,6 +1416,20 @@ public class Convert {
 "        }\n" +
 "    }";
         System.err.println( c.doConvert(p) );
+    }
+
+    /**
+     * wrap this with "str()" if this is not a string already.
+     * @param e
+     * @return doConvert(e) or "str(" + doConvert(e) + ")"
+     */
+    private String utilAssertStr( Expression e ) {
+        if ( STRING_TYPE.equals(guessType(e)) ) {
+            return doConvert( "", e );
+        } else {
+            return "str("+doConvert("",e)+")";
+        }
+        
     }
     
 }
