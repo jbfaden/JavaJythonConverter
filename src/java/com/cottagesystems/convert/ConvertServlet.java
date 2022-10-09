@@ -86,7 +86,7 @@ public class ConvertServlet extends HttpServlet {
             out.println("<button id=\"clear\" value=\"clear\" onclick=\"javascript:document.getElementById('code').value=''\">Clear</button>");
             out.println("<input type=\"submit\" value=\"submit\"></input>");
             out.println("</form action=\"ConvertServlet\" method=\"post\">");            
-            out.println("<small>Version 20221009c</small>");
+            out.println("<small>Version 20221009d</small>");
             out.println("Please note:<ul>");
             out.println("<li>The goal is to get something close to translated, but not perfect.");
             out.println("<li>Semmantics are considered, for example s.substring is assumed to be using the substring method of string.");
