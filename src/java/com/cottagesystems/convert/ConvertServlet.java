@@ -62,6 +62,7 @@ public class ConvertServlet extends HttpServlet {
             out.println("</head>");
             out.println("<body>");
             out.println("<h1>Servlet ConvertServlet at " + request.getContextPath() + "</h1>");
+            out.println("Please read caveats below, seriously difficult bugs could be introduced when translating code.<br><br>");
             out.println("<form action=\"ConvertServlet\" method=\"post\">");
             out.println("<table>");
             out.println("<tr>");
@@ -86,6 +87,14 @@ public class ConvertServlet extends HttpServlet {
             out.println("<input type=\"submit\" value=\"submit\"></input>");
             out.println("</form action=\"ConvertServlet\" method=\"post\">");            
             out.println("<small>Version 20221009c</small>");
+            out.println("Please note:<ul>");
+            out.println("<li>The goal is to get something close to translated, but not perfect.");
+            out.println("<li>Semmantics are considered, for example s.substring is assumed to be using the substring method of string.");
+            out.println("<li>other assumptions like xx.length -> len(xx) are made.");
+            out.println("<li>some Java class use may remain, and you will need to find translations to Python.");
+            out.println("<li>single methods are handled by wrapping the method with a class, then this is removed.");
+            out.println("<li>several statements are made into a method similarly.");
+            out.println("<li>I am a Java developer who knows enough Python to cause problems, see <a href='https://github.com/jbfaden/JavaJythonConverter'>GitHub project</a> to provide feedback");
             out.println("</body>");
             out.println("</html>");
         }
