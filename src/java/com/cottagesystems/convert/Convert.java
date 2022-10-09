@@ -616,9 +616,9 @@ public class Convert {
             StringBuilder sb= new StringBuilder();
             if (  methodCallExpr.getArgs().get(0) instanceof StringLiteralExpr ) {
                 String s= doConvert( "", methodCallExpr.getArgs().get(0) );
-                sb.append(indent).append( "print(" ).append( s.substring(0,s.length()-1) ).append( "\\n')" );
+                sb.append(indent).append( "print(" ).append( s.substring(0,s.length()-1) ).append( ")" );
             } else {
-                sb.append(indent).append( "print(" ).append( doConvert( "", methodCallExpr.getArgs().get(0) ) ).append( "+'\\n')" );
+                sb.append(indent).append( "print(" ).append( doConvert( "", methodCallExpr.getArgs().get(0) ) ).append( ")" );
             }    
             return sb.toString();
         } else if ( name.equals("length") && args==null ) {
