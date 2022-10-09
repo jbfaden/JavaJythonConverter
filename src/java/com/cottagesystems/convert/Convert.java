@@ -233,9 +233,14 @@ public class Convert {
      */
     public String utilMakeClass( String javasrc ) throws ParseException {
         javasrc= javasrc.trim();
+        int ibrace;
         int i= javasrc.indexOf("\n");
-        String firstLine= javasrc.substring(0,i);
-        int ibrace= firstLine.indexOf("{");
+        if ( i==-1 ) {
+            ibrace = -1;
+        } else {
+            String firstLine= javasrc.substring(0,i);
+            ibrace= firstLine.indexOf("{");
+        }
         if ( ibrace==-1 ) {
             javasrc= "void foo99() {\n" + javasrc + "\n}";
         }
@@ -623,7 +628,8 @@ public class Convert {
             StringBuilder sb= new StringBuilder();
             if (  methodCallExpr.getArgs().get(0) instanceof StringLiteralExpr ) {
                 String s= doConvert( "", methodCallExpr.getArgs().get(0) );
-                sb.append(indent).append( "sys.stderr.write(" ).append( s.substring(0,s.length()-1) ).append( "\\n')" );
+                String sWithNewLine= s.substring(0,s.length()-1) + "\\n'";
+                sb.append(indent).append( "sys.stderr.write(" ).append(sWithNewLine).append(")");
             } else {
                 sb.append(indent).append( "sys.stderr.write(" ).append( doConvert( "", methodCallExpr.getArgs().get(0) ) ).append( "+'\\n')" );
             }
@@ -633,7 +639,7 @@ public class Convert {
             StringBuilder sb= new StringBuilder();
             if (  methodCallExpr.getArgs().get(0) instanceof StringLiteralExpr ) {
                 String s= doConvert( "", methodCallExpr.getArgs().get(0) );
-                sb.append(indent).append( "print(" ).append( s.substring(0,s.length()-1) ).append( ")" );
+                sb.append(indent).append( "print(" ).append( s ).append( ")" );
             } else {
                 sb.append(indent).append( "print(" ).append( doConvert( "", methodCallExpr.getArgs().get(0) ) ).append( ")" );
             }    
