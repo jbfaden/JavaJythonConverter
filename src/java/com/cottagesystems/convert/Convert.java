@@ -28,6 +28,7 @@ import japa.parser.ast.stmt.ExpressionStmt;
 import japa.parser.ast.stmt.Statement;
 import japa.parser.ast.body.VariableDeclarator;
 import japa.parser.ast.comments.Comment;
+import japa.parser.ast.expr.AnnotationExpr;
 import japa.parser.ast.expr.ArrayAccessExpr;
 import japa.parser.ast.expr.ArrayCreationExpr;
 import japa.parser.ast.expr.ArrayInitializerExpr;
@@ -1080,6 +1081,8 @@ public class Convert {
                 sb.append( indent ).append("class " ).append( classOrInterfaceDeclaration.getName() ).append(":\n");
             }
 
+            // check to see if any two methods can be combined.
+            // https://github.com/jbfaden/JavaJythonConverter/issues/5
             classOrInterfaceDeclaration.getChildrenNodes().forEach((n) -> {
                 if ( n instanceof MethodDeclaration ) {
                     classMethods.put( ((MethodDeclaration) n).getName(), classOrInterfaceDeclaration );
@@ -1113,6 +1116,14 @@ public class Convert {
         
         if ( onlyStatic && !isStatic ) {
             return "";
+        }
+        
+        if ( methodDeclaration.getAnnotations()!=null ) {
+            for ( AnnotationExpr a : methodDeclaration.getAnnotations() ) {
+                if ( a.getName().getName().equals("Deprecated") ) {
+                    return "";
+                }
+            }
         }
         
         //if ( methodDeclaration.getName().equals("dayOfYear") ) {
@@ -1312,11 +1323,7 @@ public class Convert {
         if ( objectCreationExpr.getType().toString().equals("StringBuilder") ) {
             if ( objectCreationExpr.getArgs().size()==1 ) {
                 Expression e= objectCreationExpr.getArgs().get(0);
-                if ( "String".equals(guessType(e).toString()) ) {
-                    return indent + doConvert( "", e );
-                } else {
-                    return indent + "str(" + doConvert( "", e ) + ")";
-                }
+                return indent + utilAssertStr(e);
             } else {
                 return indent + "\"\"";
             }
