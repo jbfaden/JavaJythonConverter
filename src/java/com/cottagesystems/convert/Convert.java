@@ -269,7 +269,9 @@ public class Convert {
 
         StringBuilder sb= new StringBuilder();
         for ( String s: ss ) {
-            sb.append( s.substring(indent) ).append("\n");
+            if ( s.length()>indent ) {
+                sb.append( s.substring(indent) ).append("\n");
+            }
         }
         return sb.toString();
     }
@@ -650,6 +652,17 @@ public class Convert {
             return indent + "len("+ doConvert("",clas)+")";
         } else if ( name.equals("equals") ) {
             return indent + doConvert(indent,clas)+"=="+ utilFormatExprList(args);
+        } else if ( name.equals("arraycopy") && clasType.equals("System") ) {
+            String target = doConvert( "", methodCallExpr.getArgs().get(2) );
+            String source = doConvert( "", methodCallExpr.getArgs().get(0) );
+            Expression sourceIdx = methodCallExpr.getArgs().get(1);
+            Expression targetIdx = methodCallExpr.getArgs().get(3);
+            Expression length= methodCallExpr.getArgs().get(4);
+            String targetIndexs= utilCreateIndexs(targetIdx, length);
+            String sourceIndexs= utilCreateIndexs(sourceIdx, length);
+            String j= String.format( "%s[%s]=%s[%s]", 
+                    target, targetIndexs, source, sourceIndexs ); 
+            return indent + j;
         } else {
             if ( clas==null ) {
                 ClassOrInterfaceDeclaration m= classMethods.get(name);
@@ -1438,6 +1451,27 @@ public class Convert {
             return "str("+doConvert("",e)+")";
         }
         
+    }
+
+    /**
+     * take index and length and return "2:5" type notation.
+     * @param targetIdx
+     * @param targetLen
+     * @return 
+     */
+    private String utilCreateIndexs(Expression targetIdx, Expression targetLen) {
+        String targetIndex = doConvert("",targetIdx);
+        String targetLength = doConvert("",targetLen);
+        if ( targetIndex.equals("0") ) {
+            return targetIndex + ":"+targetLength; // it's only one character, so don't bother removing the 0 in 0:
+        } else {
+            if ( targetIndex.equals(targetLength) && 
+                    ( targetIdx instanceof FieldAccessExpr || targetIdx instanceof NameExpr ) ) {
+                return targetIndex + ":2*"+targetLength;
+            } else {
+                return targetIndex + ":" + targetIndex + "+" + targetLength;
+            }
+        }
     }
     
 }
