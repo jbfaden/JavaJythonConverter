@@ -62,11 +62,14 @@ import java.io.ByteArrayInputStream;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.Stack;
+import java.util.TreeSet;
 
 /**
  * Class for converting Java to Jython using an AST.
@@ -178,7 +181,7 @@ public class Convert {
      */
     private Map<String,Object> importedMethods = new HashMap<>();
     
-    private List<String> additionalImports = new ArrayList<>();
+    private Set<String> additionalImports = new TreeSet<>();
     
     /*** end, internal parsing state ***/
 
@@ -285,6 +288,7 @@ public class Convert {
             String src= doConvert( "", unit );
             if ( additionalImports!=null ) {
                 StringBuilder sb= new StringBuilder();
+                
                 for ( String s: additionalImports ) {
                     sb.append(s);
                 }
@@ -538,7 +542,18 @@ public class Convert {
                 
         if ( clasType.equals("System") && name.equals("currentTimeMillis") ) {
             additionalImports.add("from java.lang import System\n");
+        } else if ( clasType.equals("Double") ) {
+            additionalImports.add("from java.lang import Double\n");
+        } else if ( clasType.equals("Integer") ) {
+            additionalImports.add("from java.lang import Integer\n");
+        } else if ( clasType.equals("Short") ) {
+            additionalImports.add("from java.lang import Short\n");
+        } else if ( clasType.equals("Character") ) {
+            additionalImports.add("from java.lang import Character\n");
+        } else if ( clasType.equals("Byte") ) {
+            additionalImports.add("from java.lang import Byte\n");
         }
+        
         if ( clasType.equals("StringBuilder") ) {
             if ( name.equals("append") ) {
                 return indent + doConvert("",clas) + "+= " + utilAssertStr(args.get(0)) ;
