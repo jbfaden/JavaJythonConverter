@@ -559,21 +559,7 @@ public class Convert {
             }
         }
                 
-        if ( clasType.equals("System") && name.equals("currentTimeMillis") ) {
-            additionalImports.add("from java.lang import System\n");
-        } else if ( clasType.equals("Double") ) {
-            additionalImports.add("from java.lang import Double\n");
-        } else if ( clasType.equals("Integer") ) {
-            additionalImports.add("from java.lang import Integer\n");
-        } else if ( clasType.equals("Short") ) {
-            additionalImports.add("from java.lang import Short\n");
-        } else if ( clasType.equals("Character") ) {
-            additionalImports.add("from java.lang import Character\n");
-        } else if ( clasType.equals("Byte") ) {
-            additionalImports.add("from java.lang import Byte\n");
-        } else if ( clasType.equals("IllegalArgumentException") ) {
-            additionalImports.add("from java.lang import IllegalArgumentException\n");
-        }
+        boolean needImport= true;
         
         if ( clasType.equals("StringBuilder") ) {
             if ( name.equals("append") ) {
@@ -663,7 +649,19 @@ public class Convert {
                     break;
             }
         }
-        
+        if ( clasType.equals("Double") ) {
+            switch ( name ) {
+                case "parseDouble":
+                    return "float("+ args.get(0)+")";
+            }
+        }
+        if ( clasType.equals("Integer") ) {
+            switch ( name ) {
+                case "parseInt":
+                    return "int("+ args.get(0)+")";
+            }
+        }
+
         if ( name.equals("println") && clas instanceof FieldAccessExpr &&
                 ((FieldAccessExpr)clas).getField().equals("err") ) {
             StringBuilder sb= new StringBuilder();
@@ -717,6 +715,22 @@ public class Convert {
                     target, targetIndexs, source, sourceIndexs ); 
             return indent + j;
         } else {
+            if ( clasType.equals("System") && name.equals("currentTimeMillis") ) {
+                additionalImports.add("from java.lang import System\n");
+            } else if ( clasType.equals("Double") ) {
+                additionalImports.add("from java.lang import Double\n");
+            } else if ( clasType.equals("Integer") ) {
+                additionalImports.add("from java.lang import Integer\n");
+            } else if ( clasType.equals("Short") ) {
+                additionalImports.add("from java.lang import Short\n");
+            } else if ( clasType.equals("Character") ) {
+                additionalImports.add("from java.lang import Character\n");
+            } else if ( clasType.equals("Byte") ) {
+                additionalImports.add("from java.lang import Byte\n");
+            } else if ( clasType.equals("IllegalArgumentException") ) {
+                additionalImports.add("from java.lang import IllegalArgumentException\n");
+            }
+            
             if ( clas==null ) {
                 ClassOrInterfaceDeclaration m= classMethods.get(name);
                 if ( m!=null ) {
