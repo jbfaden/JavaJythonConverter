@@ -51,6 +51,7 @@ import japa.parser.ast.expr.UnaryExpr;
 import japa.parser.ast.stmt.BreakStmt;
 import japa.parser.ast.stmt.CatchClause;
 import japa.parser.ast.stmt.ForStmt;
+import japa.parser.ast.stmt.ForeachStmt;
 import japa.parser.ast.stmt.IfStmt;
 import japa.parser.ast.stmt.ReturnStmt;
 import japa.parser.ast.stmt.SwitchEntryStmt;
@@ -866,6 +867,8 @@ public class Convert {
                 return doConvertClassOrInterfaceType(indent,(ClassOrInterfaceType)n);
             case "Parameter":
                 return indent + ((Parameter)n).getId().getName(); // TODO: varargs, etc
+            case "ForeachStmt":
+                return doConvertForeachStmt(indent,(ForeachStmt)n);
             default:
                 return indent + "*** "+simpleName + "*** " + n.toString() + "*** end "+simpleName + "****";
         }
@@ -994,6 +997,22 @@ public class Convert {
         });
         return b.toString();
     }
+
+    private String doConvertForeachStmt(String indent, ForeachStmt foreachStmt) {
+        StringBuilder b= new StringBuilder();
+        if ( foreachStmt.getVariable().getVars().size()!=1 ) {
+            throw new IllegalArgumentException("expected only one variable in foreach statement");
+        }
+        String variableName = foreachStmt.getVariable().getVars().get(0).getId().getName();
+        b.append( indent ).append("for ").append(variableName).append(" in ").append(doConvert("",foreachStmt.getIterable() )).append(":\n");
+        if ( foreachStmt.getBody() instanceof ExpressionStmt ) {
+            b.append(indent).append(s4).append( doConvert( "", foreachStmt.getBody() ) ).append("\n");
+        } else {
+            b.append( doConvert( indent, foreachStmt.getBody() ) );
+        }
+        return b.toString();
+    }
+    
     
     private String doConvertImportDeclaration( String indent, ImportDeclaration d ) {
         StringBuilder sb= new StringBuilder();
