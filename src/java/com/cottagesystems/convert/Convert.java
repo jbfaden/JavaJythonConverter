@@ -685,6 +685,22 @@ public class Convert {
                 sb.append(indent).append( "print(" ).append( doConvert( "", methodCallExpr.getArgs().get(0) ) ).append( ")" );
             }    
             return sb.toString();
+        } else if ( name.equals("print") && clas instanceof FieldAccessExpr &&
+                ((FieldAccessExpr)clas).getField().equals("err") ) {
+            StringBuilder sb= new StringBuilder();
+            String s= doConvert( "", methodCallExpr.getArgs().get(0) );
+            sb.append(indent).append( "sys.stderr.write(" ).append(s).append(")");
+            return sb.toString();
+        } else if ( name.equals("print") && clas instanceof FieldAccessExpr &&
+                ((FieldAccessExpr)clas).getField().equals("out") ) {
+            StringBuilder sb= new StringBuilder();
+            if (  methodCallExpr.getArgs().get(0) instanceof StringLiteralExpr ) {
+                String s= doConvert( "", methodCallExpr.getArgs().get(0) );
+                sb.append(indent).append( "sys.stdout.write(" ).append( s ).append( ")" );
+            } else {
+                sb.append(indent).append( "sys.stdout.write(" ).append( doConvert( "", methodCallExpr.getArgs().get(0) ) ).append( ")" );
+            }    
+            return sb.toString();
         } else if ( name.equals("length") && args==null ) {
             return indent + "len("+ doConvert("",clas)+")";
         } else if ( name.equals("equals") ) {
