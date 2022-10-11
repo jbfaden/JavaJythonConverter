@@ -1596,7 +1596,7 @@ public class Convert {
         }
     }
 
-    private String doConvertEnumDeclaration(String indent, EnumDeclaration enumDeclaration) {
+    private String doConvertEnumDeclaration(String indent, EnumDeclaration enumDeclaration) { 
         StringBuilder builder= new StringBuilder();
         List<EnumConstantDeclaration> ll = enumDeclaration.getEntries();
         for ( EnumConstantDeclaration l : ll ) {
