@@ -10,6 +10,8 @@ import japa.parser.ast.body.BodyDeclaration;
 import japa.parser.ast.body.ClassOrInterfaceDeclaration;
 import japa.parser.ast.body.ConstructorDeclaration;
 import japa.parser.ast.body.EmptyMemberDeclaration;
+import japa.parser.ast.body.EnumConstantDeclaration;
+import japa.parser.ast.body.EnumDeclaration;
 import japa.parser.ast.body.FieldDeclaration;
 import japa.parser.ast.body.InitializerDeclaration;
 import japa.parser.ast.body.MethodDeclaration;
@@ -838,6 +840,8 @@ public class Convert {
                 return doConvertArrayAccessExpr(indent,(ArrayAccessExpr)n);
             case "FieldAccessExpr":
                 return doConvertFieldAccessExpr(indent,(FieldAccessExpr)n);
+            case "ThisExpr":
+                return "self";
             case "ImportDeclaration":
                 return doConvertImportDeclaration(indent,(ImportDeclaration)n);
             case "PackageDeclaration":
@@ -852,6 +856,8 @@ public class Convert {
                 return doConvertClassOrInterfaceType(indent,(ClassOrInterfaceType)n); // TODO: this looks suspicious
             case "ConstructorDeclaration":
                 return doConvertConstructorDeclaration(indent,(ConstructorDeclaration)n);
+            case "EnumDeclaration":
+                return doConvertEnumDeclaration(indent,(EnumDeclaration)n);
             case "InitializerDeclaration":
                 return doConvertInitializerDeclaration(indent,(InitializerDeclaration)n);
             case "ObjectCreationExpr":
@@ -1257,7 +1263,12 @@ public class Convert {
                 Map<String,Type> currentScope= getCurrentScope();
                 currentScope.put( v.getId().getName(),fieldDeclaration.getType() );
                 if ( v.getInit()==null ) {
-                    
+                    String implicitDeclaration = utilImplicitDeclaration( fieldDeclaration.getType() );
+                    if ( implicitDeclaration!=null ) {
+                        sb.append( indent ) .append( v.getId() ).append("=").append( implicitDeclaration ).append("\n");
+                    } else {
+                        sb.append( indent ).append("#1266 ") .append( v.getId() ).append("=").append( implicitDeclaration ).append("\n");
+                    }
                 } else if ( v.getInit() instanceof ConditionalExpr ) {
                     ConditionalExpr ce= (ConditionalExpr)v.getInit();
                     sb.append( indent ).append("if ").append(doConvert( "",ce.getCondition() )).append(":\n");
@@ -1544,6 +1555,26 @@ public class Convert {
         
     }
 
+    private static String utilImplicitDeclaration( Type t ) {
+        switch ( t.toString() ) {
+            case "byte": 
+            case "short":
+            case "int":
+                return "0";
+            case "long":
+                return "0L";
+            case "float":
+            case "double":
+                return "0.0";
+            case "String":
+                return "None";
+            case "String[]":
+                return "None";
+            default:
+                return null;
+        }
+    }
+    
     /**
      * take index and length and return "2:5" type notation.
      * @param targetIdx
@@ -1563,6 +1594,27 @@ public class Convert {
                 return targetIndex + ":" + targetIndex + "+" + targetLength;
             }
         }
+    }
+
+    private String doConvertEnumDeclaration(String indent, EnumDeclaration enumDeclaration) {
+        StringBuilder builder= new StringBuilder();
+        List<EnumConstantDeclaration> ll = enumDeclaration.getEntries();
+        for ( EnumConstantDeclaration l : ll ) {
+            builder.append(indent).append( "def " ).append(enumDeclaration.getName()).append("_").append(l.getName()) .append(":\n");
+            if ( l.getClassBody()!=null ) {            
+                if ( l.getClassBody().size()==1 ) {
+                    builder.append( doConvert(indent,l.getClassBody().get(0)) );
+                }
+            } else {
+                builder.append(indent).append(s4).append("pass\n");
+            }
+        }
+        builder.append(indent).append(enumDeclaration.getName()).append(" = {}\n");
+        for ( EnumConstantDeclaration l : ll ) {
+            builder.append(indent).append(enumDeclaration.getName()).append("[").append(l.getName()).append("]=")
+                    .append(enumDeclaration.getName()).append("_").append(l.getName()).append("\n");
+        }
+        return builder.toString();
     }
     
 }
