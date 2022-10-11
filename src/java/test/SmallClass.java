@@ -19,7 +19,7 @@ public class SmallClass {
 
     @Override
     public String toString() {
-        return "a SmallClass";
+        return "a SmallClass "+this.data;
     }
     
     public static void main( String[] args ) {
