@@ -9,6 +9,7 @@ import japa.parser.ast.Node;
 import japa.parser.ast.body.BodyDeclaration;
 import japa.parser.ast.body.ClassOrInterfaceDeclaration;
 import japa.parser.ast.body.ConstructorDeclaration;
+import japa.parser.ast.body.EmptyMemberDeclaration;
 import japa.parser.ast.body.FieldDeclaration;
 import japa.parser.ast.body.InitializerDeclaration;
 import japa.parser.ast.body.MethodDeclaration;
@@ -156,6 +157,21 @@ public class Convert {
         return stack.peek();
     }
     
+    /**
+     * introduce a new level
+     */
+    private void pushScopeStack() {
+        Map<String,Type> n= new HashMap<>(getCurrentScope());
+        stack.push(n);
+    }
+    
+    /**
+     * pop that new level
+     */
+    private void popScopeStack() {
+        stack.pop();
+    }
+            
     /**
      * record the name of the class (e.g. TimeUtil) so that internal references can be corrected.
      */
@@ -854,12 +870,12 @@ public class Convert {
 
     private String doConvertBlockStmt(String indent,BlockStmt blockStmt) {
         
-        stack.push( new HashMap<>(getCurrentScope()) );
+        pushScopeStack();
         
         StringBuilder result= new StringBuilder();
         List<Statement> statements= blockStmt.getStmts();
         if ( statements==null ) {
-            stack.pop( );
+            popScopeStack();
             return indent + "pass\n";
         }
         for ( Statement s: statements ) {
@@ -868,7 +884,7 @@ public class Convert {
             result.append(doConvert(indent,s));
             result.append("\n");
         }
-        stack.pop( );
+        popScopeStack();
         return result.toString();
     }
 
@@ -978,7 +994,7 @@ public class Convert {
 
     private String doConvertCompilationUnit(String indent, CompilationUnit compilationUnit) {
         
-        this.stack.push( new HashMap<>(getCurrentScope()) );
+        pushScopeStack();
 
         StringBuilder sb= new StringBuilder();
         
@@ -1000,7 +1016,7 @@ public class Convert {
         //    sb.append("# ").append(c.getContent()).append("\n");
         //}
         
-        this.stack.pop();
+        popScopeStack();
         
         return sb.toString();
     }
@@ -1076,6 +1092,10 @@ public class Convert {
     private String doConvertClassOrInterfaceDeclaration(String indent, ClassOrInterfaceDeclaration classOrInterfaceDeclaration) {
         StringBuilder sb= new StringBuilder();
         theClassName= classOrInterfaceDeclaration.getName();
+        
+        pushScopeStack();
+        getCurrentScope().put( "this", new ClassOrInterfaceType(theClassName) );
+        
         if ( onlyStatic ) {
             classOrInterfaceDeclaration.getChildrenNodes().forEach((n) -> {
                 sb.append( doConvert(indent,n) ).append("\n");
@@ -1098,11 +1118,18 @@ public class Convert {
             sb.append( "\n" );
             sb.append( comments );
             
-            if ( classOrInterfaceDeclaration.getExtends()!=null && classOrInterfaceDeclaration.getExtends().size()==1 ) {  //TODO: multiple
+            if ( classOrInterfaceDeclaration.getExtends()!=null && classOrInterfaceDeclaration.getExtends().size()==1 ) { 
                 String extendName= doConvert( "", classOrInterfaceDeclaration.getExtends().get(0) );
-                sb.append( indent ).append("class " ).append( classOrInterfaceDeclaration.getName() ).append("(" ).append(extendName).append(")").append(":\n");
+                sb.append( indent ).append("class " ).append( theClassName ).append("(" ).append(extendName).append(")").append(":\n");
+            } else if ( classOrInterfaceDeclaration.getImplements()!=null ) { 
+                List<ClassOrInterfaceType> impls= classOrInterfaceDeclaration.getImplements();
+                StringBuilder implementsName= new StringBuilder( doConvert( "", impls.get(0) ) );
+                for ( int i=1; i<impls.size(); i++ ) {
+                    implementsName.append(",").append( doConvert( "", impls.get(i) ) );
+                }
+                sb.append( indent ).append("class " ).append( theClassName ).append("(" ).append(implementsName).append(")").append(":\n");
             } else {
-                sb.append( indent ).append("class " ).append( classOrInterfaceDeclaration.getName() ).append(":\n");
+                sb.append( indent ).append("class " ).append( theClassName ).append(":\n");
             }
 
             // check to see if any two methods can be combined.
@@ -1110,11 +1137,16 @@ public class Convert {
             classOrInterfaceDeclaration.getChildrenNodes().forEach((n) -> {
                 if ( n instanceof MethodDeclaration ) {
                     classMethods.put( ((MethodDeclaration) n).getName(), classOrInterfaceDeclaration );
+                } else if ( n instanceof ClassOrInterfaceDeclaration ) {
+                    ClassOrInterfaceDeclaration coid= (ClassOrInterfaceDeclaration)n;
+                    getCurrentScope().put( coid.getName(), new ClassOrInterfaceType(coid.getName()) );
                 }
             });
             
             classOrInterfaceDeclaration.getChildrenNodes().forEach((n) -> {
                 if ( n instanceof ClassOrInterfaceType ) {
+                    // skip this strange node
+                } else if ( n instanceof EmptyMemberDeclaration ) {
                     // skip this strange node
                 } else {
                     sb.append( doConvert( s4+indent, n ) ).append("\n");
@@ -1132,6 +1164,9 @@ public class Convert {
             
         
         }
+        
+        popScopeStack();
+        
         return sb.toString();
     }
 
@@ -1169,7 +1204,7 @@ public class Convert {
             comma = false;
         }
 
-        stack.push( new HashMap<>(stack.peek()) );
+        pushScopeStack();
 
         if ( methodDeclaration.getParameters()!=null ) {
             for ( Parameter p: methodDeclaration.getParameters() ) { 
@@ -1190,7 +1225,7 @@ public class Convert {
         } else {
             sb.append(indent).append(s4).append("pass");  
         }
-        stack.pop();
+        popScopeStack();
         
         if ( pythonTarget==PythonTarget.jython_2_2 && isStatic && !onlyStatic ) {
             sb.append(indent).append(methodDeclaration.getName()).append(" = staticmethod(").append(methodDeclaration.getName()).append(")");
@@ -1347,6 +1382,14 @@ public class Convert {
         return indent + classOrInterfaceType.getName();
     }
 
+    private String utilQualifyClassName( ClassOrInterfaceType clas ) {
+        if ( getCurrentScope().containsKey(clas.getName())) {
+            return ((ClassOrInterfaceType)getCurrentScope().get("this")).getName() +"." + clas.getName();
+        } else {
+            return null;
+        }
+    }
+    
     private String doConvertObjectCreationExpr(String indent, ObjectCreationExpr objectCreationExpr) {
         if ( objectCreationExpr.getType().toString().equals("StringBuilder") ) {
             if ( objectCreationExpr.getArgs()!=null ) {
@@ -1360,7 +1403,12 @@ public class Convert {
                 return indent + "\"\"";
             }
         } else {
-            return indent + objectCreationExpr.getType() + "("+ utilFormatExprList(objectCreationExpr.getArgs())+ ")";
+            String qualifiedName= utilQualifyClassName(objectCreationExpr.getType());
+            if ( qualifiedName!=null ) {
+                return indent + qualifiedName + "("+ utilFormatExprList(objectCreationExpr.getArgs())+ ")";
+            } else {
+                return indent + objectCreationExpr.getType() + "("+ utilFormatExprList(objectCreationExpr.getArgs())+ ")";
+            }
         }
     }
 
