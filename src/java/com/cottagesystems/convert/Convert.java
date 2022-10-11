@@ -807,7 +807,7 @@ public class Convert {
             case "BodyDeclaration":
                 return "<Body Declaration>";
             case "BlockStmt":
-                return doConvertBlockStmt(s4+indent,(BlockStmt)n);
+                return doConvertBlockStmt(indent+s4,(BlockStmt)n);
             case "ExpressionStmt":
                 return doConvertExpressionStmt(indent,(ExpressionStmt)n);
             case "VariableDeclarationExpr":
@@ -915,12 +915,17 @@ public class Convert {
                 if ( v.getInit() instanceof ConditionalExpr ) {
                     ConditionalExpr cc  = (ConditionalExpr)v.getInit();
                     b.append( indent ).append("if ").append(doConvert("",cc.getCondition())).append(":\n");
-                    b.append(s4).append(indent).append( s );
+                    b.append(indent).append(s4).append( s );
                     b.append(" = ").append(doConvert("",cc.getThenExpr() )).append("\n");
                     b.append( indent ).append("else:\n" );
-                    b.append(s4).append(indent).append( s );
+                    b.append(indent).append(s4).append( s );
                     b.append(" = ").append(doConvert("",cc.getElseExpr() )).append("\n");
                 } else {
+                    if ( v.getInit() instanceof ObjectCreationExpr && ((ObjectCreationExpr)v.getInit()).getAnonymousClassBody()!=null ) {
+                        for ( BodyDeclaration bd: ((ObjectCreationExpr)v.getInit()).getAnonymousClassBody() ) {
+                            b.append(doConvert( indent+"#J2J:", bd ) );
+                        }
+                    }
                     b.append( indent ).append(s).append(" = ").append(doConvert("",v.getInit()) );
                 }
             }
@@ -980,7 +985,7 @@ public class Convert {
         });
         b.append( indent ).append("while ").append(doConvert( "", forStmt.getCompare() )).append(":\n");
         if ( forStmt.getBody() instanceof ExpressionStmt ) {
-            b.append( indent ).append(s4).append( doConvert( "", forStmt.getBody() ) ).append("\n");
+            b.append(indent).append(s4).append( doConvert( "", forStmt.getBody() ) ).append("\n");
         } else {
             b.append( doConvert( indent, forStmt.getBody() ) );
         }
@@ -1161,7 +1166,7 @@ public class Convert {
                 } else if ( n instanceof EmptyMemberDeclaration ) {
                     // skip this strange node
                 } else {
-                    sb.append( doConvert( s4+indent, n ) ).append("\n");
+                    sb.append( doConvert( indent+s4, n ) ).append("\n");
                 }
             });
             
@@ -1274,9 +1279,9 @@ public class Convert {
                 } else if ( v.getInit() instanceof ConditionalExpr ) {
                     ConditionalExpr ce= (ConditionalExpr)v.getInit();
                     sb.append( indent ).append("if ").append(doConvert( "",ce.getCondition() )).append(":\n");
-                    sb.append(s4).append(indent).append( v.getId()).append("=").append( doConvert( "",ce.getThenExpr() ) ).append("\n");
+                    sb.append( indent ).append(s4).append( v.getId()).append("=").append( doConvert( "",ce.getThenExpr() ) ).append("\n");
                     sb.append( indent ).append( "else:\n");
-                    sb.append(s4).append(indent).append( v.getId()).append("=").append( doConvert( "",ce.getElseExpr() ) ).append("\n");
+                    sb.append( indent ).append(s4).append( v.getId()).append("=").append( doConvert( "",ce.getElseExpr() ) ).append("\n");
                     
                 } else {
                     sb.append( indent ) .append( v.getId() ).append("=").append( doConvert( "",v.getInit() ) ).append("\n");
@@ -1354,18 +1359,18 @@ public class Convert {
             if ( ses.getLabel()!=null && !( ( statements.get(statements.size()-1) instanceof BreakStmt ) ||
                     ( statements.get(statements.size()-1) instanceof ReturnStmt ) ||
                     ( statements.get(statements.size()-1) instanceof ThrowStmt ) ) ) {
-                sb.append(s4).append(indent).append("### Switch Fall Through Not Implemented ###\n");
+                sb.append(indent).append(s4).append("### Switch Fall Through Not Implemented ###\n");
                 for ( Statement s: statements ) {
                     sb.append("#").append(doConvert(s4+indent, s )).append("\n");
                 }
             } else {
                 if ( statements.get(statements.size()-1) instanceof BreakStmt ) {
                     for ( Statement s: statements.subList(0,statements.size()-1) ) {
-                        sb.append(doConvert(s4+indent, s )).append("\n");
+                        sb.append(doConvert(indent + s4, s )).append("\n");
                     }
                 } else {
                     for ( Statement s: statements ) {
-                        sb.append(doConvert(s4+indent, s )).append("\n");
+                        sb.append(doConvert(indent+s4, s )).append("\n");
                     }
                 }
 
@@ -1424,7 +1429,13 @@ public class Convert {
             if ( qualifiedName!=null ) {
                 return indent + qualifiedName + "("+ utilFormatExprList(objectCreationExpr.getArgs())+ ")";
             } else {
-                return indent + objectCreationExpr.getType() + "("+ utilFormatExprList(objectCreationExpr.getArgs())+ ")";
+                if ( objectCreationExpr.getAnonymousClassBody()!=null ) {
+                    StringBuilder sb= new StringBuilder();
+                    sb.append(indent).append(objectCreationExpr.getType()).append("(").append(utilFormatExprList(objectCreationExpr.getArgs())).append(")"); 
+                    return sb.toString();
+                } else {
+                    return indent + objectCreationExpr.getType() + "("+ utilFormatExprList(objectCreationExpr.getArgs())+ ")";
+                }
             }
         }
     }
@@ -1606,7 +1617,7 @@ public class Convert {
             
             for ( Node n: enumDeclaration.getChildrenNodes() ) {
                 if ( n instanceof ConstructorDeclaration ) {
-                    builder.append( doConvert( s4+indent, n ) );
+                    builder.append( doConvert( indent + s4, n ) );
                 }
             }
 
