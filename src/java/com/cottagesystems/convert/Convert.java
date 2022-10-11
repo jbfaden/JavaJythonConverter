@@ -552,6 +552,8 @@ public class Convert {
             additionalImports.add("from java.lang import Character\n");
         } else if ( clasType.equals("Byte") ) {
             additionalImports.add("from java.lang import Byte\n");
+        } else if ( clasType.equals("IllegalArgumentException") ) {
+            additionalImports.add("from java.lang import IllegalArgumentException\n");
         }
         
         if ( clasType.equals("StringBuilder") ) {
@@ -728,6 +730,13 @@ public class Convert {
     }
     
     private String doConvert( String indent, Node n ) {
+        
+        if ( n==null ) {
+            throw new IllegalArgumentException("n cannot be null.");
+        }
+        if ( n.getClass()==null ) {
+            throw new IllegalArgumentException("no class");
+        }
         String simpleName= n.getClass().getSimpleName();
         switch ( simpleName ) {
             case "foo":
@@ -1176,7 +1185,11 @@ public class Convert {
         }
         sb.append( "):\n" );
         
-        sb.append( doConvert( indent, methodDeclaration.getBody() ) );  
+        if ( methodDeclaration.getBody()!=null ) {
+            sb.append( doConvert( indent, methodDeclaration.getBody() ) );  
+        } else {
+            sb.append(indent).append(s4).append("pass");  
+        }
         stack.pop();
         
         if ( pythonTarget==PythonTarget.jython_2_2 && isStatic && !onlyStatic ) {
@@ -1336,9 +1349,13 @@ public class Convert {
 
     private String doConvertObjectCreationExpr(String indent, ObjectCreationExpr objectCreationExpr) {
         if ( objectCreationExpr.getType().toString().equals("StringBuilder") ) {
-            if ( objectCreationExpr.getArgs().size()==1 ) {
-                Expression e= objectCreationExpr.getArgs().get(0);
-                return indent + utilAssertStr(e);
+            if ( objectCreationExpr.getArgs()!=null ) {
+                if ( objectCreationExpr.getArgs().size()==1 ) {
+                    Expression e= objectCreationExpr.getArgs().get(0);
+                    return indent + utilAssertStr(e);
+                } else {
+                    return indent + "\"\""; // TODO: are there any stringbuilder methods which take more than one arg?
+                }
             } else {
                 return indent + "\"\"";
             }
