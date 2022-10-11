@@ -864,6 +864,8 @@ public class Convert {
                 return doConvertObjectCreationExpr(indent,(ObjectCreationExpr)n);
             case "ClassOrInterfaceType":
                 return doConvertClassOrInterfaceType(indent,(ClassOrInterfaceType)n);
+            case "Parameter":
+                return indent + ((Parameter)n).getId().getName(); // TODO: varargs, etc
             default:
                 return indent + "*** "+simpleName + "*** " + n.toString() + "*** end "+simpleName + "****";
         }
@@ -1598,21 +1600,40 @@ public class Convert {
 
     private String doConvertEnumDeclaration(String indent, EnumDeclaration enumDeclaration) { 
         StringBuilder builder= new StringBuilder();
-        List<EnumConstantDeclaration> ll = enumDeclaration.getEntries();
-        for ( EnumConstantDeclaration l : ll ) {
-            builder.append(indent).append( "def " ).append(enumDeclaration.getName()).append("_").append(l.getName()) .append(":\n");
-            if ( l.getClassBody()!=null ) {            
-                if ( l.getClassBody().size()==1 ) {
-                    builder.append( doConvert(indent,l.getClassBody().get(0)) );
+        if ( true ) {        
+            builder.append(indent).append("class ").append(enumDeclaration.getName()).append(":\n");
+            List<EnumConstantDeclaration> ll = enumDeclaration.getEntries();
+            
+            for ( Node n: enumDeclaration.getChildrenNodes() ) {
+                if ( n instanceof ConstructorDeclaration ) {
+                    builder.append( doConvert( s4+indent, n ) );
                 }
-            } else {
-                builder.append(indent).append(s4).append("pass\n");
             }
-        }
-        builder.append(indent).append(enumDeclaration.getName()).append(" = {}\n");
-        for ( EnumConstantDeclaration l : ll ) {
-            builder.append(indent).append(enumDeclaration.getName()).append("[").append(l.getName()).append("]=")
-                    .append(enumDeclaration.getName()).append("_").append(l.getName()).append("\n");
+
+            for ( EnumConstantDeclaration l : ll ) {
+                String args = utilFormatExprList(l.getArgs());
+                builder.append(indent).append(enumDeclaration.getName()).append(".").append(l.getName()).append(" = ")
+                        .append(enumDeclaration.getName()).append("(").append(args).append(")") .append("\n");
+                
+            }
+            
+        } else {
+            List<EnumConstantDeclaration> ll = enumDeclaration.getEntries();
+            for ( EnumConstantDeclaration l : ll ) {
+                builder.append(indent).append( "def " ).append(enumDeclaration.getName()).append("_").append(l.getName()) .append(":\n");
+                if ( l.getClassBody()!=null ) {            
+                    if ( l.getClassBody().size()==1 ) {
+                        builder.append( doConvert(indent,l.getClassBody().get(0)) );
+                    }
+                } else {
+                    builder.append(indent).append(s4).append("pass\n");
+                }
+            }
+            builder.append(indent).append(enumDeclaration.getName()).append(" = {}\n");
+            for ( EnumConstantDeclaration l : ll ) {
+                builder.append(indent).append(enumDeclaration.getName()).append("[").append(l.getName()).append("]=")
+                        .append(enumDeclaration.getName()).append("_").append(l.getName()).append("\n");
+            }
         }
         return builder.toString();
     }
