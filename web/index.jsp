@@ -21,5 +21,12 @@
         and using a jar file from Maven Central.</p>
         
         <a href='ConvertServlet'>Return</a>
+        
+        <p>There are other codes which do the same thing, but not on-line, which
+            are useful references, and should be considered as well:<ul>
+            <li><a href="https://github.com/natural/java2python">https://github.com/natural/java2python</a> which is implemented in Python
+        </ul>
+        
+        </p>
     </body>
 </html>
