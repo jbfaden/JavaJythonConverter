@@ -892,7 +892,9 @@ public class Convert {
     
 
     private String doConvertStringLiteralExpr(String indent,StringLiteralExpr stringLiteralExpr) {
-        return "'" + stringLiteralExpr.getValue() + "'";
+        String s= stringLiteralExpr.getValue();
+        s= s.replaceAll("'","\\\\'");
+        return "'" + s + "'";
     }
 
     private String doConvertBlockStmt(String indent,BlockStmt blockStmt) {
