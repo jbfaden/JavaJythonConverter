@@ -971,7 +971,11 @@ public class Convert {
             b.append(indent).append( doConvert( "", e ) ).append( "\n" );
         });
         b.append( indent ).append("while ").append(doConvert( "", forStmt.getCompare() )).append(":\n");
-        b.append( doConvert( indent, forStmt.getBody() ) );
+        if ( forStmt.getBody() instanceof ExpressionStmt ) {
+            b.append( indent ).append(s4).append( doConvert( "", forStmt.getBody() ) ).append("\n");
+        } else {
+            b.append( doConvert( indent, forStmt.getBody() ) );
+        }
         forStmt.getUpdate().forEach((e) -> {
             b.append(indent).append(s4).append( doConvert( "", e ) ).append( "\n" );
         });
