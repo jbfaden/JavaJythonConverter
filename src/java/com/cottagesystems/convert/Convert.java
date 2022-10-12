@@ -465,6 +465,11 @@ public class Convert {
         }
     }
     
+    /**
+     * guess the class type, and return null if there is no guess.
+     * @param clas
+     * @return 
+     */
     private Type guessType( Expression clas ) {
         if ( clas instanceof NameExpr ) {
             String clasName= ((NameExpr)clas).getName();
@@ -544,7 +549,8 @@ public class Convert {
                 if ( t.toString().equals("StringBuilder") ) {
                     clasType= "StringBuilder";
                 } else {
-                    System.err.println("don't know what to do with type: "+ t);
+                    clasType= t.toString();
+                    System.err.println("don't know what to do with type: "+ t + ", guessing...");
                 }
             }
         } else if ( clas instanceof StringLiteralExpr ) {
@@ -557,9 +563,14 @@ public class Convert {
             } else {
                 clasType= "String";
             }
+        } else {
+            Type t= guessType(clas);
+            if ( t==null ) {
+                clasType= "";
+            } else {
+                clasType= t.toString();
+            }
         }
-                
-        boolean needImport= true;
         
         if ( clasType.equals("StringBuilder") ) {
             if ( name.equals("append") ) {
@@ -659,6 +670,24 @@ public class Convert {
             switch ( name ) {
                 case "parseInt":
                     return "int("+ args.get(0)+")";
+            }
+        }
+        if ( clasType.equals("Pattern") ) {
+            additionalImports.add("import re");
+            switch ( name ) {
+                case "compile":
+                    return "re.compile("+doConvert("",args.get(0))+")";
+            }
+        }
+        if ( clasType.equals("Pattern") 
+                && name.equals("matcher") ) {
+            return doConvert("",clas) + ".match(" + doConvert("",args.get(0) ) + ")";
+        }
+        if ( clasType.equals("Matcher") ) {
+            if ( name.equals("matches") ) {
+                return doConvert("",clas) + "!=None";
+            } else if ( name.equals("find") ) {
+                return doConvert("",clas) + "!=None  #j2j: USE search not match above";
             }
         }
 
