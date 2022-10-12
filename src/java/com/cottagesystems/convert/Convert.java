@@ -1466,6 +1466,9 @@ public class Convert {
                 }
             } else {
                 if ( statements.get(statements.size()-1) instanceof BreakStmt ) {
+                    if ( statements.size()==1 ) {
+                        sb.append(indent+s4).append("pass\n");
+                    }
                     for ( Statement s: statements.subList(0,statements.size()-1) ) {
                         sb.append(doConvert(indent + s4, s )).append("\n");
                     }
