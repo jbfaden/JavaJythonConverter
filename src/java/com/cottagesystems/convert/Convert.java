@@ -50,6 +50,7 @@ import japa.parser.ast.expr.QualifiedNameExpr;
 import japa.parser.ast.expr.UnaryExpr;
 import japa.parser.ast.stmt.BreakStmt;
 import japa.parser.ast.stmt.CatchClause;
+import japa.parser.ast.stmt.EmptyStmt;
 import japa.parser.ast.stmt.ForStmt;
 import japa.parser.ast.stmt.ForeachStmt;
 import japa.parser.ast.stmt.IfStmt;
@@ -945,6 +946,8 @@ public class Convert {
                 return indent + ((Parameter)n).getId().getName(); // TODO: varargs, etc
             case "ForeachStmt":
                 return doConvertForeachStmt(indent,(ForeachStmt)n);
+            case "EmptyStmt":
+                return doConvertEmptyStmt(indent,(EmptyStmt)n);
             default:
                 return indent + "*** "+simpleName + "*** " + n.toString() + "*** end "+simpleName + "****";
         }
@@ -1757,6 +1760,10 @@ public class Convert {
             }
         }
         return builder.toString();
+    }
+
+    private String doConvertEmptyStmt(String indent, EmptyStmt emptyStmt) {
+        return indent + "pass";
     }
     
 }
