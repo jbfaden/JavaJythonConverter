@@ -300,7 +300,7 @@ public class Convert {
     }
     
     public String doConvert( String javasrc ) throws ParseException {
-        Exception throwMe= null;
+        ParseException throwMe= null;
         try {
             ByteArrayInputStream ins= new ByteArrayInputStream( javasrc.getBytes(Charset.forName("UTF-8")) );
             CompilationUnit unit= japa.parser.JavaParser.parse(ins,"UTF-8");
@@ -319,25 +319,6 @@ public class Convert {
             throwMe= ex;
         }
         
-        try {
-            String ssrc= utilMakeClass(javasrc);
-            ByteArrayInputStream ins= new ByteArrayInputStream( ssrc.getBytes(Charset.forName("UTF-8")) );
-            CompilationUnit unit= japa.parser.JavaParser.parse(ins,"UTF-8");
-            String src= doConvert( "", unit );
-            src= utilUnMakeClass(src);
-            
-            if ( additionalImports!=null ) {
-                StringBuilder sb= new StringBuilder();
-                for ( String s: additionalImports ) {
-                    sb.append(s);
-                }
-                sb.append(src);
-                src= sb.toString();
-            }
-            return src;
-        } catch ( ParseException ex ) {
-            throwMe= ex;
-        }
         
         try {
                 String[] lines= javasrc.split("\n");
@@ -382,15 +363,43 @@ public class Convert {
         } catch (ParseException ex2) {
             throwMe= ex2;
         }
-        
+
         try {
             BodyDeclaration parsed = japa.parser.JavaParser.parseBodyDeclaration(javasrc);
             return doConvert("", parsed);
         } catch (ParseException ex3 ) {
-            Statement parsed = japa.parser.JavaParser.parseBlock(javasrc);
-            return doConvert("", parsed);
+            throwMe= ex3;
         }
 
+        try {
+            Statement parsed = japa.parser.JavaParser.parseBlock(javasrc);
+            return doConvert("", parsed);
+        } catch ( ParseException ex ) {
+            throwMe =ex;
+        }
+        
+        try {
+            String ssrc= utilMakeClass(javasrc);
+            ByteArrayInputStream ins= new ByteArrayInputStream( ssrc.getBytes(Charset.forName("UTF-8")) );
+            CompilationUnit unit= japa.parser.JavaParser.parse(ins,"UTF-8");
+            String src= doConvert( "", unit );
+            src= utilUnMakeClass(src);
+            
+            if ( additionalImports!=null ) {
+                StringBuilder sb= new StringBuilder();
+                for ( String s: additionalImports ) {
+                    sb.append(s);
+                }
+                sb.append(src);
+                src= sb.toString();
+            }
+            return src;
+        } catch ( ParseException ex ) {
+            throwMe= ex;
+        }
+
+        throw throwMe;
+                
     }
 
     private String doConvertBinaryExpr(String indent,BinaryExpr b) {
@@ -1503,6 +1512,12 @@ public class Convert {
                 }
             } else {
                 return indent + "\"\"";
+            }
+        } else if ( objectCreationExpr.getType().toString().endsWith("Exception") ) {
+            if ( objectCreationExpr.getArgs()==null ) {
+                return indent + "Exception()";
+            } else {
+                return indent + "Exception("+ doConvert("",objectCreationExpr.getArgs().get(0))+")";
             }
         } else {
             String qualifiedName= utilQualifyClassName(objectCreationExpr.getType());
