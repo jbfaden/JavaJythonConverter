@@ -896,7 +896,7 @@ public class Convert {
             case "WhileStmt":
                 return doConvertWhileStmt(indent,(WhileStmt)n);
             case "SwitchStmt":
-                return doSwitchStmt(indent,(SwitchStmt)n);                
+                return doConvertSwitchStmt(indent,(SwitchStmt)n);                
             case "ReturnStmt":
                 return doConvertReturnStmt(indent,(ReturnStmt)n);
             case "BreakStmt":
@@ -906,7 +906,7 @@ public class Convert {
             case "ReferenceType":
                 return doConvertReferenceType(indent,(ReferenceType)n);
             case "MultiTypeParameter":
-                return doMultiTypeParameter(indent,(MultiTypeParameter)n);
+                return doConvertMultiTypeParameter(indent,(MultiTypeParameter)n);
             case "ThrowStmt":
                 return doConvertThrowStmt(indent,(ThrowStmt)n);
             case "ArrayCreationExpr":
@@ -1411,7 +1411,7 @@ public class Convert {
     }
 
     
-    private String doSwitchStmt(String indent, SwitchStmt switchStmt) {
+    private String doConvertSwitchStmt(String indent, SwitchStmt switchStmt) {
         String selector= doConvert( "",switchStmt.getSelector() );
         StringBuilder sb= new StringBuilder();
         boolean iff= true;
@@ -1594,7 +1594,7 @@ public class Convert {
         return sb.toString();
     }
 
-    private String doMultiTypeParameter(String indent, MultiTypeParameter multiTypeParameter) {
+    private String doConvertMultiTypeParameter(String indent, MultiTypeParameter multiTypeParameter) {
         return utilFormatTypeList( multiTypeParameter.getTypes() );
     }
 
