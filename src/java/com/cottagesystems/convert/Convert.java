@@ -691,7 +691,7 @@ public class Convert {
             }
         }
         if ( clasType.equals("Pattern") ) {
-            additionalImports.add("import re");
+            additionalImports.add("import re\n");
             switch ( name ) {
                 case "compile":
                     return "re.compile("+doConvert("",args.get(0))+")";
@@ -712,6 +712,7 @@ public class Convert {
         if ( name.equals("println") && clas instanceof FieldAccessExpr &&
                 ((FieldAccessExpr)clas).getField().equals("err") ) {
             StringBuilder sb= new StringBuilder();
+            additionalImports.add("import sys\n");
             if (  methodCallExpr.getArgs().get(0) instanceof StringLiteralExpr ) {
                 String s= doConvert( "", methodCallExpr.getArgs().get(0) );
                 String sWithNewLine= s.substring(0,s.length()-1) + "\\n'";
@@ -732,6 +733,7 @@ public class Convert {
             return sb.toString();
         } else if ( name.equals("print") && clas instanceof FieldAccessExpr &&
                 ((FieldAccessExpr)clas).getField().equals("err") ) {
+            additionalImports.add("import sys\n");
             StringBuilder sb= new StringBuilder();
             String s= doConvert( "", methodCallExpr.getArgs().get(0) );
             sb.append(indent).append( "sys.stderr.write(" ).append(s).append(")");
@@ -739,6 +741,7 @@ public class Convert {
         } else if ( name.equals("print") && clas instanceof FieldAccessExpr &&
                 ((FieldAccessExpr)clas).getField().equals("out") ) {
             StringBuilder sb= new StringBuilder();
+            additionalImports.add("import sys\n");
             if (  methodCallExpr.getArgs().get(0) instanceof StringLiteralExpr ) {
                 String s= doConvert( "", methodCallExpr.getArgs().get(0) );
                 sb.append(indent).append( "sys.stdout.write(" ).append( s ).append( ")" );
@@ -761,6 +764,10 @@ public class Convert {
             String j= String.format( "%s[%s]=%s[%s]", 
                     target, targetIndexs, source, sourceIndexs ); 
             return indent + j;
+        } else if ( name.equals("exit") && clasType.equals("System") ) {
+            additionalImports.add( "import sys\n" );
+            return indent + "sys.exit("+ doConvert("",methodCallExpr.getArgs().get(0)) + ")";
+
         } else {
             if ( clasType.equals("System") && name.equals("currentTimeMillis") ) {
                 additionalImports.add("from java.lang import System\n");
