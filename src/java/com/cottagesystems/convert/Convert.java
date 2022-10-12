@@ -531,7 +531,12 @@ public class Convert {
         characterMethods.add("isLetter");
     }
 
-            
+    /**
+     * This is somewhat the "heart" of this converter, where Java library use is translated to Python use.
+     * @param indent
+     * @param methodCallExpr
+     * @return 
+     */
     private String doConvertMethodCallExpr(String indent,MethodCallExpr methodCallExpr) {
         Expression clas= methodCallExpr.getScope();
         String name= methodCallExpr.getName();
@@ -603,6 +608,9 @@ public class Convert {
                 default:
                     break;
             }
+        }
+        if ( clasType.equals("Logger") ) {
+            return indent + "# "+methodCallExpr.toString();
         }
         if ( clasType.equals("String") ) {
             switch (name) {
@@ -1353,6 +1361,10 @@ public class Convert {
         sb.append( utilRewriteComments( indent, fieldDeclaration.getComment() ) );
         if ( vv!=null ) {
             for ( VariableDeclarator v: vv ) {
+                if ( v.getInit()!=null && v.getInit().toString().startsWith("Logger.getLogger") ) {
+                    sb.append( indent ).append("#j2j: not supporting ").append(fieldDeclaration.toString());
+                    continue;
+                }
                 if ( s ) {
                     classFields.put( v.getId().getName(),fieldDeclaration );
                 }
