@@ -763,6 +763,8 @@ public class Convert {
             switch ( name ) {
                 case "compile":
                     return "re.compile("+doConvert("",args.get(0))+")";
+                case "quote":
+                    return "re.escape("+doConvert("",args.get(0))+")";
             }
         }
         if ( clasType.equals("Pattern") 
@@ -1059,7 +1061,7 @@ public class Convert {
             if ( !aline.trim().startsWith("#") ) lines++;
         }
         if ( lines==0 ) {
-            result.append(indent).append("pass");
+            result.append(indent).append("pass\n");
         }
         popScopeStack();
         return result.toString();
