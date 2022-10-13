@@ -70,8 +70,10 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.Stack;
 import java.util.TreeSet;
@@ -201,9 +203,15 @@ public class Convert {
      */
     private Map<String,Object> importedMethods = new HashMap<>();
     
-    private Set<String> additionalImports = new TreeSet<>();
+    /**
+     * map from the import statement to a boolean.  If Boolean.TRUE, then use it.
+     */
+    private Map<String,Boolean> additionalImports = new LinkedHashMap<>();
     
-    private Set<String> additionalClasses = new TreeSet<>();
+    /**
+     * map from the additional class code to a boolean.  If Boolean.TRUE, then use it.
+     */
+    private Map<String,Boolean> additionalClasses = new LinkedHashMap<>();
     
     /*** end, internal parsing state ***/
 
@@ -311,12 +319,16 @@ public class Convert {
             if ( additionalImports!=null ) {
                 StringBuilder sb= new StringBuilder();
                 
-                for ( String s: additionalImports ) {
-                    sb.append(s);
+                for ( Entry<String,Boolean> e: additionalImports.entrySet() ) {
+                    if ( e.getValue() ) {
+                        sb.append( e.getKey() );
+                    }
                 }
 
-                for ( String s: additionalClasses ) {
-                    sb.append(s);
+                for (  Entry<String,Boolean> e: additionalClasses.entrySet() ) {
+                    if ( e.getValue() ) {
+                        sb.append( e.getKey() );
+                    }
                 }
 
                 sb.append(src);
@@ -350,14 +362,21 @@ public class Convert {
                     bb.append( "\n" ).append( doConvert( "", parseExpression ) );
                 }
                 String src= bb.toString();
-                if ( additionalImports!=null ) {
-                    StringBuilder sb= new StringBuilder();
-                    for ( String s: additionalImports ) {
-                        sb.append(s);
+
+                StringBuilder sb= new StringBuilder();
+                for ( Entry<String,Boolean> e: additionalImports.entrySet() ) {
+                    if ( e.getValue() ) {
+                        sb.append( e.getKey() );
                     }
-                    sb.append(src);
-                    src= sb.toString();
                 }
+
+                for (  Entry<String,Boolean> e: additionalClasses.entrySet() ) {
+                    if ( e.getValue() ) {
+                        sb.append( e.getKey() );
+                    }
+                }
+                sb.append(src);
+                src= sb.toString();
 
                 return src;
             
@@ -395,8 +414,17 @@ public class Convert {
             
             if ( additionalImports!=null ) {
                 StringBuilder sb= new StringBuilder();
-                for ( String s: additionalImports ) {
-                    sb.append(s);
+                
+                for ( Entry<String,Boolean> e: additionalImports.entrySet() ) {
+                    if ( e.getValue() ) {
+                        sb.append( e.getKey() );
+                    }
+                }
+
+                for (  Entry<String,Boolean> e: additionalClasses.entrySet() ) {
+                    if ( e.getValue() ) {
+                        sb.append( e.getKey() );
+                    }
                 }
                 sb.append(src);
                 src= sb.toString();
@@ -681,7 +709,7 @@ public class Convert {
                         s= s.substring(4,s.length()-1);
                     }
                     return s + ".isalpha()"; 
-                case "isAlphebetic":
+                case "isAlphabetic":
                     s= doConvert( "",args.get(0) );
                     if ( s.startsWith("ord(") && s.endsWith(")") ) {
                         s= s.substring(4,s.length()-1);
@@ -704,7 +732,7 @@ public class Convert {
             }
         }
         if ( clasType.equals("Pattern") ) {
-            additionalImports.add("import re\n");
+            additionalImports.put("import re\n",Boolean.TRUE);
             switch ( name ) {
                 case "compile":
                     return "re.compile("+doConvert("",args.get(0))+")";
@@ -725,7 +753,7 @@ public class Convert {
         if ( name.equals("println") && clas instanceof FieldAccessExpr &&
                 ((FieldAccessExpr)clas).getField().equals("err") ) {
             StringBuilder sb= new StringBuilder();
-            additionalImports.add("import sys\n");
+            additionalImports.put("import sys\n",Boolean.TRUE);
             if (  methodCallExpr.getArgs().get(0) instanceof StringLiteralExpr ) {
                 String s= doConvert( "", methodCallExpr.getArgs().get(0) );
                 String sWithNewLine= s.substring(0,s.length()-1) + "\\n'";
@@ -746,7 +774,7 @@ public class Convert {
             return sb.toString();
         } else if ( name.equals("print") && clas instanceof FieldAccessExpr &&
                 ((FieldAccessExpr)clas).getField().equals("err") ) {
-            additionalImports.add("import sys\n");
+            additionalImports.put("import sys\n",Boolean.TRUE);
             StringBuilder sb= new StringBuilder();
             String s= doConvert( "", methodCallExpr.getArgs().get(0) );
             sb.append(indent).append( "sys.stderr.write(" ).append(s).append(")");
@@ -754,7 +782,7 @@ public class Convert {
         } else if ( name.equals("print") && clas instanceof FieldAccessExpr &&
                 ((FieldAccessExpr)clas).getField().equals("out") ) {
             StringBuilder sb= new StringBuilder();
-            additionalImports.add("import sys\n");
+            additionalImports.put("import sys\n",Boolean.TRUE);
             if (  methodCallExpr.getArgs().get(0) instanceof StringLiteralExpr ) {
                 String s= doConvert( "", methodCallExpr.getArgs().get(0) );
                 sb.append(indent).append( "sys.stdout.write(" ).append( s ).append( ")" );
@@ -778,24 +806,24 @@ public class Convert {
                     target, targetIndexs, source, sourceIndexs ); 
             return indent + j;
         } else if ( name.equals("exit") && clasType.equals("System") ) {
-            additionalImports.add( "import sys\n" );
+            additionalImports.put( "import sys\n", Boolean.TRUE );
             return indent + "sys.exit("+ doConvert("",methodCallExpr.getArgs().get(0)) + ")";
 
         } else {
             if ( clasType.equals("System") && name.equals("currentTimeMillis") ) {
-                additionalImports.add("from java.lang import System\n");
+                additionalImports.put("from java.lang import System\n",Boolean.FALSE);
             } else if ( clasType.equals("Double") ) {
-                additionalImports.add("from java.lang import Double\n");
+                additionalImports.put("from java.lang import Double\n",Boolean.FALSE);
             } else if ( clasType.equals("Integer") ) {
-                additionalImports.add("from java.lang import Integer\n");
+                additionalImports.put("from java.lang import Integer\n",Boolean.FALSE);
             } else if ( clasType.equals("Short") ) {
-                additionalImports.add("from java.lang import Short\n");
+                additionalImports.put("from java.lang import Short\n",Boolean.FALSE);
             } else if ( clasType.equals("Character") ) {
-                additionalImports.add("from java.lang import Character\n");
+                additionalImports.put("from java.lang import Character\n",Boolean.FALSE);
             } else if ( clasType.equals("Byte") ) {
-                additionalImports.add("from java.lang import Byte\n");
+                additionalImports.put("from java.lang import Byte\n",Boolean.FALSE);
             } else if ( clasType.equals("IllegalArgumentException") ) {
-                additionalImports.add("from java.lang import IllegalArgumentException\n");
+                additionalImports.put("from java.lang import IllegalArgumentException\n",Boolean.FALSE);
             }
             
             if ( clas==null ) {
@@ -1413,9 +1441,9 @@ public class Convert {
                 if ( v.getInit()==null ) {
                     String implicitDeclaration = utilImplicitDeclaration( fieldDeclaration.getType() );
                     if ( implicitDeclaration!=null ) {
-                        sb.append( indent ) .append( v.getId() ).append("=").append( implicitDeclaration ).append("\n");
+                        sb.append( indent ).append( v.getId() ).append("=").append( implicitDeclaration ).append("\n");
                     } else {
-                        sb.append( indent ).append("#J2J (implicit declaraction omitted) ") .append( v.getId() ).append("=").append( implicitDeclaration ).append("\n");
+                        sb.append( indent ).append( v.getId() ).append("=").append( "None  #J2J added" ).append("\n");
                     }
                 } else if ( v.getInit() instanceof ConditionalExpr ) {
                     ConditionalExpr ce= (ConditionalExpr)v.getInit();
