@@ -682,6 +682,8 @@ public class Convert {
                     return doConvert(indent,clas)+".endswith("+ utilFormatExprList(args) +")";
                 case "equalsIgnoreCase":
                     return doConvert(indent,clas)+".lower()=="+ utilFormatExprList(args) +".lower()";
+                case "trim":
+                    return doConvert(indent,clas)+".strip()";
                 default:
                     break;
             }
