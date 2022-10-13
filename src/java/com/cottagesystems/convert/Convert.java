@@ -803,7 +803,7 @@ public class Convert {
             return sb.toString();
         } else if ( name.equals("length") && args==null ) {
             return indent + "len("+ doConvert("",clas)+")";
-        } else if ( name.equals("equals") ) {
+        } else if ( name.equals("equals") && args.size()==1 ) {
             return indent + doConvert(indent,clas)+"=="+ utilFormatExprList(args);
         } else if ( name.equals("arraycopy") && clasType.equals("System") ) {
             String target = doConvert( "", methodCallExpr.getArgs().get(2) );
