@@ -1006,6 +1006,10 @@ public class Convert {
         StringBuilder b= new StringBuilder();
         for ( VariableDeclarator v: variableDeclarationExpr.getVars() ) {
             String s= v.getId().getName();
+            if ( v.getInit().toString().startsWith("Logger.getLogger") ) {
+                getCurrentScope().put(s,ASTHelper.createReferenceType("Logger",0) );
+                return indent + "#J2J: "+variableDeclarationExpr.toString().trim();
+            }
             if ( s.equals("len") ) {
                 String news= "llen446";
                 nameMapForward.put( s, news );
