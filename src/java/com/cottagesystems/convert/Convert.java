@@ -881,11 +881,11 @@ public class Convert {
         if ( n.getClass()==null ) {
             throw new IllegalArgumentException("no class");
         }
-        //if ( n.getBeginLine()>530) {
-        //    if ( n.toString().contains("VersioningType") ) {
-        //        System.err.println("VersioningType "+ n); //switching to parsing end time
-        //    }
-        //}
+        if ( n.getBeginLine()>530) {
+            if ( n.toString().contains("VersioningType") ) {
+                System.err.println("VersioningType "+ n); //switching to parsing end time
+            }
+        }
         String simpleName= n.getClass().getSimpleName();
         switch ( simpleName ) {
             case "foo":
@@ -1468,9 +1468,13 @@ public class Convert {
     private String doConvertWhileStmt(String indent, WhileStmt whileStmt) {
         StringBuilder sb= new StringBuilder(indent);
         sb.append( "while ");
-        sb.append( doConvert( "", whileStmt.getCondition() ) );
+        sb.append( doConvert( indent, whileStmt.getCondition() ) );
         sb.append( ":\n" );
-        sb.append( doConvert( indent, whileStmt.getBody() ) );
+        if ( whileStmt.getBody() instanceof ExpressionStmt ) {
+            sb.append( doConvert( indent+s4, whileStmt.getBody() ) );
+        } else {
+            sb.append( doConvert( indent, whileStmt.getBody() ) );
+        }
         return sb.toString();
     }
 
