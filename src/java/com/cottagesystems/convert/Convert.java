@@ -719,6 +719,17 @@ public class Convert {
                     break;
             }
         }
+        if ( clasType.equals("Arrays") ) {
+            switch (name) {
+                case "copyOfRange": {
+                    StringBuilder sb= new StringBuilder();
+                    sb.append(indent).append(args.get(0)).append("[");
+                    sb.append(doConvert("",args.get(1))).append(":").append(doConvert("",args.get(2)));
+                    sb.append("]");
+                    return sb.toString();
+                }
+            }
+        }
         if ( clasType.equals("Double") ) {
             switch ( name ) {
                 case "parseDouble":
@@ -1468,7 +1479,7 @@ public class Convert {
     private String doConvertWhileStmt(String indent, WhileStmt whileStmt) {
         StringBuilder sb= new StringBuilder(indent);
         sb.append( "while ");
-        sb.append( doConvert( indent, whileStmt.getCondition() ) );
+        sb.append( doConvert( "", whileStmt.getCondition() ) );
         sb.append( ":\n" );
         if ( whileStmt.getBody() instanceof ExpressionStmt ) {
             sb.append( doConvert( indent+s4, whileStmt.getBody() ) );
