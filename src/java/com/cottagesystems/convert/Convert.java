@@ -651,11 +651,15 @@ public class Convert {
         if ( clasType.equals("String") ) {
             switch (name) {
                 case "format":
-                    StringBuilder sb= new StringBuilder();
-                    sb.append(indent).append(args.get(0)).append(" % (");
-                    sb.append( utilFormatExprList( args.subList(1, args.size() ) ) );
-                    sb.append(" )");
-                    return sb.toString();
+                    if ( clas.toString().equals("String") ) {
+                        StringBuilder sb= new StringBuilder();
+                        sb.append(indent).append(args.get(0)).append(" % (");
+                        sb.append( utilFormatExprList( args.subList(1, args.size() ) ) );
+                        sb.append(" )");
+                        return sb.toString();
+                    } else {
+                        break;
+                    }
                 case "substring":
                     if ( args.size()==2 ) {
                         return doConvert(indent,clas)+"["+ doConvert("",args.get(0)) + ":"+ doConvert("",args.get(1)) +"]";
