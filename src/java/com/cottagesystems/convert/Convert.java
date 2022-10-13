@@ -535,9 +535,9 @@ public class Convert {
             return STRING_TYPE;
         } else if ( clas instanceof MethodCallExpr ) {
             MethodCallExpr mce= (MethodCallExpr)clas;
-            Type t= guessType( mce.getScope() );
             switch ( mce.getName() ) { // TODO: consider t
                 case "charAt": return ASTHelper.CHAR_TYPE;
+                case "copyOfRange": return guessType( mce.getArgs().get(0) );
             }
         }
         return null;
@@ -727,6 +727,18 @@ public class Convert {
                     sb.append(doConvert("",args.get(1))).append(":").append(doConvert("",args.get(2)));
                     sb.append("]");
                     return sb.toString();
+                }
+                case "equals": {
+                    // if they are not objects, then Python == can be used.
+                    StringBuilder sb= new StringBuilder();
+                    Type t1= guessType(args.get(0)); // are both arrays containing primative objects (int,float,etc)
+                    Type t2= guessType(args.get(1));
+                    if ( t1.equals(ASTHelper.createReferenceType(ASTHelper.INT_TYPE,1)) 
+                            && t2.equals(ASTHelper.createReferenceType(ASTHelper.INT_TYPE,1)) ) {
+                        sb.append(indent).append(doConvert("",args.get(0))).append("==");
+                        sb.append(doConvert("",args.get(1)));
+                        return sb.toString();        
+                    }
                 }
             }
         }
