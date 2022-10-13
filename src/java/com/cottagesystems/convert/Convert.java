@@ -655,25 +655,31 @@ public class Convert {
                     if ( s.startsWith("ord(") && s.endsWith(")") ) {
                         s= s.substring(4,s.length()-1);
                     }
-                    return s + ".isdigit()"; // TODO: cheesy
+                    return s + ".isdigit()"; 
                 case "isSpace":
                     s= doConvert( "",args.get(0) );
                     if ( s.startsWith("ord(") && s.endsWith(")") ) {
                         s= s.substring(4,s.length()-1);
                     }
-                    return s + ".isspace()"; // TODO: cheesy
+                    return s + ".isspace()"; 
                 case "isWhitespace":
                     s= doConvert( "",args.get(0) );
                     if ( s.startsWith("ord(") && s.endsWith(")") ) {
                         s= s.substring(4,s.length()-1);
                     }
-                    return s + ".isspace()"; // TODO: cheesy
+                    return s + ".isspace()"; 
                 case "isLetter":
                     s= doConvert( "",args.get(0) );
                     if ( s.startsWith("ord(") && s.endsWith(")") ) {
                         s= s.substring(4,s.length()-1);
                     }
-                    return s + ".isalpha()"; // TODO: cheesy
+                    return s + ".isalpha()"; 
+                case "isAlphebetic":
+                    s= doConvert( "",args.get(0) );
+                    if ( s.startsWith("ord(") && s.endsWith(")") ) {
+                        s= s.substring(4,s.length()-1);
+                    }
+                    return s + ".isalpha()"; 
                 default: 
                     break;
             }
