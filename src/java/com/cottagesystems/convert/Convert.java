@@ -203,6 +203,8 @@ public class Convert {
     
     private Set<String> additionalImports = new TreeSet<>();
     
+    private Set<String> additionalClasses = new TreeSet<>();
+    
     /*** end, internal parsing state ***/
 
     private String utilFormatExprList( List<Expression> l ) {
@@ -312,6 +314,11 @@ public class Convert {
                 for ( String s: additionalImports ) {
                     sb.append(s);
                 }
+
+                for ( String s: additionalClasses ) {
+                    sb.append(s);
+                }
+
                 sb.append(src);
                 src= sb.toString();
             }
@@ -611,7 +618,7 @@ public class Convert {
             }
         }
         if ( clasType.equals("Logger") ) {
-            return indent + "# "+methodCallExpr.toString();
+            return indent + "#J2J (logger) "+methodCallExpr.toString();
         }
         if ( clasType.equals("String") ) {
             switch (name) {
@@ -988,11 +995,16 @@ public class Convert {
             popScopeStack();
             return indent + "pass\n";
         }
+        int lines=0;
         for ( Statement s: statements ) {
             String aline= doConvert(indent,s);
             if ( aline.trim().length()==0 ) continue;
             result.append(doConvert(indent,s));
             result.append("\n");
+            if ( !aline.trim().startsWith("#") ) lines++;
+        }
+        if ( lines==0 ) {
+            result.append(indent).append("pass");
         }
         popScopeStack();
         return result.toString();
@@ -1006,7 +1018,8 @@ public class Convert {
         StringBuilder b= new StringBuilder();
         for ( VariableDeclarator v: variableDeclarationExpr.getVars() ) {
             String s= v.getId().getName();
-            if ( v.getInit().toString().startsWith("Logger.getLogger") ) {
+            if ( v.getInit()!=null && v.getInit().toString().startsWith("Logger.getLogger") ) {
+                //addLogger();
                 getCurrentScope().put(s,ASTHelper.createReferenceType("Logger",0) );
                 return indent + "#J2J: "+variableDeclarationExpr.toString().trim();
             }
@@ -1387,7 +1400,9 @@ public class Convert {
         if ( vv!=null ) {
             for ( VariableDeclarator v: vv ) {
                 if ( v.getInit()!=null && v.getInit().toString().startsWith("Logger.getLogger") ) {
-                    sb.append( indent ).append("#j2j: not supporting ").append(fieldDeclaration.toString());
+                    getCurrentScope().put( v.getId().getName(), ASTHelper.createReferenceType("Logger", 0) );
+                    //addLogger();
+                    sb.append( indent ).append("#J2J: ").append(fieldDeclaration.toString());
                     continue;
                 }
                 if ( s ) {
@@ -1400,7 +1415,7 @@ public class Convert {
                     if ( implicitDeclaration!=null ) {
                         sb.append( indent ) .append( v.getId() ).append("=").append( implicitDeclaration ).append("\n");
                     } else {
-                        sb.append( indent ).append("#1266 ") .append( v.getId() ).append("=").append( implicitDeclaration ).append("\n");
+                        sb.append( indent ).append("#J2J (implicit declaraction omitted) ") .append( v.getId() ).append("=").append( implicitDeclaration ).append("\n");
                     }
                 } else if ( v.getInit() instanceof ConditionalExpr ) {
                     ConditionalExpr ce= (ConditionalExpr)v.getInit();
@@ -1789,6 +1804,19 @@ public class Convert {
 
     private String doConvertEmptyStmt(String indent, EmptyStmt emptyStmt) {
         return indent + "pass";
+    }
+
+    private void addLogger() {
+//        additionalClasses.add( "class Logger:\n" +
+//                    "    def getLogger(name):\n" +
+//                    "        return Logger()\n" +
+//                    "    def info( self, mesg, e=None ):\n" +
+//                    "        print mesg\n" +
+//                    "    def fine( self, mesg, e=None ):\n" +
+//                    "        print mesg\n" +
+//                    "    def log( self, level, mesg, e=None ):\n" +
+//                    "        print mesg\n" +
+//                "");
     }
     
 }
