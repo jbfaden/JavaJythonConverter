@@ -840,6 +840,11 @@ public class Convert {
         if ( n.getClass()==null ) {
             throw new IllegalArgumentException("no class");
         }
+        //if ( n.getBeginLine()>530) {
+        //    if ( n.toString().contains("VersioningType") ) {
+        //        System.err.println("VersioningType "+ n); //switching to parsing end time
+        //    }
+        //}
         String simpleName= n.getClass().getSimpleName();
         switch ( simpleName ) {
             case "foo":
@@ -1551,7 +1556,9 @@ public class Convert {
             } else {
                 if ( objectCreationExpr.getAnonymousClassBody()!=null ) {
                     StringBuilder sb= new StringBuilder();
+                    String body= doConvert( indent, objectCreationExpr.getAnonymousClassBody().get(0) );
                     sb.append(indent).append(objectCreationExpr.getType()).append("(").append(utilFormatExprList(objectCreationExpr.getArgs())).append(")"); 
+                    sb.append("*** #J2J: This is extended in an anonymous inner class ***");
                     return sb.toString();
                 } else {
                     return indent + objectCreationExpr.getType() + "("+ utilFormatExprList(objectCreationExpr.getArgs())+ ")";
@@ -1743,6 +1750,7 @@ public class Convert {
 
             for ( EnumConstantDeclaration l : ll ) {
                 String args = utilFormatExprList(l.getArgs());
+                //TODO find anonymous extension  l.getArgs().get(0).getChildrenNodes()
                 builder.append(indent).append(enumDeclaration.getName()).append(".").append(l.getName()).append(" = ")
                         .append(enumDeclaration.getName()).append("(").append(args).append(")") .append("\n");
                 
