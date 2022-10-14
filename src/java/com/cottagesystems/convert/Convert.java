@@ -476,6 +476,11 @@ public class Convert {
             if ( leftType.equals(ASTHelper.INT_TYPE) && rightType.equals(ASTHelper.CHAR_TYPE) ) {
                 left= "ord("+left+")";
             }
+            if ( leftType.equals(ASTHelper.createReferenceType("String", 0)) 
+                    && rightType instanceof PrimitiveType 
+                    && !rightType.equals(ASTHelper.CHAR_TYPE) ) {
+                right= "str("+right+")";
+            }
         }
         
         switch (op) {
@@ -535,6 +540,13 @@ public class Convert {
             return STRING_TYPE;
         } else if ( clas instanceof MethodCallExpr ) {
             MethodCallExpr mce= (MethodCallExpr)clas;
+            Type scopeType=null;
+            if ( mce.getScope()!=null ) scopeType= guessType(mce.getScope());
+            if ( scopeType!=null && scopeType.toString().equals("Pattern") ) {
+                if ( mce.getName().equals("matcher") ) {
+                    return ASTHelper.createReferenceType("Matcher", 0);
+                }
+            }
             switch ( mce.getName() ) { // TODO: consider t
                 case "charAt": return ASTHelper.CHAR_TYPE;
                 case "copyOfRange": return guessType( mce.getArgs().get(0) );
