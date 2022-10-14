@@ -1,0 +1,10 @@
+
+class Logger:
+    def getLogger(name):
+        return Logger()
+    def info( self, mesg, e=None ):
+        print mesg
+    def fine( self, mesg, e=None ):
+        print mesg
+    def log( self, level, mesg, e=None ):
+        print mesg
