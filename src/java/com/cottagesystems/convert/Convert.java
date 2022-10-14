@@ -684,6 +684,10 @@ public class Convert {
                     return doConvert(indent,clas)+".lower()=="+ utilFormatExprList(args) +".lower()";
                 case "trim":
                     return doConvert(indent,clas)+".strip()";
+                case "replaceAll":
+                    return doConvert(indent,clas)+".replace("+doConvert("",args.get(0))+","+doConvert("",args.get(1))+")";
+                case "replaceFirst":
+                    return doConvert(indent,clas)+".replace("+doConvert("",args.get(0))+","+doConvert("",args.get(1))+",1)";
                 default:
                     break;
             }
