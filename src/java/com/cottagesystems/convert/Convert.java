@@ -579,6 +579,13 @@ public class Convert {
         characterMethods.add("isLetter");
     }
 
+    private String utilRemoveEscapes( String regex ) {
+        if ( regex.contains("\\") ) {
+            regex= regex.replaceAll("\\\\","");
+        }
+        return regex;
+    }
+    
     /**
      * This is somewhat the "heart" of this converter, where Java library use is translated to Python use.
      * @param indent
@@ -696,10 +703,16 @@ public class Convert {
                     return doConvert(indent,clas)+".lower()=="+ utilFormatExprList(args) +".lower()";
                 case "trim":
                     return doConvert(indent,clas)+".strip()";
+                case "replace":
+                    String search = doConvert("",args.get(0));
+                    String replac = doConvert("",args.get(1));
+                    return doConvert(indent,clas)+".replace("+search+","+replac+")";
                 case "replaceAll":
-                    return doConvert(indent,clas)+".replace("+doConvert("",args.get(0))+","+doConvert("",args.get(1))+")";
+                    importedClasses.put("import re",methodCallExpr);
+                    return indent + "re.sub("+doConvert("",args.get(0))+","+doConvert("",args.get(1))+","+doConvert("",clas)+")";
                 case "replaceFirst":
-                    return doConvert(indent,clas)+".replace("+doConvert("",args.get(0))+","+doConvert("",args.get(1))+",1)";
+                    importedClasses.put("import re",methodCallExpr);
+                    return indent + "re.sub("+doConvert("",args.get(0))+","+doConvert("",args.get(1))+","+doConvert("",clas)+",1)";
                 default:
                     break;
             }
