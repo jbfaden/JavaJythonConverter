@@ -144,6 +144,8 @@ public class Convert {
         this.unittest = unittest;
     }
     
+    private boolean hasMain= false;
+    
     // Constants
     static final ReferenceType STRING_TYPE = ASTHelper.createReferenceType( "String", 0 );
     
@@ -332,7 +334,14 @@ public class Convert {
                 }
 
                 sb.append(src);
+                
+                if ( hasMain ) {
+                    sb.append(theClassName).append(".main([])\n");
+                }
+                
                 src= sb.toString();
+                
+                
             }
             return src;
         } catch ( ParseException ex ) {
@@ -708,10 +717,10 @@ public class Convert {
                     String replac = doConvert("",args.get(1));
                     return doConvert(indent,clas)+".replace("+search+","+replac+")";
                 case "replaceAll":
-                    importedClasses.put("import re",methodCallExpr);
+                    additionalImports.put("import re",Boolean.TRUE);
                     return indent + "re.sub("+doConvert("",args.get(0))+","+doConvert("",args.get(1))+","+doConvert("",clas)+")";
                 case "replaceFirst":
-                    importedClasses.put("import re",methodCallExpr);
+                    additionalImports.put("import re",Boolean.TRUE);
                     return indent + "re.sub("+doConvert("",args.get(0))+","+doConvert("",args.get(1))+","+doConvert("",clas)+",1)";
                 default:
                     break;
@@ -1431,6 +1440,10 @@ public class Convert {
         
         if ( onlyStatic && !isStatic ) {
             return "";
+        } else if ( isStatic ) {
+            if ( methodDeclaration.getName().equals("main") ) {
+                hasMain= true;
+            }
         }
         
         if ( methodDeclaration.getAnnotations()!=null ) {
