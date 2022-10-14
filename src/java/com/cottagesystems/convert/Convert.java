@@ -185,6 +185,8 @@ public class Convert {
      */
     private String theClassName;
     
+    private Stack<String> classNameStack= new Stack<>();
+    
     /**
      * record the method names, since Python will need to refer to "self" to call methods but Java does not.
      */
@@ -1314,7 +1316,7 @@ public class Convert {
                 return indent + "len("+ s + ")";
             }
         }
-        if ( onlyStatic && s.equals(theClassName) ) {
+        if ( onlyStatic && s.equals(classNameStack.peek()) ) {
             return fieldAccessExpr.getField();
         } else {
             return indent + s + "." + fieldAccessExpr.getField();
@@ -1356,10 +1358,14 @@ public class Convert {
 
     private String doConvertClassOrInterfaceDeclaration(String indent, ClassOrInterfaceDeclaration classOrInterfaceDeclaration) {
         StringBuilder sb= new StringBuilder();
-        theClassName= classOrInterfaceDeclaration.getName();
         
+        String name = classOrInterfaceDeclaration.getName();
+        if ( classNameStack.isEmpty() ) {
+            theClassName= name;
+        }
+        classNameStack.push(name);
         pushScopeStack();
-        getCurrentScope().put( "this", new ClassOrInterfaceType(theClassName) );
+        getCurrentScope().put( "this", new ClassOrInterfaceType(name) );
         
         if ( onlyStatic ) {
             classOrInterfaceDeclaration.getChildrenNodes().forEach((n) -> {
@@ -1385,16 +1391,16 @@ public class Convert {
             
             if ( classOrInterfaceDeclaration.getExtends()!=null && classOrInterfaceDeclaration.getExtends().size()==1 ) { 
                 String extendName= doConvert( "", classOrInterfaceDeclaration.getExtends().get(0) );
-                sb.append( indent ).append("class " ).append( theClassName ).append("(" ).append(extendName).append(")").append(":\n");
+                sb.append( indent ).append("class " ).append( name ).append("(" ).append(extendName).append(")").append(":\n");
             } else if ( classOrInterfaceDeclaration.getImplements()!=null ) { 
                 List<ClassOrInterfaceType> impls= classOrInterfaceDeclaration.getImplements();
                 StringBuilder implementsName= new StringBuilder( doConvert( "", impls.get(0) ) );
                 for ( int i=1; i<impls.size(); i++ ) {
                     implementsName.append(",").append( doConvert( "", impls.get(i) ) );
                 }
-                sb.append( indent ).append("class " ).append( theClassName ).append("(" ).append(implementsName).append(")").append(":\n");
+                sb.append( indent ).append("class " ).append( name ).append("(" ).append(implementsName).append(")").append(":\n");
             } else {
-                sb.append( indent ).append("class " ).append( theClassName ).append(":\n");
+                sb.append( indent ).append("class " ).append( name ).append(":\n");
             }
 
             // check to see if any two methods can be combined.
@@ -1431,6 +1437,7 @@ public class Convert {
         }
         
         popScopeStack();
+        classNameStack.pop();
         
         return sb.toString();
     }
