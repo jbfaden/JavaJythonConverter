@@ -630,6 +630,10 @@ public class Convert {
                     clasType= "StringBuilder";
                 } else {
                     clasType= t.toString();
+                    int i= clasType.indexOf("<"); // diamond typing
+                    if ( i>=0 ) {
+                        clasType= clasType.substring(0,i);
+                    }
                     System.err.println("don't know what to do with type: "+ t + ", guessing...");
                 }
             }
@@ -671,6 +675,22 @@ public class Convert {
                     return name + "(" + doConvert(indent,args.get(0)) + ","+ doConvert(indent,args.get(1))+")";
                 case "min":
                     return name + "(" + doConvert(indent,args.get(0)) + ","+ doConvert(indent,args.get(1))+")";
+                default:
+                    break;
+            }
+        }
+        if ( clasType.equals("HashMap") ) {
+            HashMap m;
+            
+            switch (name) {
+                case "put":
+                    return indent + doConvert("",clas) + "["+doConvert("",args.get(0))+"] = "+doConvert("",args.get(1));
+                case "get":
+                    return indent + doConvert("",clas) + "["+doConvert("",args.get(0))+"]";
+                case "containsKey":
+                    return indent + doConvert("",args.get(0)) + " in "+ doConvert("",clas);
+                case "remove":
+                    return indent + doConvert("",clas) + ".pop(" + doConvert("",args.get(0)) + ")";
                 default:
                     break;
             }
@@ -1714,7 +1734,11 @@ public class Convert {
                     sb.append("*** #J2J: This is extended in an anonymous inner class ***");
                     return sb.toString();
                 } else {
-                    return indent + objectCreationExpr.getType() + "("+ utilFormatExprList(objectCreationExpr.getArgs())+ ")";
+                    if ( objectCreationExpr.getType().getName().equals("HashMap") ) {
+                        return indent + "{}";
+                    } else {
+                        return indent + objectCreationExpr.getType() + "("+ utilFormatExprList(objectCreationExpr.getArgs())+ ")";
+                    }
                 }
             }
         }
