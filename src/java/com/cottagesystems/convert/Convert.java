@@ -717,10 +717,10 @@ public class Convert {
                     String replac = doConvert("",args.get(1));
                     return doConvert(indent,clas)+".replace("+search+","+replac+")";
                 case "replaceAll":
-                    additionalImports.put("import re",Boolean.TRUE);
+                    additionalImports.put("import re\n",Boolean.TRUE);
                     return indent + "re.sub("+doConvert("",args.get(0))+","+doConvert("",args.get(1))+","+doConvert("",clas)+")";
                 case "replaceFirst":
-                    additionalImports.put("import re",Boolean.TRUE);
+                    additionalImports.put("import re\n",Boolean.TRUE);
                     return indent + "re.sub("+doConvert("",args.get(0))+","+doConvert("",args.get(1))+","+doConvert("",clas)+",1)";
                 default:
                     break;
