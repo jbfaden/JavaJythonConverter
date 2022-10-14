@@ -793,7 +793,11 @@ public class Convert {
             if ( name.equals("matches") ) {
                 return doConvert("",clas) + "!=None";
             } else if ( name.equals("find") ) {
-                return doConvert("",clas) + "!=None  #j2j: USE search not match above";
+                if ( clas instanceof MethodCallExpr ) {
+                    return doConvert("",clas).replaceAll("match", "search") + "!=None";
+                } else {
+                    return doConvert("",clas) + "!=None  #j2j: USE search not match above";
+                }
             }
         }
 
@@ -1598,7 +1602,7 @@ public class Convert {
             } else {
                 if ( statements.get(statements.size()-1) instanceof BreakStmt ) {
                     if ( statements.size()==1 ) {
-                        sb.append(indent+s4).append("pass\n");
+                        sb.append(indent).append(s4).append("pass\n");
                     }
                     for ( Statement s: statements.subList(0,statements.size()-1) ) {
                         sb.append(doConvert(indent + s4, s )).append("\n");
