@@ -904,6 +904,12 @@ public class Convert {
         }
     }
     
+    /**
+     * return the node as Jython/Python code, with each line indented with "indent"
+     * @param indent whitespace to prefix each statement.  Note some blocks are converted with a comment prefix for reference.
+     * @param n the node, which might be an expression, or a block of statements, or an entire program.
+     * @return the Jython/Python code converted as much as possible.
+     */
     private String doConvert( String indent, Node n ) {
         
         if ( n==null ) {
@@ -986,6 +992,8 @@ public class Convert {
                 return doConvertReturnStmt(indent,(ReturnStmt)n);
             case "BreakStmt":
                 return indent + "break";
+            case "ContinueStmt":
+                return indent + "continue";
             case "TryStmt":
                 return doConvertTryStmt(indent,(TryStmt)n);
             case "ReferenceType":
@@ -1130,6 +1138,10 @@ public class Convert {
     
     private String doConvertIfStmt(String indent, IfStmt ifStmt) {
         StringBuilder b= new StringBuilder();
+        if ( ifStmt.getCondition() instanceof MethodCallExpr && 
+                ((MethodCallExpr)ifStmt.getCondition()).getName().equals("isLoggable") ) {
+            return indent + "#J2J: if "+ifStmt.getCondition() + " ... removed";
+        }
         b.append(indent).append("if ");
         b.append( doConvert("", ifStmt.getCondition() ) );
         if ( ifStmt.getThenStmt() instanceof BlockStmt ) {
