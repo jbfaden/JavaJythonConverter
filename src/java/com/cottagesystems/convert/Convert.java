@@ -77,6 +77,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.Stack;
 import java.util.TreeSet;
+import java.util.regex.Matcher;
 
 /**
  * Class for converting Java to Jython using an AST.
@@ -740,10 +741,14 @@ public class Convert {
                     return doConvert(indent,clas)+".replace("+search+","+replac+")";
                 case "replaceAll":
                     additionalImports.put("import re\n",Boolean.TRUE);
-                    return indent + "re.sub("+doConvert("",args.get(0))+","+doConvert("",args.get(1))+","+doConvert("",clas)+")";
+                    search= doConvert("",args.get(0));
+                    replac= utilUnquoteReplacement( doConvert("",args.get(1)) );
+                    return indent + "re.sub("+search+","+replac+","+doConvert("",clas)+")";
                 case "replaceFirst":
+                    search= doConvert("",args.get(0));
+                    replac= utilUnquoteReplacement( doConvert("",args.get(1)) );
                     additionalImports.put("import re\n",Boolean.TRUE);
-                    return indent + "re.sub("+doConvert("",args.get(0))+","+doConvert("",args.get(1))+","+doConvert("",clas)+",1)";
+                    return indent + "re.sub("+search+","+replac+","+doConvert("",clas)+",1)";
                 default:
                     break;
             }
@@ -1872,6 +1877,21 @@ public class Convert {
         
     }
 
+    /**
+     * turn a quoted replacement string into an raw string.  This
+     * is beyond my mental capacity because it's code not interpretted
+     * code, but I know "\\" needs to return "".
+     * @param s for example "\\$"
+     * @return for example "$"
+     * @see java.util.regex.Matcher#quoteReplacement(s)
+     */
+    private String utilUnquoteReplacement( String s ) {
+        if ((!s.contains("\\\\")) && (!s.contains("\\$"))) {
+            return s;
+        }
+        return s.replaceAll("\\\\", "");
+    }
+    
     private static String utilImplicitDeclaration( Type t ) {
         switch ( t.toString() ) {
             case "byte": 
