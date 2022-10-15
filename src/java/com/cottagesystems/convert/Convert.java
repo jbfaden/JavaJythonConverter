@@ -543,6 +543,16 @@ public class Convert {
         } else if ( clas instanceof FieldAccessExpr ) {
             String fieldName= ((FieldAccessExpr)clas).getField();
             return getCurrentScope().get(fieldName);
+        } else if ( clas instanceof ArrayAccessExpr ) {
+            ArrayAccessExpr aae= (ArrayAccessExpr)clas;
+            Type arrayType=  guessType( aae.getName() );
+            if ( arrayType==null ) {
+                return null;
+            } else if ( arrayType instanceof ReferenceType && ((ReferenceType)arrayType).getArrayCount()==1 ) {
+                return ((ReferenceType) arrayType).getType();
+            } else {
+                return null;
+            }
         } else if ( clas instanceof IntegerLiteralExpr ) {
             return ASTHelper.INT_TYPE;
         } else if ( clas instanceof CharLiteralExpr ) {
