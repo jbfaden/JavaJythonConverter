@@ -540,6 +540,9 @@ public class Convert {
             } else if ( getCurrentScope().containsKey(clasName) ) {
                 return getCurrentScope().get(clasName);
             }
+        } else if ( clas instanceof FieldAccessExpr ) {
+            String fieldName= ((FieldAccessExpr)clas).getField();
+            return getCurrentScope().get(fieldName);
         } else if ( clas instanceof IntegerLiteralExpr ) {
             return ASTHelper.INT_TYPE;
         } else if ( clas instanceof CharLiteralExpr ) {
@@ -654,6 +657,10 @@ public class Convert {
                 clasType= "";
             } else {
                 clasType= t.toString();
+                int i= clasType.indexOf("<"); 
+                if ( i>0 ) { // remove diamond types for now
+                    clasType= clasType.substring(0,i);
+                }
             }
         }
         
@@ -680,15 +687,14 @@ public class Convert {
                     break;
             }
         }
-        if ( clasType.equals("HashMap") ) {
-            HashMap m;
+        if ( clasType.equals("HashMap") || clasType.equals("Map") ) {
             
             switch (name) {
                 case "put":
                     return indent + doConvert("",clas) + "["+doConvert("",args.get(0))+"] = "+doConvert("",args.get(1));
                 case "get":
                     return indent + doConvert("",clas) + "["+doConvert("",args.get(0))+"]";
-                case "containsKey":
+                case "containsKey": // Note that unlike Java, getting a key which doesn't exist is a runtime error.
                     return indent + doConvert("",args.get(0)) + " in "+ doConvert("",clas);
                 case "remove":
                     return indent + doConvert("",clas) + ".pop(" + doConvert("",args.get(0)) + ")";
@@ -1327,7 +1333,7 @@ public class Convert {
             StringBuilder sb= new StringBuilder();
             return "[ " + utilFormatExprList( ap.getValues() ) + " ]";
         } else {
-            return "[0] * " + doConvert( "", arrayCreationExpr.getDimensions().get(0) );
+            return "[0] * (" + doConvert( "", arrayCreationExpr.getDimensions().get(0) ) + ")"; //TODO: might not be necessary
         }
     }
 
@@ -1716,7 +1722,11 @@ public class Convert {
             if ( objectCreationExpr.getArgs()!=null ) {
                 if ( objectCreationExpr.getArgs().size()==1 ) {
                     Expression e= objectCreationExpr.getArgs().get(0);
-                    return indent + utilAssertStr(e);
+                    if ( ASTHelper.INT_TYPE.equals(guessType(e)) ) { // new StringBuilder(100);
+                        return "\"\"";
+                    } else {
+                        return indent + utilAssertStr(e);
+                    }
                 } else {
                     return indent + "\"\""; // TODO: are there any stringbuilder methods which take more than one arg?
                 }
