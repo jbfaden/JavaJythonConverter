@@ -28,3 +28,4 @@ and well and this must be done unless the result is reviewed line-by-line.)
 |  stringbuilder 	|  sb.append() 	| sb+= | (note sources say this is no slower)  	|
 |  regex 	|   	|   	|  |
 | length | x.length | len(x) | The type of the object could be considered |
+| regex | Pattern/Matcher | re | some patterns recognized and converted |
