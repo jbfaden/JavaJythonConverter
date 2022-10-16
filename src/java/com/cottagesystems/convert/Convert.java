@@ -1177,7 +1177,7 @@ public class Convert {
                 return indent + "#J2J: "+variableDeclarationExpr.toString().trim();
             }
             if ( s.equals("len") ) {
-                String news= "llen446";
+                String news= "lenJ2J";
                 nameMapForward.put( s, news );
                 nameMapReverse.put( news, s );
                 s= news;
