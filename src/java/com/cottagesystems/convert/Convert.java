@@ -63,8 +63,14 @@ import japa.parser.ast.stmt.WhileStmt;
 import japa.parser.ast.type.ClassOrInterfaceType;
 import japa.parser.ast.type.PrimitiveType;
 import japa.parser.ast.type.ReferenceType;
+import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -74,6 +80,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Stack;
+import java.util.stream.Collectors;
 
 /**
  * Class for converting Java to Jython using an AST.
@@ -509,6 +516,10 @@ public class Convert {
             }
         }
         
+        if ( leftType!=null && leftType.equals(ASTHelper.createReferenceType("String", 0)) && rightType==null ) {
+            right= "str("+right+")";
+        }
+        
         switch (op) {
             case plus:
                 return left + "+" + right;
@@ -639,21 +650,24 @@ public class Convert {
         if ( name==null ) {
             name=""; // I don't think this happens
         }
-                
+        
         /**
          * try to identify the class of the scope, which could be either a static or non-static method.
          */
         String clasType="";  
         if ( clas instanceof NameExpr ) {
             String contextName= ((NameExpr)clas).getName(); // sb in sb.append, or String in String.format.
+            Type contextType= getCurrentScope().get(contextName);
             if ( Character.isUpperCase(contextName.charAt(0)) ) { // Yup, we're assuming that upper case refers to a class
                 clasType= contextName;
-            } else if ( stringMethods.contains(name) ) {
+            } else if ( stringMethods.contains(name) 
+                    && ( contextType==null || contextType.equals(ASTHelper.createReferenceType("String", 0) )) ) {
                 clasType= "String";
-            } else if ( characterMethods.contains(name) ) {
+            } else if ( characterMethods.contains(name) 
+                    && ( contextType==null || contextType.equals(ASTHelper.createReferenceType("String", 0) )) ) {
                 clasType= "Character";
             } else if ( getCurrentScope().containsKey(contextName) ) {
-                Type t= getCurrentScope().get(contextName);
+                Type t= contextType;
                 if ( t.toString().equals("StringBuilder") ) {
                     clasType= "StringBuilder";
                 } else {
@@ -726,6 +740,35 @@ public class Convert {
                     break;
             }
         }
+        
+        if ( clasType.equals("ArrayList") || clasType.equals("List") ) {
+            switch (name) {
+                case "size":
+                    return indent + "len(" + doConvert("",clas) + ")";
+                case "add":
+                    if ( args.size()==2 ) {
+                        return indent + doConvert("",clas) + ".insert("+doConvert("",args.get(0))+","+doConvert("",args.get(1))+")";
+                    } else {
+                        return indent + doConvert("",clas) + ".append("+doConvert("",args.get(0))+")";
+                    }
+                case "remove":
+                    if ( guessType(args.get(0)).equals(ASTHelper.INT_TYPE) ) {
+                        String item = doConvert("",clas) + "["+doConvert("",args.get(0))+"]";
+                        return indent + doConvert("",clas) + ".remove(" + item + ")";
+                    } else {
+                        return indent + doConvert("",clas) + ".remove(" + doConvert("",args.get(0)) + ")";
+                    }
+                case "get":
+                    return indent + doConvert("",clas) + "["+doConvert("",args.get(0))+"]";
+                case "contains":
+                    return indent + "(" + doConvert("",args.get(0)) + ".index("+ doConvert("",args.get(0))+") > -1)";
+                case "indexOf":
+                    return indent + doConvert("",clas) + ".index(" + doConvert("",args.get(0)) + ")";
+                default:
+                    break;
+            }
+        }
+        
         if ( clasType.equals("Logger") ) {
             return indent + "#J2J (logger) "+methodCallExpr.toString();
         }
@@ -1768,6 +1811,8 @@ public class Convert {
                 } else {
                     if ( objectCreationExpr.getType().getName().equals("HashMap") ) { 
                         return indent + "{}";
+                    } else if ( objectCreationExpr.getType().getName().equals("ArrayList") ) { 
+                        return indent + "[]";
                     } else {
                         return indent + objectCreationExpr.getType() + "("+ utilFormatExprList(objectCreationExpr.getArgs())+ ")";
                     }
@@ -1843,8 +1888,10 @@ public class Convert {
         
     }
 
-    public static void main(String[] args ) throws ParseException {
+    public static void main(String[] args ) throws ParseException, FileNotFoundException {
         Convert c= new Convert();
+        c.setOnlyStatic(false);
+        c.setUnittest(false);
 //        System.err.println("----");
 //        System.err.println(c.doConvert("{ int x= Math.pow(3,5); }"));
 //        System.err.println("----");
@@ -1863,31 +1910,14 @@ public class Convert {
 //        System.err.println("----");
 //        System.err.println(c.doConvert("\"apple\".subString(3)"));
 //        System.err.println("----");
-        String p= "private static int parseInt(String s) {\n" +
-"        int result;\n" +
-"        int len= s.length();\n" +
-"        for (int i = 0; i < len; i++) {\n" +
-"            char c = s.charAt(i);\n" +
-"            if (c < 48 || c >= 58) {\n" +
-"                throw new IllegalArgumentException(\"only digits are allowed in string\");\n" +
-"            }\n" +
-"        }\n" +
-"        switch (len) {\n" +
-"            case 2:\n" +
-"                result = 10 * (s.charAt(0) - 48) + (s.charAt(1) - 48);\n" +
-"                return result;\n" +
-"            case 3:\n" +
-"                result = 100 * (s.charAt(0) - 48) + 10 * (s.charAt(1) - 48) + (s.charAt(2) - 48);\n" +
-"                return result;\n" +
-"            default:\n" +
-"                result = 0;\n" +
-"                for (int i = 0; i < s.length(); i++) {\n" +
-"                    result = 10 * result + (s.charAt(i) - 48);\n" +
-"                }\n" +
-"                return result;\n" +
-"        }\n" +
-"    }";
-        System.err.println( c.doConvert(p) );
+
+        InputStream ins= new FileInputStream("/net/spot8/home/jbf/ct/git/JavaJythonConverter/src/java/test/ArrayListDemo.java");
+        String text = new BufferedReader(
+            new InputStreamReader(ins, StandardCharsets.UTF_8))
+            .lines()
+            .collect(Collectors.joining("\n"));
+        
+        System.err.println( c.doConvert(text) );
     }
 
     /**
