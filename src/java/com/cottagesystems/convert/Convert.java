@@ -1403,6 +1403,9 @@ public class Convert {
         
         // test to see if this is an array and "length" of the array is accessed.
         if ( fieldAccessExpr.getField().equals("length") ) {
+            if ( s.startsWith("self.") ) {
+                s= s.substring(5);
+            }
             Type t= getCurrentScope().get(s);
             if ( t!=null && t instanceof ReferenceType && ((ReferenceType)t).getArrayCount()>0 ) { 
                 return indent + "len("+ s + ")";
