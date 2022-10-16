@@ -766,6 +766,8 @@ public class Convert {
                     return indent + "(" + doConvert("",args.get(0)) + ".index("+ doConvert("",args.get(0))+") > -1)";
                 case "indexOf":
                     return indent + doConvert("",clas) + ".index(" + doConvert("",args.get(0)) + ")";
+                case "toArray":
+                    return indent + doConvert("",clas); // It's already an array (a list really).
                 default:
                     break;
             }
@@ -824,6 +826,8 @@ public class Convert {
                     replac= utilUnquoteReplacement( doConvert("",args.get(1)) );
                     additionalImports.put("import re\n",Boolean.TRUE);
                     return indent + "re.sub("+search+","+replac+","+doConvert("",clas)+",1)";
+                case "valueOf":
+                    return indent + "str("+doConvert("",args.get(0)) +")";
                 default:
                     break;
             }
