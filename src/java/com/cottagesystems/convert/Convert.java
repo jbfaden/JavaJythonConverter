@@ -1344,7 +1344,12 @@ public class Convert {
             StringBuilder sb= new StringBuilder();
             return "[ " + utilFormatExprList( ap.getValues() ) + " ]";
         } else {
-            return "[0] * (" + doConvert( "", arrayCreationExpr.getDimensions().get(0) ) + ")"; //TODO: might not be necessary
+            if ( arrayCreationExpr.getDimensions().get(0) instanceof BinaryExpr ) {
+                return "[0] * (" + doConvert( "", arrayCreationExpr.getDimensions().get(0) ) + ")"; //TODO: might not be necessary
+            } else {
+                return "[0] * " + doConvert( "", arrayCreationExpr.getDimensions().get(0) ) + ""; //TODO: might not be necessary
+            }
+            
         }
     }
 
