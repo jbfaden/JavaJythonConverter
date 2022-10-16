@@ -2025,12 +2025,12 @@ public class Convert {
                 scope = "self";
             }
         } else {
-            scope = "#J2Jscope";
+            scope = ""; // local variable
         }
         if ( nameMapForward.containsKey(s) ) {
-            return indent + scope + "." + nameMapForward.get(s);
+            return indent + scope + (scope.length()==0 ? "" : ".") + nameMapForward.get(s);
         } else {
-            return indent + scope + "." + s;
+            return indent + scope + (scope.length()==0 ? "" : ".") + s;
         }
 
     }
