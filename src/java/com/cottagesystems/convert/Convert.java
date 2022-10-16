@@ -45,6 +45,7 @@ import japa.parser.ast.expr.DoubleLiteralExpr;
 import japa.parser.ast.expr.EnclosedExpr;
 import japa.parser.ast.expr.FieldAccessExpr;
 import japa.parser.ast.expr.LongLiteralExpr;
+import japa.parser.ast.expr.NullLiteralExpr;
 import japa.parser.ast.expr.ObjectCreationExpr;
 import japa.parser.ast.expr.QualifiedNameExpr;
 import japa.parser.ast.expr.UnaryExpr;
@@ -516,7 +517,8 @@ public class Convert {
             }
         }
         
-        if ( leftType!=null && leftType.equals(ASTHelper.createReferenceType("String", 0)) && rightType==null ) {
+        if ( leftType!=null && !( b.getRight() instanceof NullLiteralExpr )
+                && leftType.equals(ASTHelper.createReferenceType("String", 0)) && rightType==null ) {
             right= "str("+right+")";
         }
         
