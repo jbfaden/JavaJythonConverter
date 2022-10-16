@@ -67,17 +67,13 @@ import java.io.ByteArrayInputStream;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Set;
 import java.util.Stack;
-import java.util.TreeSet;
-import java.util.regex.Matcher;
 
 /**
  * Class for converting Java to Jython using an AST.
@@ -87,7 +83,13 @@ public class Convert {
 
     public Convert() {
         this.stack = new Stack<>();
+        this.stackFields= new Stack<>();
+        this.stackMethods= new Stack<>();
+        
         this.stack.push( new HashMap<>() );
+        this.stackFields.push( new HashMap<>() );
+        this.stackMethods.push( new HashMap<>() );
+        
     }
     
     private String doConvertInitializerDeclaration(String indent, InitializerDeclaration initializerDeclaration) {
@@ -153,6 +155,9 @@ public class Convert {
     /*** internal parsing state ***/
     
     Stack<Map<String,Type>> stack;
+    Stack<Map<String,VariableDeclarationExpr>> stackVariables;
+    Stack<Map<String,FieldDeclaration>> stackFields;
+    Stack<Map<String,MethodDeclaration>> stackMethods;
     
     Map<String,String> nameMapForward= new HashMap<>();
     Map<String,String> nameMapReverse= new HashMap<>();
@@ -167,11 +172,23 @@ public class Convert {
     }
     
     /**
+     * this contains both the static and non-static (class) variables.
+     * @return 
+     */
+    private Map<String,FieldDeclaration> getCurrentScopeFields() {
+        return stackFields.peek();
+    }
+    
+    private Map<String,MethodDeclaration> getCurrentScopeMethods() {
+        return stackMethods.peek();
+    }
+    /**
      * introduce a new level
      */
     private void pushScopeStack() {
-        Map<String,Type> n= new HashMap<>(getCurrentScope());
-        stack.push(n);
+        stack.push( new HashMap<>(getCurrentScope()) );
+        stackFields.push( new HashMap<>(getCurrentScopeFields()) );
+        stackMethods.push( new HashMap<>(getCurrentScopeMethods()) ) ;
     }
     
     /**
@@ -179,6 +196,8 @@ public class Convert {
      */
     private void popScopeStack() {
         stack.pop();
+        stackFields.pop();
+        stackMethods.pop();
     }
             
     /**
@@ -186,37 +205,32 @@ public class Convert {
      */
     private String theClassName;
     
-    private Stack<String> classNameStack= new Stack<>();
+    private final Stack<String> classNameStack= new Stack<>();
     
     /**
      * record the method names, since Python will need to refer to "self" to call methods but Java does not.
      */
-    private Map<String,ClassOrInterfaceDeclaration> classMethods = new HashMap<>();
-    
-    /**
-     * record the class fields.
-     */
-    private Map<String,FieldDeclaration> classFields = new HashMap<>();
+    private final Map<String,ClassOrInterfaceDeclaration> classMethods = new HashMap<>();
     
     /**
      * return imported class names.
      */
-    private Map<String,Object> importedClasses = new HashMap<>();
+    private final Map<String,Object> importedClasses = new HashMap<>();
      
     /**
      * return imported methods, from star imports.
      */
-    private Map<String,Object> importedMethods = new HashMap<>();
+    private final Map<String,Object> importedMethods = new HashMap<>();
     
     /**
      * map from the import statement to a boolean.  If Boolean.TRUE, then use it.
      */
-    private Map<String,Boolean> additionalImports = new LinkedHashMap<>();
+    private final Map<String,Boolean> additionalImports = new LinkedHashMap<>();
     
     /**
      * map from the additional class code to a boolean.  If Boolean.TRUE, then use it.
      */
-    private Map<String,Boolean> additionalClasses = new LinkedHashMap<>();
+    private final Map<String,Boolean> additionalClasses = new LinkedHashMap<>();
     
     /*** end, internal parsing state ***/
 
@@ -316,7 +330,7 @@ public class Convert {
     }
     
     public String doConvert( String javasrc ) throws ParseException {
-        ParseException throwMe= null;
+        ParseException throwMe;
         try {
             ByteArrayInputStream ins= new ByteArrayInputStream( javasrc.getBytes(Charset.forName("UTF-8")) );
             CompilationUnit unit= japa.parser.JavaParser.parse(ins,"UTF-8");
@@ -580,7 +594,7 @@ public class Convert {
         return null;
     }
 
-    static HashSet stringMethods= new HashSet();
+    static final HashSet stringMethods= new HashSet();
 
     static {
         
@@ -596,7 +610,7 @@ public class Convert {
         stringMethods.add("equalsIgnoreCase");
     }
 
-    static HashSet characterMethods= new HashSet();
+    static final HashSet characterMethods= new HashSet();
     static {
         characterMethods.add("isDigit");
         characterMethods.add("isSpace");
@@ -1019,20 +1033,7 @@ public class Convert {
             case "BinaryExpr":
                 return doConvertBinaryExpr(indent,(BinaryExpr)n);
             case "NameExpr":
-                String s= ((NameExpr)n).getName();
-                if ( classFields.containsKey(s) ) {
-                    if ( nameMapForward.containsKey(s) ) {
-                        return indent + theClassName + "." + nameMapForward.get(s);
-                    } else {
-                        return indent + theClassName + "." + s;
-                    }
-                } else {
-                    if ( nameMapForward.containsKey(s) ) {
-                        return indent + nameMapForward.get(s);
-                    } else {
-                        return indent + s;
-                    }
-                }
+                return doConvertNameExpr(indent,(NameExpr)n);
             case "EnclosedExpr": 
                 return indent + "(" + doConvert( "", ((EnclosedExpr)n).getInner() ) + ")";
             case "NullLiteralExpr":
@@ -1572,11 +1573,10 @@ public class Convert {
                     sb.append( indent ).append("#J2J: ").append(fieldDeclaration.toString());
                     continue;
                 }
-                if ( s ) {
-                    classFields.put( v.getId().getName(),fieldDeclaration );
-                }
-                Map<String,Type> currentScope= getCurrentScope();
-                currentScope.put( v.getId().getName(),fieldDeclaration.getType() );
+                
+                getCurrentScope().put( v.getId().getName(),fieldDeclaration.getType() );
+                getCurrentScopeFields().put( v.getId().getName(),fieldDeclaration);
+
                 if ( v.getInit()==null ) {
                     String implicitDeclaration = utilImplicitDeclaration( fieldDeclaration.getType() );
                     if ( implicitDeclaration!=null ) {
@@ -1761,7 +1761,7 @@ public class Convert {
                     sb.append("*** #J2J: This is extended in an anonymous inner class ***");
                     return sb.toString();
                 } else {
-                    if ( objectCreationExpr.getType().getName().equals("HashMap") ) {
+                    if ( objectCreationExpr.getType().getName().equals("HashMap") ) { 
                         return indent + "{}";
                     } else {
                         return indent + objectCreationExpr.getType() + "("+ utilFormatExprList(objectCreationExpr.getArgs())+ ")";
@@ -2011,6 +2011,28 @@ public class Convert {
 //                    "    def log( self, level, mesg, e=None ):\n" +
 //                    "        print mesg\n" +
 //                "");
+    }
+
+    private String doConvertNameExpr(String indent, NameExpr nameExpr) {
+        String s= nameExpr.getName();
+        String scope;
+        if ( getCurrentScopeFields().containsKey(s) ) {
+            FieldDeclaration ss= getCurrentScopeFields().get(s);
+            boolean isStatic= ModifierSet.isStatic( ss.getModifiers() );
+            if ( isStatic ) {
+                scope = theClassName;
+            } else {
+                scope = "self";
+            }
+        } else {
+            scope = "#J2Jscope";
+        }
+        if ( nameMapForward.containsKey(s) ) {
+            return indent + scope + "." + nameMapForward.get(s);
+        } else {
+            return indent + scope + "." + s;
+        }
+
     }
     
 }
