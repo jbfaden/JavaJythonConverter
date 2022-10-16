@@ -25,7 +25,6 @@ and well and this must be done unless the result is reviewed line-by-line.)
 |---	|---	|---	|--- |
 | string function | .toUpperCase() | .upper() | many other string functions translate |
 | format  	| String.format(a,...)  	| a.format(...)  	| |
-|  stringbuilder 	|  sb.append() 	| sb+= | (note sources say this is no slower)  	|
-|  regex 	|   	|   	|  |
+|  stringbuilder 	|  sb.append() 	| sb+= | just use strings, sources say this is no slower 	|
 | length | x.length | len(x) | The type of the object could be considered |
 | regex | Pattern/Matcher | re | some patterns recognized and converted |
