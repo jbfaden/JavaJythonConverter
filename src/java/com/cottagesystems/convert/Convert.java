@@ -80,6 +80,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.Stack;
 import java.util.stream.Collectors;
 
@@ -743,6 +744,17 @@ public class Convert {
             }
         }
         
+        if ( clasType.equals("HashSet") || clasType.equals("Set") ) {
+            switch (name) {
+                case "contains":
+                    return indent + doConvert("",args.get(0)) + " in " + doConvert("",clas);
+                case "add":
+                    return indent + doConvert("",clas) + "["+doConvert("",args.get(0))+"] = "+doConvert("",args.get(0)); // Jython 2.2 no sets
+                case "remove":
+                    return indent + doConvert("",clas) + ".pop(" + doConvert("",args.get(0)) + ")";  
+            }
+        }
+        
         if ( clasType.equals("ArrayList") || clasType.equals("List") ) {
             switch (name) {
                 case "size":
@@ -828,6 +840,9 @@ public class Convert {
                     return indent + "re.sub("+search+","+replac+","+doConvert("",clas)+",1)";
                 case "valueOf":
                     return indent + "str("+doConvert("",args.get(0)) +")";
+                case "split":
+                    String arg= utilUnquoteReplacement( doConvert("",args.get(0)) );
+                    return indent + doConvert(indent,clas) + ".split("+arg+")";
                 default:
                     break;
             }
@@ -889,6 +904,10 @@ public class Convert {
                         sb.append(doConvert("",args.get(1)));
                         return sb.toString();        
                     }
+                }
+                case "toString": {
+                    String js= "', '.join("+doConvert("",args.get(0))+")";
+                    return "('['+"+js + "+']')";
                 }
             }
         }
@@ -1822,6 +1841,8 @@ public class Convert {
                         return indent + "{}";
                     } else if ( objectCreationExpr.getType().getName().equals("ArrayList") ) { 
                         return indent + "[]";
+                    } else if ( objectCreationExpr.getType().getName().equals("HashSet") ) {
+                        return indent + "{}"; // to support Jython 2.2, use dictionary for now
                     } else {
                         return indent + objectCreationExpr.getType() + "("+ utilFormatExprList(objectCreationExpr.getArgs())+ ")";
                     }
