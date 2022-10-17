@@ -16,5 +16,6 @@ public class HashMapDemo {
             System.out.println( m.get("barg") );
         }
         System.out.println( m.get("barg") );
+        m.remove("foo");
     }
 }
