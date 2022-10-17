@@ -171,6 +171,8 @@ public class Convert {
     Map<String,String> nameMapForward= new HashMap<>();
     Map<String,String> nameMapReverse= new HashMap<>();
     
+    Map<String,Type> localVariables= new HashMap<>();
+    
     /**
      * return the current scope, which includes local variables.  Presently this just uses one scope,
      * but this should check for code blocks, etc.
@@ -194,8 +196,13 @@ public class Convert {
     /**
      * introduce a new level
      */
-    private void pushScopeStack() {
-        stack.push( new HashMap<>(getCurrentScope()) );
+    private void pushScopeStack(boolean keepLocals) {
+        HashMap newScope= new HashMap<>(getCurrentScope());
+        if ( !keepLocals ) {
+            newScope.putAll(localVariables);
+            localVariables.clear();
+        }
+        stack.push( newScope );
         stackFields.push( new HashMap<>(getCurrentScopeFields()) );
         stackMethods.push( new HashMap<>(getCurrentScopeMethods()) ) ;
     }
@@ -660,7 +667,8 @@ public class Convert {
         String clasType="";  
         if ( clas instanceof NameExpr ) {
             String contextName= ((NameExpr)clas).getName(); // sb in sb.append, or String in String.format.
-            Type contextType= getCurrentScope().get(contextName);
+            Type contextType= localVariables.get(contextName); // allow local variables to override class variables.
+            if ( contextType==null ) contextType= getCurrentScope().get(contextName);
             if ( Character.isUpperCase(contextName.charAt(0)) ) { // Yup, we're assuming that upper case refers to a class
                 clasType= contextName;
             } else if ( stringMethods.contains(name) 
@@ -904,8 +912,8 @@ public class Convert {
                     StringBuilder sb= new StringBuilder();
                     Type t1= guessType(args.get(0)); // are both arrays containing primative objects (int,float,etc)
                     Type t2= guessType(args.get(1));
-                    if ( t1.equals(ASTHelper.createReferenceType(ASTHelper.INT_TYPE,1)) 
-                            && t2.equals(ASTHelper.createReferenceType(ASTHelper.INT_TYPE,1)) ) {
+                    if ( t1!=null && t1.equals(ASTHelper.createReferenceType(ASTHelper.INT_TYPE,1)) 
+                            && t2!=null && t2.equals(ASTHelper.createReferenceType(ASTHelper.INT_TYPE,1)) ) {
                         sb.append(indent).append(doConvert("",args.get(0))).append("==");
                         sb.append(doConvert("",args.get(1)));
                         return sb.toString();        
@@ -1097,9 +1105,9 @@ public class Convert {
         }
         String simpleName= n.getClass().getSimpleName();
 
-        //if ( n.getBeginLine()>530 && n instanceof MethodCallExpr ) {
-        //    if ( n.toString().contains("formatString.split") ) {
-        //        System.err.println("formatString.split "+ n); //switching to parsing end time
+        //if ( n.getBeginLine()>761 && n instanceof NameExpr ) {
+        //    if ( n.toString().contains("qualifiers") ) {
+        //        System.err.println("At methodCallExpr: "+ n); //switching to parsing end time
         //    }
         //}
 
@@ -1220,7 +1228,7 @@ public class Convert {
 
     private String doConvertBlockStmt(String indent,BlockStmt blockStmt) {
         
-        pushScopeStack();
+        pushScopeStack(true);
         
         StringBuilder result= new StringBuilder();
         List<Statement> statements= blockStmt.getStmts();
@@ -1232,7 +1240,7 @@ public class Convert {
         for ( Statement s: statements ) {
             String aline= doConvert(indent,s);
             if ( aline.trim().length()==0 ) continue;
-            result.append(doConvert(indent,s));
+            result.append(aline);
             result.append("\n");
             if ( !aline.trim().startsWith("#") ) lines++;
         }
@@ -1253,7 +1261,7 @@ public class Convert {
             String s= v.getId().getName();
             if ( v.getInit()!=null && v.getInit().toString().startsWith("Logger.getLogger") ) {
                 //addLogger();
-                getCurrentScope().put(s,ASTHelper.createReferenceType("Logger",0) );
+                localVariables.put(s,ASTHelper.createReferenceType("Logger",0) );
                 return indent + "#J2J: "+variableDeclarationExpr.toString().trim();
             }
             if ( s.equals("len") ) {
@@ -1262,7 +1270,7 @@ public class Convert {
                 nameMapReverse.put( news, s );
                 s= news;
             }
-            getCurrentScope().put( s, variableDeclarationExpr.getType() );
+            localVariables.put( s, variableDeclarationExpr.getType() );
             if ( v.getInit()!=null ) {
                 if ( v.getInit() instanceof ConditionalExpr ) {
                     ConditionalExpr cc  = (ConditionalExpr)v.getInit();
@@ -1383,7 +1391,7 @@ public class Convert {
 
     private String doConvertCompilationUnit(String indent, CompilationUnit compilationUnit) {
         
-        pushScopeStack();
+        pushScopeStack(false);
 
         StringBuilder sb= new StringBuilder();
         
@@ -1442,7 +1450,10 @@ public class Convert {
             if ( inContext.startsWith("self.") ) {
                 inContext= inContext.substring(5);
             }
-            Type t= getCurrentScope().get(inContext);
+            Type t= localVariables.get(inContext);
+            if (t==null ) {
+                t= getCurrentScope().get(inContext);
+            }
             if ( t!=null && t instanceof ReferenceType && ((ReferenceType)t).getArrayCount()>0 ) { 
                 return indent + "len("+ s + ")";
             }
@@ -1495,7 +1506,7 @@ public class Convert {
             theClassName= name;
         }
         classNameStack.push(name);
-        pushScopeStack();
+        pushScopeStack(false);
         getCurrentScope().put( "this", new ClassOrInterfaceType(name) );
         
         if ( onlyStatic ) {
@@ -1594,9 +1605,11 @@ public class Convert {
             }
         }
         
-        //if ( methodDeclaration.getName().equals("dayOfYear") ) {
-        //    System.err.println("here stop");
-        //}
+        
+        if ( methodDeclaration.getName().equals("makeQualifiersCanonical") ) {
+            System.err.println("here stop");
+        }
+        
         StringBuilder sb= new StringBuilder();
         String comments= utilRewriteComments( indent, methodDeclaration.getComment() );
         sb.append( comments );
@@ -1613,7 +1626,7 @@ public class Convert {
             comma = false;
         }
 
-        pushScopeStack();
+        pushScopeStack(false);
 
         if ( methodDeclaration.getParameters()!=null ) {
             for ( Parameter p: methodDeclaration.getParameters() ) { 
@@ -1624,7 +1637,7 @@ public class Convert {
                     comma = true;
                 }
                 sb.append( name );
-                getCurrentScope().put( name, p.getType() );
+                localVariables.put( name, p.getType() );
             }
         }
         sb.append( "):\n" );
@@ -1873,7 +1886,7 @@ public class Convert {
         if ( constructorDeclaration.getParameters()!=null ) {
             for ( Parameter p: constructorDeclaration.getParameters() ) { 
                 String name= p.getId().getName();
-                getCurrentScope().put( name, p.getType() );
+                localVariables.put( name, p.getType() );
             }
         }
         sb.append( doConvert(indent,constructorDeclaration.getBlock()) );
@@ -2100,7 +2113,9 @@ public class Convert {
     private String doConvertNameExpr(String indent, NameExpr nameExpr) {
         String s= nameExpr.getName();
         String scope;
-        if ( getCurrentScopeFields().containsKey(s) ) {
+        if ( localVariables.containsKey(s) ) {
+            scope = ""; // local variable
+        } else if ( getCurrentScopeFields().containsKey(s) ) {
             FieldDeclaration ss= getCurrentScopeFields().get(s);
             boolean isStatic= ModifierSet.isStatic( ss.getModifiers() );
             if ( isStatic ) {
@@ -2109,7 +2124,7 @@ public class Convert {
                 scope = "self";
             }
         } else {
-            scope = ""; // local variable
+            scope = ""; // local variable //TODO: review this
         }
         if ( nameMapForward.containsKey(s) ) {
             return indent + scope + (scope.length()==0 ? "" : ".") + nameMapForward.get(s);
