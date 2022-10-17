@@ -1,8 +1,4 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
+
 package test;
 
 /**
@@ -16,5 +12,9 @@ public class ArrayStuff {
         System.out.println(times[3]);
         return 0;
     }
-
+    public static void main(String[]args ) {
+        if ( args.length>0 ) {
+            System.err.println( args.length );
+        }
+    }
 }
