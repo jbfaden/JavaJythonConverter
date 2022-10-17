@@ -739,6 +739,8 @@ public class Convert {
                     return indent + doConvert("",args.get(0)) + " in "+ doConvert("",clas);
                 case "remove":
                     return indent + doConvert("",clas) + ".pop(" + doConvert("",args.get(0)) + ")";
+                case "addAll":
+                    return indent + doConvert("",clas) + ".update(" + doConvert("",args.get(0)) + ")";
                 default:
                     break;
             }
@@ -752,6 +754,10 @@ public class Convert {
                     return indent + doConvert("",clas) + "["+doConvert("",args.get(0))+"] = "+doConvert("",args.get(0)); // Jython 2.2 no sets
                 case "remove":
                     return indent + doConvert("",clas) + ".pop(" + doConvert("",args.get(0)) + ")";  
+                case "addAll":
+                    String a= doConvert("",args.get(0));
+                    String d= "dict( zip( " + a + ","+ a +") )";
+                    return indent + doConvert("",clas) + ".update( " + d + ")";  
             }
         }
         
@@ -909,6 +915,10 @@ public class Convert {
                     String js= "', '.join("+doConvert("",args.get(0))+")";
                     return "('['+"+js + "+']')";
                 }
+                case "asList": 
+                    // since in Python we are treating lists and arrays as the same thing, do nothing.
+                    return doConvert("",args.get(0));
+                
             }
         }
         if ( clasType.equals("Double") ) {
@@ -1327,7 +1337,7 @@ public class Convert {
         forStmt.getInit().forEach((e) -> {
             b.append(indent).append( doConvert( "", e ) ).append( "\n" );
         });
-        b.append( indent ).append("while ").append(doConvert( "", forStmt.getCompare() )).append(":\n");
+        b.append( indent ).append("while ").append(doConvert( "", forStmt.getCompare() )).append(":  # J2J for loop\n");
         if ( forStmt.getBody() instanceof ExpressionStmt ) {
             b.append(indent).append(s4).append( doConvert( "", forStmt.getBody() ) ).append("\n");
         } else {
@@ -1426,10 +1436,11 @@ public class Convert {
         
         // test to see if this is an array and "length" of the array is accessed.
         if ( fieldAccessExpr.getField().equals("length") ) {
-            if ( s.startsWith("self.") ) {
-                s= s.substring(5);
+            String inContext= s;
+            if ( inContext.startsWith("self.") ) {
+                inContext= inContext.substring(5);
             }
-            Type t= getCurrentScope().get(s);
+            Type t= getCurrentScope().get(inContext);
             if ( t!=null && t instanceof ReferenceType && ((ReferenceType)t).getArrayCount()>0 ) { 
                 return indent + "len("+ s + ")";
             }
@@ -1941,7 +1952,7 @@ public class Convert {
 //        System.err.println(c.doConvert("\"apple\".subString(3)"));
 //        System.err.println("----");
 
-        InputStream ins= new FileInputStream("/net/spot8/home/jbf/ct/git/JavaJythonConverter/src/java/test/ArrayListDemo.java");
+        InputStream ins= new FileInputStream("/net/spot8/home/jbf/ct/hapi/git/uri-templates/UriTemplatesJava/src/org/hapiserver/URITemplate.java");
         String text = new BufferedReader(
             new InputStreamReader(ins, StandardCharsets.UTF_8))
             .lines()
