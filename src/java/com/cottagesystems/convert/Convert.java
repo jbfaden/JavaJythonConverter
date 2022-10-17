@@ -677,17 +677,12 @@ public class Convert {
             } else if ( characterMethods.contains(name) 
                     && ( contextType==null || contextType.equals(ASTHelper.createReferenceType("String", 0) )) ) {
                 clasType= "Character";
-            } else if ( getCurrentScope().containsKey(contextName) ) {
+            } else if ( contextType!=null ) {
                 Type t= contextType;
                 if ( t.toString().equals("StringBuilder") ) {
                     clasType= "StringBuilder";
                 } else {
                     clasType= t.toString();
-                    int i= clasType.indexOf("<"); // diamond typing
-                    if ( i>=0 ) {
-                        clasType= clasType.substring(0,i);
-                    }
-                    System.err.println("don't know what to do with type: "+ t + ", guessing...");
                 }
             }
         } else if ( clas instanceof StringLiteralExpr ) {
@@ -706,11 +701,13 @@ public class Convert {
                 clasType= "";
             } else {
                 clasType= t.toString();
-                int i= clasType.indexOf("<"); 
-                if ( i>0 ) { // remove diamond types for now
-                    clasType= clasType.substring(0,i);
-                }
             }
+        }
+
+        // remove diamond typing (Map<String,String> -> Map)
+        int i= clasType.indexOf("<"); 
+        if ( i>=0 ) {
+            clasType= clasType.substring(0,i);
         }
         
         if ( clasType.equals("StringBuilder") ) {
