@@ -1095,12 +1095,14 @@ public class Convert {
         if ( n.getClass()==null ) {
             throw new IllegalArgumentException("no class");
         }
-        if ( n.getBeginLine()>530) {
-            if ( n.toString().contains("VersioningType") ) {
-                System.err.println("VersioningType "+ n); //switching to parsing end time
-            }
-        }
         String simpleName= n.getClass().getSimpleName();
+
+        //if ( n.getBeginLine()>530 && n instanceof MethodCallExpr ) {
+        //    if ( n.toString().contains("formatString.split") ) {
+        //        System.err.println("formatString.split "+ n); //switching to parsing end time
+        //    }
+        //}
+
         switch ( simpleName ) {
             case "foo":
                 return "foo";
@@ -1868,6 +1870,12 @@ public class Convert {
         sb.append(indent).append("def __init__(self");
         if ( params.trim().length()>0 ) sb.append(",").append(params);
         sb.append("):\n");
+        if ( constructorDeclaration.getParameters()!=null ) {
+            for ( Parameter p: constructorDeclaration.getParameters() ) { 
+                String name= p.getId().getName();
+                getCurrentScope().put( name, p.getType() );
+            }
+        }
         sb.append( doConvert(indent,constructorDeclaration.getBlock()) );
         return sb.toString();
     }
