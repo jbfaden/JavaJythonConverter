@@ -572,6 +572,8 @@ public class Convert {
             String clasName= ((NameExpr)clas).getName();
             if ( Character.isUpperCase(clasName.charAt(0)) ) { // Yup, we're assuming that upper case refers to a class
                 return ASTHelper.createReferenceType( clasName,0 );
+            } else if ( localVariables.containsKey(clasName) ) {
+                return localVariables.get(clasName);
             } else if ( getCurrentScope().containsKey(clasName) ) {
                 return getCurrentScope().get(clasName);
             }
