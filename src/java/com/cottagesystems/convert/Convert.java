@@ -748,6 +748,9 @@ public class Convert {
                     return indent + doConvert("",clas) + ".pop(" + doConvert("",args.get(0)) + ")";
                 case "addAll":
                     return indent + doConvert("",clas) + ".update(" + doConvert("",args.get(0)) + ")";
+                case "size":
+                    return indent + "len(" + doConvert("",clas) + ")";
+                    
                 default:
                     break;
             }
@@ -765,6 +768,8 @@ public class Convert {
                     String a= doConvert("",args.get(0));
                     String d= "dict( zip( " + a + ","+ a +") )";
                     return indent + doConvert("",clas) + ".update( " + d + ")";  
+                case "size":
+                    return indent + "len(" + doConvert("",clas) + ")";
             }
         }
         
@@ -1431,10 +1436,20 @@ public class Convert {
             StringBuilder sb= new StringBuilder();
             return "[ " + utilFormatExprList( ap.getValues() ) + " ]";
         } else {
-            if ( arrayCreationExpr.getDimensions().get(0) instanceof BinaryExpr ) {
-                return "[0] * (" + doConvert( "", arrayCreationExpr.getDimensions().get(0) ) + ")"; //TODO: might not be necessary
+            String item;
+            if ( arrayCreationExpr.getType().equals( ASTHelper.BYTE_TYPE ) ||
+                    arrayCreationExpr.getType().equals( ASTHelper.CHAR_TYPE ) ||
+                    arrayCreationExpr.getType().equals( ASTHelper.SHORT_TYPE ) ||
+                    arrayCreationExpr.getType().equals( ASTHelper.INT_TYPE ) ||
+                    arrayCreationExpr.getType().equals( ASTHelper.LONG_TYPE ) ) {
+                item="0";
             } else {
-                return "[0] * " + doConvert( "", arrayCreationExpr.getDimensions().get(0) ) + ""; //TODO: might not be necessary
+                item= "None";
+            }
+            if ( arrayCreationExpr.getDimensions().get(0) instanceof BinaryExpr ) {
+                return "["+item+"] * (" + doConvert( "", arrayCreationExpr.getDimensions().get(0) ) + ")"; //TODO: might not be necessary
+            } else {
+                return "["+item+"] * " + doConvert( "", arrayCreationExpr.getDimensions().get(0) ) + ""; //TODO: might not be necessary
             }
             
         }
