@@ -83,6 +83,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.Stack;
 import java.util.stream.Collectors;
+import org.eclipse.jdt.internal.compiler.ast.IfStatement;
 
 /**
  * Class for converting Java to Jython using an AST.
@@ -608,9 +609,32 @@ public class Convert {
             MethodCallExpr mce= (MethodCallExpr)clas;
             Type scopeType=null;
             if ( mce.getScope()!=null ) scopeType= guessType(mce.getScope());
-            if ( scopeType!=null && scopeType.toString().equals("Pattern") ) {
-                if ( mce.getName().equals("matcher") ) {
-                    return ASTHelper.createReferenceType("Matcher", 0);
+            if ( scopeType!=null ) {
+                if (  scopeType.toString().equals("Pattern") ) {
+                    if ( mce.getName().equals("matcher") ) {
+                        return ASTHelper.createReferenceType("Matcher", 0);
+                    }
+                } else if ( scopeType.toString().equals("String") ) {
+                    switch ( mce.getName() ) {
+                        case "substring": 
+                        case "trim": 
+                        case "valueOf": 
+                        case "concat": 
+                        case "replace": 
+                        case "replaceAll": 
+                        case "toLowerCase": 
+                        case "toUpperCase": 
+                            return scopeType;
+                        case "length": 
+                            return ASTHelper.INT_TYPE;
+                        case "charAt":
+                            return ASTHelper.CHAR_TYPE;
+                    }
+                } else if ( scopeType.toString().equals("Arrays") ) {
+                    switch ( mce.getName() ) {
+                        case "copyOfRange":
+                            return guessType( mce.getArgs().get(0) );
+                    }
                 }
             }
             switch ( mce.getName() ) { // TODO: consider t
@@ -1116,11 +1140,11 @@ public class Convert {
         }
         String simpleName= n.getClass().getSimpleName();
 
-        if ( n.getBeginLine()>30 ) {//&& n instanceof NameExpr ) {
-            if ( n.toString().contains("timeWidth") ) {
-                System.err.println("At methodCallExpr: "+ n); //switching to parsing end time
-            }
-        }
+        //if ( n.getBeginLine()>1000 ) {//&& n instanceof NameExpr ) {
+        //    if ( n.toString().contains("ss21") ) {
+        //        System.err.println("At methodCallExpr: "+ n); //switching to parsing end time
+        //    }
+        //}
 
         switch ( simpleName ) {
             case "foo":
@@ -1326,6 +1350,9 @@ public class Convert {
     
     private String doConvertIfStmt(String indent, IfStmt ifStmt) {
         StringBuilder b= new StringBuilder();
+        if ( ifStmt.getBeginLine()>1000 ) {
+            System.err.println("here13331");
+        }
         if ( ifStmt.getCondition() instanceof MethodCallExpr && 
                 ((MethodCallExpr)ifStmt.getCondition()).getName().equals("isLoggable") ) {
             return indent + "#J2J: if "+ifStmt.getCondition() + " ... removed";
@@ -1346,6 +1373,7 @@ public class Convert {
                 b.append(indent).append("else");
                 if ( ifStmt.getElseStmt() instanceof BlockStmt ) {
                     b.append(":\n");
+                    localVariablesStack.peek();
                     b.append( doConvert(indent,ifStmt.getElseStmt()) );
                 } else {
                     b.append(": ");
@@ -1358,6 +1386,7 @@ public class Convert {
 
     private String doConvertForStmt(String indent, ForStmt forStmt) {
         StringBuilder b= new StringBuilder();
+        localVariablesStack.push( new HashMap<>(localVariablesStack.peek()) );
         forStmt.getInit().forEach((e) -> {
             b.append(indent).append( doConvert( "", e ) ).append( "\n" );
         });
@@ -1370,6 +1399,7 @@ public class Convert {
         forStmt.getUpdate().forEach((e) -> {
             b.append(indent).append(s4).append( doConvert( "", e ) ).append( "\n" );
         });
+        localVariablesStack.pop();
         return b.toString();
     }
 
@@ -1379,12 +1409,16 @@ public class Convert {
             throw new IllegalArgumentException("expected only one variable in foreach statement");
         }
         String variableName = foreachStmt.getVariable().getVars().get(0).getId().getName();
+        Type variableType= foreachStmt.getVariable().getType();
+        localVariablesStack.push( new HashMap<>(localVariablesStack.peek()) );
+        localVariablesStack.peek().put( variableName,variableType );
         b.append( indent ).append("for ").append(variableName).append(" in ").append(doConvert("",foreachStmt.getIterable() )).append(":\n");
         if ( foreachStmt.getBody() instanceof ExpressionStmt ) {
             b.append(indent).append(s4).append( doConvert( "", foreachStmt.getBody() ) ).append("\n");
         } else {
             b.append( doConvert( indent, foreachStmt.getBody() ) );
         }
+        localVariablesStack.pop( );
         return b.toString();
     }
     
@@ -1913,9 +1947,6 @@ public class Convert {
         if ( constructorDeclaration.getParameters()!=null ) {
             for ( Parameter p: constructorDeclaration.getParameters() ) { 
                 String name= p.getId().getName();
-                if ( name.equals("fc") ) {
-                   System.err.println("here fc is mistaken as local variable 1910");
-                }
                 localVariablesStack.peek().put( name, p.getType() );
             }
         }
