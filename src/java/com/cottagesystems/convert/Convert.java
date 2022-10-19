@@ -83,7 +83,6 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.Stack;
 import java.util.stream.Collectors;
-import org.eclipse.jdt.internal.compiler.ast.IfStatement;
 
 /**
  * Class for converting Java to Jython using an AST.
@@ -1350,9 +1349,9 @@ public class Convert {
     
     private String doConvertIfStmt(String indent, IfStmt ifStmt) {
         StringBuilder b= new StringBuilder();
-        if ( ifStmt.getBeginLine()>1000 ) {
-            System.err.println("here13331");
-        }
+        //if ( ifStmt.getBeginLine()>1000 ) {
+        //    System.err.println("here13331");
+        //}
         if ( ifStmt.getCondition() instanceof MethodCallExpr && 
                 ((MethodCallExpr)ifStmt.getCondition()).getName().equals("isLoggable") ) {
             return indent + "#J2J: if "+ifStmt.getCondition() + " ... removed";
@@ -1373,7 +1372,6 @@ public class Convert {
                 b.append(indent).append("else");
                 if ( ifStmt.getElseStmt() instanceof BlockStmt ) {
                     b.append(":\n");
-                    localVariablesStack.peek();
                     b.append( doConvert(indent,ifStmt.getElseStmt()) );
                 } else {
                     b.append(": ");
