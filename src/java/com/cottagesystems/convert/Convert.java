@@ -745,6 +745,9 @@ public class Convert {
                 case "put":
                     return indent + doConvert("",clas) + "["+doConvert("",args.get(0))+"] = "+doConvert("",args.get(1));
                 case "get":
+                    //String map= doConvert("",clas);
+                    //String key= doConvert("",args.get(0));
+                    //return indent + "(" + map + "["+key+"] if "+key +" in "+ map + " else None)";
                     return indent + doConvert("",clas) + "["+doConvert("",args.get(0))+"]";
                 case "containsKey": // Note that unlike Java, getting a key which doesn't exist is a runtime error.
                     return indent + doConvert("",args.get(0)) + " in "+ doConvert("",clas);
