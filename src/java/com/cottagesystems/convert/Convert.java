@@ -94,11 +94,12 @@ public class Convert {
         this.stack = new Stack<>();
         this.stackFields= new Stack<>();
         this.stackMethods= new Stack<>();
+        this.localVariablesStack = new Stack<>();
         
         this.stack.push( new HashMap<>() );
         this.stackFields.push( new HashMap<>() );
         this.stackMethods.push( new HashMap<>() );
-        
+        this.localVariablesStack.push( new HashMap<>() );
     }
     
     private String doConvertInitializerDeclaration(String indent, InitializerDeclaration initializerDeclaration) {
@@ -164,14 +165,14 @@ public class Convert {
     /*** internal parsing state ***/
     
     Stack<Map<String,Type>> stack;
+    Stack<Map<String,Type>> localVariablesStack;
+    
     Stack<Map<String,VariableDeclarationExpr>> stackVariables;
     Stack<Map<String,FieldDeclaration>> stackFields;
     Stack<Map<String,MethodDeclaration>> stackMethods;
     
     Map<String,String> nameMapForward= new HashMap<>();
     Map<String,String> nameMapReverse= new HashMap<>();
-    
-    Map<String,Type> localVariables= new HashMap<>();
     
     /**
      * return the current scope, which includes local variables.  Presently this just uses one scope,
@@ -199,8 +200,10 @@ public class Convert {
     private void pushScopeStack(boolean keepLocals) {
         HashMap newScope= new HashMap<>(getCurrentScope());
         if ( !keepLocals ) {
-            newScope.putAll(localVariables);
-            localVariables.clear();
+            newScope.putAll(localVariablesStack.peek());
+            localVariablesStack.push(new HashMap<>());
+        } else {
+            localVariablesStack.push(localVariablesStack.peek());
         }
         stack.push( newScope );
         stackFields.push( new HashMap<>(getCurrentScopeFields()) );
@@ -214,6 +217,7 @@ public class Convert {
         stack.pop();
         stackFields.pop();
         stackMethods.pop();
+        localVariablesStack.pop();
     }
             
     /**
@@ -572,8 +576,8 @@ public class Convert {
             String clasName= ((NameExpr)clas).getName();
             if ( Character.isUpperCase(clasName.charAt(0)) ) { // Yup, we're assuming that upper case refers to a class
                 return ASTHelper.createReferenceType( clasName,0 );
-            } else if ( localVariables.containsKey(clasName) ) {
-                return localVariables.get(clasName);
+            } else if ( localVariablesStack.peek().containsKey(clasName) ) {
+                return localVariablesStack.peek().get(clasName);
             } else if ( getCurrentScope().containsKey(clasName) ) {
                 return getCurrentScope().get(clasName);
             }
@@ -669,7 +673,7 @@ public class Convert {
         String clasType="";  
         if ( clas instanceof NameExpr ) {
             String contextName= ((NameExpr)clas).getName(); // sb in sb.append, or String in String.format.
-            Type contextType= localVariables.get(contextName); // allow local variables to override class variables.
+            Type contextType= localVariablesStack.peek().get(contextName); // allow local variables to override class variables.
             if ( contextType==null ) contextType= getCurrentScope().get(contextName);
             if ( Character.isUpperCase(contextName.charAt(0)) ) { // Yup, we're assuming that upper case refers to a class
                 clasType= contextName;
@@ -1109,11 +1113,11 @@ public class Convert {
         }
         String simpleName= n.getClass().getSimpleName();
 
-        //if ( n.getBeginLine()>761 && n instanceof NameExpr ) {
-        //    if ( n.toString().contains("qualifiers") ) {
-        //        System.err.println("At methodCallExpr: "+ n); //switching to parsing end time
-        //    }
-        //}
+        if ( n.getBeginLine()>30 ) {//&& n instanceof NameExpr ) {
+            if ( n.toString().contains("timeWidth") ) {
+                System.err.println("At methodCallExpr: "+ n); //switching to parsing end time
+            }
+        }
 
         switch ( simpleName ) {
             case "foo":
@@ -1265,7 +1269,7 @@ public class Convert {
             String s= v.getId().getName();
             if ( v.getInit()!=null && v.getInit().toString().startsWith("Logger.getLogger") ) {
                 //addLogger();
-                localVariables.put(s,ASTHelper.createReferenceType("Logger",0) );
+                localVariablesStack.peek().put(s,ASTHelper.createReferenceType("Logger",0) );
                 return indent + "#J2J: "+variableDeclarationExpr.toString().trim();
             }
             if ( s.equals("len") ) {
@@ -1274,7 +1278,10 @@ public class Convert {
                 nameMapReverse.put( news, s );
                 s= news;
             }
-            localVariables.put( s, variableDeclarationExpr.getType() );
+            if ( s.equals("fc") ) {
+                System.err.println("here fc is mistaken as local variable");
+            }
+            localVariablesStack.peek().put( s, variableDeclarationExpr.getType() );
             if ( v.getInit()!=null ) {
                 if ( v.getInit() instanceof ConditionalExpr ) {
                     ConditionalExpr cc  = (ConditionalExpr)v.getInit();
@@ -1464,7 +1471,7 @@ public class Convert {
             if ( inContext.startsWith("self.") ) {
                 inContext= inContext.substring(5);
             }
-            Type t= localVariables.get(inContext);
+            Type t= localVariablesStack.peek().get(inContext);
             if (t==null ) {
                 t= getCurrentScope().get(inContext);
             }
@@ -1651,7 +1658,10 @@ public class Convert {
                     comma = true;
                 }
                 sb.append( name );
-                localVariables.put( name, p.getType() );
+                if ( name.equals("fc") ) {
+                   System.err.println("here fc is mistaken as local variable 1658");
+                }   
+                localVariablesStack.peek().put( name, p.getType() );
             }
         }
         sb.append( "):\n" );
@@ -1900,7 +1910,10 @@ public class Convert {
         if ( constructorDeclaration.getParameters()!=null ) {
             for ( Parameter p: constructorDeclaration.getParameters() ) { 
                 String name= p.getId().getName();
-                localVariables.put( name, p.getType() );
+                if ( name.equals("fc") ) {
+                   System.err.println("here fc is mistaken as local variable 1910");
+                }
+                localVariablesStack.peek().put( name, p.getType() );
             }
         }
         sb.append( doConvert(indent,constructorDeclaration.getBlock()) );
@@ -2127,7 +2140,7 @@ public class Convert {
     private String doConvertNameExpr(String indent, NameExpr nameExpr) {
         String s= nameExpr.getName();
         String scope;
-        if ( localVariables.containsKey(s) ) {
+        if ( localVariablesStack.peek().containsKey(s) ) {
             scope = ""; // local variable
         } else if ( getCurrentScopeFields().containsKey(s) ) {
             FieldDeclaration ss= getCurrentScopeFields().get(s);
