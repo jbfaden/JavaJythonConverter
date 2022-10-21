@@ -91,10 +91,11 @@ public class ConvertServlet extends HttpServlet {
             out.println("<li>The goal is to get something close to translated, but not perfect.\n");
             out.println("<li>The Java code must be working, this assumes that it is a functioning and correct code.\n");
             out.println("<li>Semmantics are considered, for example s.substring is assumed to be using the substring method of string.\n");
-            out.println("<li>other assumptions like xx.length -> len(xx) are made.\n");
-            out.println("<li>some Java class use may remain, and you will need to find translations to Python.\n");
-            out.println("<li>single methods are handled by wrapping the method with a class, then this is removed.\n");
-            out.println("<li>several statements are made into a method similarly.\n");
+            out.println("<li>Other assumptions like xx.length -> len(xx) are made.\n");
+            out.println("<li>Some Java class use may remain, and you will need to find translations to Python.\n");
+            out.println("<li>Single methods are handled by wrapping the method with a class, then this is removed.\n");
+            out.println("<li>Several statements are made into a method similarly.\n");
+            out.println("<li>This currently targets Python 2.2, but will soon have a switch to use 3.6 features.\n");
             out.println("<li>I am a Java developer who knows enough Python to cause problems, see <a href='https://github.com/jbfaden/JavaJythonConverter'>GitHub project</a> to provide feedback\n");
             out.println("</body>");
             out.println("</html>");
