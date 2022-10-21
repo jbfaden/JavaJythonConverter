@@ -496,15 +496,15 @@ public class Convert {
                     && ((IntegerLiteralExpr)b.getRight()).toString().equals("0") ) {
                 if ( null!=b.getOperator() ) switch (b.getOperator()) {
                     case greater:
-                        return doConvert("",mce.getScope()) + ">" + doConvert("",mce.getArgs().get(0));
+                        return doConvert("",mce.getScope()) + " > " + doConvert("",mce.getArgs().get(0));
                     case greaterEquals:
-                        return doConvert("",mce.getScope()) + ">=" + doConvert("",mce.getArgs().get(0));
+                        return doConvert("",mce.getScope()) + " >= " + doConvert("",mce.getArgs().get(0));
                     case less:
-                        return doConvert("",mce.getScope()) + "<" + doConvert("",mce.getArgs().get(0));
+                        return doConvert("",mce.getScope()) + " < " + doConvert("",mce.getArgs().get(0));
                     case lessEquals:
-                        return doConvert("",mce.getScope()) + "<=" + doConvert("",mce.getArgs().get(0));
+                        return doConvert("",mce.getScope()) + " <= " + doConvert("",mce.getArgs().get(0));
                     case equals:                    
-                        return doConvert("",mce.getScope()) + "==" + doConvert("",mce.getArgs().get(0));
+                        return doConvert("",mce.getScope()) + " == " + doConvert("",mce.getArgs().get(0));
                     default:
                         break;
                 }
@@ -536,31 +536,31 @@ public class Convert {
         
         switch (op) {
             case plus:
-                return left + "+" + right;
+                return left + " + " + right;
             case minus:
-                return left + "-" + right;
+                return left + " - " + right;
             case divide:
-                return left + "/" + right;
+                return left + " / " + right;
             case times:
-                return left + "*" + right;
+                return left + " * " + right;
             case greater:
-                return left + ">" + right;
+                return left + " > " + right;
             case less:
-                return left + "<" + right;
+                return left + " < " + right;
             case greaterEquals:
-                return left + ">=" + right;                
+                return left + " >= " + right;                
             case lessEquals:
-                return left + "<=" + right;
+                return left + " <= " + right;
             case and:
                 return left + " and " + right;
             case or:
                 return left + " or " + right;
             case equals:
-                return left + "==" + right;
+                return left + " == " + right;
             case notEquals:
-                return left + "!=" + right;
+                return left + " != " + right;
             case remainder:
-                return left + "%" + right;
+                return left + " % " + right;
             default:
                 throw new IllegalArgumentException("not supported: "+op);
         }
@@ -1531,11 +1531,11 @@ public class Convert {
         } else switch (unaryExpr.getOperator()) {
             case posIncrement: {
                 String n= doConvert("",unaryExpr.getExpr());
-                return indent + n + "=" + n + "+1";
+                return indent + n + " = " + n + " + 1";
             }
             case posDecrement: {
                 String n= doConvert("",unaryExpr.getExpr());
-                return indent + n + "=" + n + "-1";
+                return indent + n + " = " + n + " - 1";
             }
             case positive: {
                 String n= doConvert("",unaryExpr.getExpr());
@@ -1741,19 +1741,19 @@ public class Convert {
                 if ( v.getInit()==null ) {
                     String implicitDeclaration = utilImplicitDeclaration( fieldDeclaration.getType() );
                     if ( implicitDeclaration!=null ) {
-                        sb.append( indent ).append( v.getId() ).append("=").append( implicitDeclaration ).append("\n");
+                        sb.append( indent ).append( v.getId() ).append(" = ").append( implicitDeclaration ).append("\n");
                     } else {
-                        sb.append( indent ).append( v.getId() ).append("=").append( "None  #J2J added" ).append("\n");
+                        sb.append( indent ).append( v.getId() ).append(" = ").append( "None  #J2J added" ).append("\n");
                     }
                 } else if ( v.getInit() instanceof ConditionalExpr ) {
                     ConditionalExpr ce= (ConditionalExpr)v.getInit();
                     sb.append( indent ).append("if ").append(doConvert( "",ce.getCondition() )).append(":\n");
-                    sb.append( indent ).append(s4).append( v.getId()).append("=").append( doConvert( "",ce.getThenExpr() ) ).append("\n");
+                    sb.append( indent ).append(s4).append( v.getId()).append(" = ").append( doConvert( "",ce.getThenExpr() ) ).append("\n");
                     sb.append( indent ).append( "else:\n");
-                    sb.append( indent ).append(s4).append( v.getId()).append("=").append( doConvert( "",ce.getElseExpr() ) ).append("\n");
+                    sb.append( indent ).append(s4).append( v.getId()).append(" = ").append( doConvert( "",ce.getElseExpr() ) ).append("\n");
                     
                 } else {
-                    sb.append( indent ) .append( v.getId() ).append("=").append( doConvert( "",v.getInit() ) ).append("\n");
+                    sb.append( indent ) .append( v.getId() ).append(" = ").append( doConvert( "",v.getInit() ) ).append("\n");
                     
                 }
             }
@@ -2119,15 +2119,31 @@ public class Convert {
             
             for ( Node n: enumDeclaration.getChildrenNodes() ) {
                 if ( n instanceof ConstructorDeclaration ) {
-                    builder.append( doConvert( indent + s4, n ) );
+                    String params= utilFormatParameterList( ((ConstructorDeclaration)n).getParameters() );
+                    builder.append( indent + s4 + "def compare( self, o1, o2 ):\n");
+                    builder.append( indent + s4 + "    raise Exception('Implement me')\n");
                 }
             }
 
             for ( EnumConstantDeclaration l : ll ) {
-                String args = utilFormatExprList(l.getArgs());
+                String args = utilFormatExprList(l.getArgs()); 
+                args= "";// we drop the args
                 //TODO find anonymous extension  l.getArgs().get(0).getChildrenNodes()
                 builder.append(indent).append(enumDeclaration.getName()).append(".").append(l.getName()).append(" = ")
                         .append(enumDeclaration.getName()).append("(").append(args).append(")") .append("\n");
+                String methodName=null;
+                if ( l.getArgs().get(0).getChildrenNodes()!=null ) {
+                    for ( Node n: l.getArgs().get(0).getChildrenNodes() ) {
+                        if ( n instanceof MethodDeclaration ) {
+                            methodName= ((MethodDeclaration)n).getName();
+                            builder.append( doConvert( indent, n ) );
+                        }
+                    }
+                }
+                if (methodName!=null) {
+                    builder.append(indent).append(enumDeclaration.getName()).append(".").append(l.getName()).append(".")
+                            .append(methodName).append('=').append(methodName).append("\n");
+                }
                 
             }
             
