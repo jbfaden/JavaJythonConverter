@@ -1987,6 +1987,10 @@ public class Convert {
             type= "str";
         } else if ( type.equals("char") ) {
             type= "str";
+        } else if ( type.equals("int") ) {
+            type= "int";
+        } else if ( type.equals("long") ) {
+            type= "long";            
         } else {
             type = ""; // (FieldHandler)fh
         }
