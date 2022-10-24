@@ -1970,6 +1970,8 @@ public class Convert {
             type= "str";
         } else if ( type.equals("char") ) {
             type= "str";
+        } else {
+            type = ""; // (FieldHandler)fh
         }
         return type + "(" + doConvert("", castExpr.getExpr() ) + ")";
     }
