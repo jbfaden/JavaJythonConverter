@@ -540,7 +540,11 @@ public class Convert {
             case minus:
                 return left + " - " + right;
             case divide:
-                return left + " / " + right;
+                if ( isIntegerType( leftType ) && isIntegerType( rightType ) ) {
+                    return left + " // " + right;
+                } else {
+                    return left + " / " + right;
+                }
             case times:
                 return left + " * " + right;
             case greater:
@@ -580,6 +584,20 @@ public class Convert {
                 return localVariablesStack.peek().get(clasName);
             } else if ( getCurrentScope().containsKey(clasName) ) {
                 return getCurrentScope().get(clasName);
+            }
+        } else if ( clas instanceof CastExpr ) {
+            CastExpr ex= (CastExpr)clas;
+            return ex.getType();
+        } else if ( clas instanceof EnclosedExpr ) {
+            EnclosedExpr expr= (EnclosedExpr)clas;
+            return guessType(expr.getInner());
+        } else if ( clas instanceof BinaryExpr ) {
+            Type leftType= guessType( ((BinaryExpr)clas).getLeft() );
+            Type rightType= guessType( ((BinaryExpr)clas).getRight() );
+            if ( leftType!=null && leftType.equals(rightType) ) {
+                return leftType;
+            } else {
+                return null;
             }
         } else if ( clas instanceof FieldAccessExpr ) {
             String fieldName= ((FieldAccessExpr)clas).getField();
@@ -2230,6 +2248,20 @@ public class Convert {
             return indent + scope + (scope.length()==0 ? "" : ".") + s;
         }
 
+    }
+
+    /**
+     * return true if integer division should be used.
+     * @param exprType
+     * @return true if it's null or it's an integer and integer division should be used.
+     */
+    private boolean isIntegerType(Type exprType) {
+        if ( exprType==null ) {
+            return false;
+        }
+        return exprType.equals(ASTHelper.INT_TYPE)
+                || exprType.equals(ASTHelper.LONG_TYPE) 
+                || exprType.equals(ASTHelper.SHORT_TYPE );
     }
     
 }
