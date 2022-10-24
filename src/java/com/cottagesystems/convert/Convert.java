@@ -1085,7 +1085,17 @@ public class Convert {
             if ( clas==null ) {
                 ClassOrInterfaceDeclaration m= classMethods.get(name);
                 if ( m!=null ) {
-                    return indent + m.getName() + "." + name + "("+ utilFormatExprList(args) +")";
+                    MethodDeclaration mm= this.getCurrentScopeMethods().get(name);
+                    if ( mm==null ) {
+                        return indent + m.getName() + "." + name + "("+ utilFormatExprList(args) +")";
+                    } else {
+                        boolean isStatic= ModifierSet.isStatic(mm.getModifiers() );
+                        if ( isStatic ) {
+                            return indent + m.getName() + "." + name + "("+ utilFormatExprList(args) +")";
+                        } else {
+                            return indent + "self." + name + "("+ utilFormatExprList(args) +")";
+                        }
+                    }
                 } else {
                     return indent + name + "("+ utilFormatExprList(args) +")";
                 }                
@@ -1612,6 +1622,7 @@ public class Convert {
             classOrInterfaceDeclaration.getChildrenNodes().forEach((n) -> {
                 if ( n instanceof MethodDeclaration ) {
                     classMethods.put( ((MethodDeclaration) n).getName(), classOrInterfaceDeclaration );
+                    getCurrentScopeMethods().put(((MethodDeclaration) n).getName(),(MethodDeclaration)n );
                 } else if ( n instanceof ClassOrInterfaceDeclaration ) {
                     ClassOrInterfaceDeclaration coid= (ClassOrInterfaceDeclaration)n;
                     getCurrentScope().put( coid.getName(), new ClassOrInterfaceType(coid.getName()) );
