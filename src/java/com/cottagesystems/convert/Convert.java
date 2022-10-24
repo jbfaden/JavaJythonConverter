@@ -758,6 +758,12 @@ public class Convert {
                     return name + "(" + doConvert(indent,args.get(0)) + ","+ doConvert(indent,args.get(1))+")";
                 case "min":
                     return name + "(" + doConvert(indent,args.get(0)) + ","+ doConvert(indent,args.get(1))+")";
+                case "floorDiv":
+                    return doConvert(indent,args.get(0)) + "//" + doConvert(indent,args.get(1));
+                case "floorMod":
+                    String x= doConvert(indent,args.get(0));
+                    String y= doConvert(indent,args.get(1));
+                    return "(" + x + " - " + y + " * ( "+x+"//"+y + ") )";
                 default:
                     break;
             }
