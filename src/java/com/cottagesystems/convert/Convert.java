@@ -1682,7 +1682,7 @@ public class Convert {
             });
             
             if ( unittest ) {
-                sb.append("test=").append(classOrInterfaceDeclaration.getName()).append("()\n");
+                sb.append("test = ").append(classOrInterfaceDeclaration.getName()).append("()\n");
                 for ( Node n : classOrInterfaceDeclaration.getChildrenNodes() ) {
                     if ( n instanceof MethodDeclaration 
                             && ((MethodDeclaration)n).getName().startsWith("test") 
