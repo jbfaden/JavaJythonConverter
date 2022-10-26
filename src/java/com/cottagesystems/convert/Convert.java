@@ -796,6 +796,19 @@ public class Convert {
                 return indent + doConvert("",clas);
             }
         }
+        if ( clasType.equals("Collections") ) {
+            switch (name) {
+                case "emptyMap":
+                    return indent + "{}";
+                case "emptySet":
+                    return indent + "{}";  // Jython 2.2 has no set type
+                case "emptyList":
+                    return indent + "[]";
+                default:
+                    break;
+            }
+            
+        }
         if ( clasType.equals("Math") ) {
             switch (name) {
                 case "pow":
@@ -1606,6 +1619,19 @@ public class Convert {
         if ( onlyStatic && s.equals(classNameStack.peek()) ) {
             return fieldAccessExpr.getField();
         } else {
+            if ( s.equals("Collections") ) {
+                String f= fieldAccessExpr.getField();
+                switch (f) {
+                    case "EMPTY_MAP":
+                        return indent + "{}";
+                    case "EMPTY_SET":
+                        return indent + "{}"; // Jython 2.2 does not have sets.
+                    case "EMPTY_LIST":
+                        return indent + "[]";
+                    default:
+                        break;
+                }
+            }
             return indent + s + "." + fieldAccessExpr.getField();
         }
     }
