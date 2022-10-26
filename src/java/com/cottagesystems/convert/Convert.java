@@ -895,7 +895,17 @@ public class Convert {
                         return doConvert(indent,clas)+"["+ doConvert("",args.get(0)) +":]";
                     }
                 case "indexOf":
-                    return doConvert(indent,clas)+".find("+ doConvert("",args.get(0)) + ")";
+                    if ( args.size()==1 ) {
+                        return doConvert(indent,clas)+".find("+ doConvert("",args.get(0)) + ")";
+                    } else {
+                        return doConvert(indent,clas)+".find("+ doConvert("",args.get(0)) + "," + doConvert("",args.get(1))+")";
+                    }
+                case "lastIndexOf":
+                    if ( args.size()==1 ) {
+                        return doConvert(indent,clas)+".rfind("+ doConvert("",args.get(0)) + ")";
+                    } else {
+                        return doConvert(indent,clas)+".rfind("+ doConvert("",args.get(0)) + ",0," + doConvert("",args.get(1))+")";
+                    }                    
                 case "contains":
                     return doConvert(indent,args.get(0)) + " in " + doConvert(indent,clas);
                 case "toUpperCase":
