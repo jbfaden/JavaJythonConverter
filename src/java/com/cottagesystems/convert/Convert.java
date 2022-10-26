@@ -1197,7 +1197,11 @@ public class Convert {
             case "BooleanLiteralExpr":
                 return indent + ( ((BooleanLiteralExpr)n).getValue() ? "True" : "False" );
             case "LongLiteralExpr":
-                return indent + ((LongLiteralExpr)n).getValue();
+                if ( pythonTarget==PythonTarget.jython_2_2 ) {
+                    return indent + ((LongLiteralExpr)n).getValue();
+                } else if ( pythonTarget==PythonTarget.python_3_6 ) {
+                    return indent + ((LongLiteralExpr)n).getValue().replace("L",""); // all ints are longs.
+                }
             case "IntegerLiteralExpr":
                 return indent + ((IntegerLiteralExpr)n).getValue();
             case "DoubleLiteralExpr":
@@ -1614,7 +1618,11 @@ public class Convert {
                 sb.append( "    for b1 in b: print(b1) \n");
                 sb.append( "    print(' '+str(len(b))) \n");
                 sb.append( "    if ( len(a)==len(b) ): \n");
-                sb.append( "        for i in xrange(len(a)): \n");
+                if ( pythonTarget==PythonTarget.python_3_6 ) {
+                    sb.append( "        for i in range(len(a)): \n");
+                } else {
+                    sb.append( "        for i in xrange(len(a)): \n");
+                }
                 sb.append( "            if ( a[i]!=b[i] ): raise Exception('a[%d]!=b[%d]'%(i,i))\n" );
             }
             String comments= utilRewriteComments(indent, classOrInterfaceDeclaration.getComment() );
