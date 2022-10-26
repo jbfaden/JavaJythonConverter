@@ -106,7 +106,7 @@ public class Convert {
         return doConvert(indent,initializerDeclaration.getBlock());
     }
         
-    private PythonTarget pythonTarget = PythonTarget.jython_2_2;
+    private PythonTarget pythonTarget = PythonTarget.python_3_6;
 
     public static final String PROP_PYTHONTARGET = "pythonTarget";
 
@@ -591,13 +591,29 @@ public class Convert {
         } else if ( clas instanceof EnclosedExpr ) {
             EnclosedExpr expr= (EnclosedExpr)clas;
             return guessType(expr.getInner());
+        } else if ( clas instanceof UnaryExpr ) {
+            UnaryExpr ue= ((UnaryExpr)clas);
+            return guessType(ue.getExpr());
         } else if ( clas instanceof BinaryExpr ) {
-            Type leftType= guessType( ((BinaryExpr)clas).getLeft() );
-            Type rightType= guessType( ((BinaryExpr)clas).getRight() );
-            if ( leftType!=null && leftType.equals(rightType) ) {
-                return leftType;
+            BinaryExpr be= ((BinaryExpr)clas);
+            Type leftType= guessType( be.getLeft() );
+            Type rightType= guessType( be.getRight() );
+            if ( be.getOperator()==BinaryExpr.Operator.and ||
+                    be.getOperator()==BinaryExpr.Operator.or || 
+                    be.getOperator()==BinaryExpr.Operator.equals ||
+                    be.getOperator()==BinaryExpr.Operator.notEquals ||
+                    be.getOperator()==BinaryExpr.Operator.greater ||
+                    be.getOperator()==BinaryExpr.Operator.greaterEquals ||
+                    be.getOperator()==BinaryExpr.Operator.less ||
+                    be.getOperator()==BinaryExpr.Operator.lessEquals 
+                    ) {
+                return ASTHelper.BOOLEAN_TYPE;
             } else {
-                return null;
+                if ( leftType!=null && leftType.equals(rightType) ) {
+                    return leftType;
+                } else {
+                    return null;
+                }
             }
         } else if ( clas instanceof FieldAccessExpr ) {
             String fieldName= ((FieldAccessExpr)clas).getField();
@@ -1173,11 +1189,11 @@ public class Convert {
         }
         String simpleName= n.getClass().getSimpleName();
 
-        //if ( n.getBeginLine()>1000 ) {//&& n instanceof NameExpr ) {
-        //    if ( n.toString().contains("ss21") ) {
-        //        System.err.println("At methodCallExpr: "+ n); //switching to parsing end time
-        //    }
-        //}
+        if ( n.getBeginLine()>740 && n instanceof BinaryExpr ) {
+            if ( n.toString().contains("formatString") ) {
+                System.err.println("At methodCallExpr: "+ n); //switching to parsing end time
+            }
+        }
 
         switch ( simpleName ) {
             case "foo":
