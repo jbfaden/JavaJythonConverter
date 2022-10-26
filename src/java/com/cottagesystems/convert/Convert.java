@@ -252,6 +252,10 @@ public class Convert {
      */
     private final Map<String,Boolean> additionalClasses = new LinkedHashMap<>();
     
+    private final Map<String,Boolean> javaImports= new LinkedHashMap<>();
+    
+    private final Map<String,ImportDeclaration> javaImportDeclarations= new LinkedHashMap<>();
+    
     /*** end, internal parsing state ***/
 
     private String utilFormatExprList( List<Expression> l ) {
@@ -370,6 +374,18 @@ public class Convert {
                     }
                 }
 
+                boolean first= true;
+                for ( Entry<String,Boolean> e: javaImports.entrySet() ) {
+                    if ( e.getValue() ) {
+                        if ( first ) {
+                            sb.append("\n");
+                            first= false;
+                        }
+                        ImportDeclaration id= javaImportDeclarations.get(e.getKey());
+                        sb.append( doConvert( "", id ) ).append("\n");
+                    }
+                }
+                
                 sb.append(src);
                 
                 if ( hasMain ) {
@@ -379,7 +395,7 @@ public class Convert {
                 src= sb.toString();
                 
                 
-            }
+            }            
             return src;
         } catch ( ParseException ex ) {
             throwMe= ex;
@@ -1126,6 +1142,10 @@ public class Convert {
                 additionalImports.put("from java.lang import IllegalArgumentException\n",Boolean.FALSE);
             }
             
+            if ( javaImports.keySet().contains(clasType) ) {
+                javaImports.put(clasType,true);
+            }
+            
             if ( clas==null ) {
                 ClassOrInterfaceDeclaration m= classMethods.get(name);
                 if ( m!=null ) {
@@ -1199,11 +1219,11 @@ public class Convert {
         }
         String simpleName= n.getClass().getSimpleName();
 
-        if ( n.getBeginLine()>740 && n instanceof BinaryExpr ) {
-            if ( n.toString().contains("formatString") ) {
-                System.err.println("At methodCallExpr: "+ n); //switching to parsing end time
-            }
-        }
+        //if ( n.getBeginLine()>740 && n instanceof BinaryExpr ) {
+        //    if ( n.toString().contains("formatString") ) {
+        //        System.err.println("At methodCallExpr: "+ n); //switching to parsing end time
+        //    }
+        //}
 
         switch ( simpleName ) {
             case "foo":
@@ -1516,7 +1536,12 @@ public class Convert {
                     continue;
                 }
             }
-            sb.append( doConvert( "", n ) ).append("\n");
+            if ( n instanceof ImportDeclaration ) {
+                javaImports.put(((ImportDeclaration)n).getName().getName(), false );
+                javaImportDeclarations.put(((ImportDeclaration)n).getName().getName(), (ImportDeclaration)n );
+            } else {
+                sb.append( doConvert( "", n ) ).append("\n");
+            }
         }
         
         //for ( Comment c: compilationUnit.getComments() ) {
@@ -1998,6 +2023,9 @@ public class Convert {
                     } else if ( objectCreationExpr.getType().getName().equals("HashSet") ) {
                         return indent + "{}"; // to support Jython 2.2, use dictionary for now
                     } else {
+                        if ( javaImports.keySet().contains( objectCreationExpr.getType().getName() ) ) {
+                            javaImports.put( objectCreationExpr.getType().getName(), true );
+                        }
                         return indent + objectCreationExpr.getType() + "("+ utilFormatExprList(objectCreationExpr.getArgs())+ ")";
                     }
                 }
