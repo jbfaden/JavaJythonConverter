@@ -1607,7 +1607,7 @@ public class Convert {
             
             if ( unittest ) {
                 sb.append( "\n# cheesy unittest temporary\n");
-                sb.append( "def assertEquals(a,b):\n    print a\n    print b\n    if ( not a==b ): raise Exception('a!=b')\n");
+                sb.append( "def assertEquals(a,b):\n    print(a)\n    print(b)\n    if ( not a==b ): raise Exception('a!=b')\n");
                 sb.append( "def assertArrayEquals(a,b):\n");
                 sb.append( "    for a1 in a: print(a1) \n");
                 sb.append( "    print(' '+str(len(a))) \n");
