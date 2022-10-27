@@ -31,15 +31,15 @@ public class ConvertServlet extends HttpServlet {
         String code= request.getParameter("code");
         
         boolean onlyStatic = "true".equals( request.getParameter("onlyStatic") );
-        
-        String pythonVersion = request.getParameter("pythonTarget");
-        if ( pythonVersion==null ) pythonVersion= PythonTarget.jython_2_2.toString();
+        request.getParameterMap();
+        String pythonTarget = request.getParameter("pythonTarget");
+        if ( pythonTarget==null ) pythonTarget= PythonTarget.jython_2_2.toString();
                 
         response.setContentType("text/html;charset=UTF-8");
 
         Convert convert= new Convert();
         convert.setOnlyStatic(onlyStatic);
-        convert.setPythonTarget(PythonTarget.valueOf(pythonVersion));
+        convert.setPythonTarget(PythonTarget.valueOf(pythonTarget));
         convert.setUnittest( "true".equals( request.getParameter("unittest") ) );
         String jythonCode;
         try {
@@ -77,12 +77,12 @@ public class ConvertServlet extends HttpServlet {
                     convert.isOnlyStatic() ? "checked" : "" ) );
             out.println( String.format( "<input type=\"checkbox\" id=\"unittest\" name=\"unittest\" value=\"true\" %s>Unit Test</input>",
                     convert.isUnittest() ? "checked" : "" ) );
-            //out.println("<select name=\"jythonVersion\" id=\"jythonVersion\">");
-            //out.println(String.format( "    <option value=\"jython_2_2\" %s>Jython 2.2</option>", 
-            //        convert.getPythonTarget()==Convert.PythonTarget.jython_2_2 ? "selected=1" : ""  ) );
-            //out.println(String.format( "    <option value=\"python_3_6\" %s>Python 3.6</option>", 
-            //        convert.getPythonTarget()==Convert.PythonTarget.python_3_6 ? "selected=1" : ""  ) );
-            //out.println("</select>");
+            out.println("<select name=\"pythonTarget\" id=\"pythonTarget\">");
+            out.println(String.format( "    <option value=\"jython_2_2\" %s>Jython 2.2</option>", 
+                    ( convert.getPythonTarget()==PythonTarget.jython_2_2 ? "selected=1" : ""  ) ) );
+            out.println(String.format( "    <option value=\"python_3_6\" %s>Python 3.6</option>", 
+                    ( convert.getPythonTarget()==PythonTarget.python_3_6 ? "selected=1" : ""  ) ) );
+            out.println("</select>");
             out.println("<button id=\"clear\" value=\"clear\" onclick=\"javascript:document.getElementById('code').value=''\">Clear</button>");
             out.println("<input type=\"submit\" value=\"submit\"></input>");
             out.println("</form action=\"ConvertServlet\" method=\"post\">");            
