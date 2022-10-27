@@ -794,6 +794,11 @@ public class Convert {
                 return indent + doConvert("",clas) + "+= " + utilAssertStr(args.get(0)) ;
             } else if ( name.equals("toString") ) {
                 return indent + doConvert("",clas);
+            } else if ( name.equals("insert") ) {
+                String n= doConvert("",clas);
+                String i0= doConvert("",args.get(0));
+                String ins= doConvert("",args.get(1));
+                return indent + n + " = ''.join( ( " + n + "[0:"+ i0 + "], "+ins+", " + n + "["+i0+":] ) ) #J2J expr -> assignment"; // expr becomes assignment, this will cause problems
             }
         }
         if ( clasType.equals("Collections") ) {
