@@ -804,6 +804,8 @@ public class Convert {
                     return indent + "{}";  // Jython 2.2 has no set type
                 case "emptyList":
                     return indent + "[]";
+                case "singletonList":
+                    return indent + "[ "+doConvert("",args.get(0)) + " ]";
                 default:
                     break;
             }
@@ -2089,16 +2091,26 @@ public class Convert {
 
     private String doConvertCastExpr(String indent, CastExpr castExpr) {
         String type= castExpr.getType().toString();
-        if ( type.equals("String") ) {
-            type= "str";
-        } else if ( type.equals("char") ) {
-            type= "str";
-        } else if ( type.equals("int") ) {
-            type= "int";
-        } else if ( type.equals("long") ) {
-            type= "long";            
-        } else {
-            type = ""; // (FieldHandler)fh
+        switch (type) {
+            case "String":
+                type= "str";
+                break;
+            case "char":
+                if ( isIntegerType(guessType(castExpr.getExpr())) ) {
+                    type = "chr";
+                } else {
+                    type = "str";
+                }   
+                break;
+            case "int":
+                type= "int";
+                break;
+            case "long":
+                type= "long";
+                break;
+            default:
+                type = ""; // (FieldHandler)fh
+                break;
         }
         return type + "(" + doConvert("", castExpr.getExpr() ) + ")";
     }
