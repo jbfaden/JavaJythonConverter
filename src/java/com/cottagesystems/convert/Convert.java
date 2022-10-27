@@ -1596,7 +1596,6 @@ public class Convert {
         } else {
             String item;
             if ( arrayCreationExpr.getType().equals( ASTHelper.BYTE_TYPE ) ||
-                    arrayCreationExpr.getType().equals( ASTHelper.CHAR_TYPE ) ||
                     arrayCreationExpr.getType().equals( ASTHelper.SHORT_TYPE ) ||
                     arrayCreationExpr.getType().equals( ASTHelper.INT_TYPE ) ||
                     arrayCreationExpr.getType().equals( ASTHelper.LONG_TYPE ) ) {
