@@ -12,5 +12,9 @@ public class StringBuilderDemo {
         sb= new StringBuilder("Hi Thee");
         sb.insert(6,"r");
         System.out.println(sb.toString());
+        
+        sb= new StringBuilder(" 12345 ");
+        sb.insert( 4, "-");
+        String s=  sb.toString().trim();        
     }
 }
