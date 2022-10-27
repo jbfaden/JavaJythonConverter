@@ -663,6 +663,11 @@ public class Convert {
                     if ( mce.getName().equals("matcher") ) {
                         return ASTHelper.createReferenceType("Matcher", 0);
                     }
+                } else if ( scopeType.toString().equals("StringBuilder") ) {
+                    switch ( mce.getName() ) {
+                        case "toString":
+                            return ASTHelper.createReferenceType("String", 0);
+                    }
                 } else if ( scopeType.toString().equals("String") ) {
                     switch ( mce.getName() ) {
                         case "substring": 
@@ -834,6 +839,8 @@ public class Convert {
                     String x= doConvert(indent,args.get(0));
                     String y= doConvert(indent,args.get(1));
                     return "(" + x + " - " + y + " * ( "+x+"//"+y + ") )";
+                case "round":
+                    return name + "(" + doConvert(indent,args.get(0)) + ")";
                 default:
                     break;
             }
