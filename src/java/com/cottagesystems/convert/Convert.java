@@ -1064,13 +1064,13 @@ public class Convert {
         if ( clasType.equals("Double") ) {
             switch ( name ) {
                 case "parseDouble":
-                    return "float("+ args.get(0)+")";
+                    return "float("+doConvert( "", args.get(0))+")";
             }
         }
         if ( clasType.equals("Integer") ) {
             switch ( name ) {
                 case "parseInt":
-                    return "int("+ args.get(0)+")";
+                    return "int("+ doConvert( "", args.get(0) ) +")";
             }
         }
         if ( clasType.equals("Pattern") ) {
@@ -1251,7 +1251,7 @@ public class Convert {
         }
         String simpleName= n.getClass().getSimpleName();
 
-        if ( n.getBeginLine()>800  ) { 
+        if ( n.getBeginLine()>256  ) { 
             if ( n.toString().contains("result") ) {
                 System.err.println("here is the thing you were looking for: "+ n); //switching to parsing end time
             }
@@ -1709,14 +1709,8 @@ public class Convert {
             if ( unittest ) {
                 sb.append( "\n# cheesy unittest temporary\n");
                 sb.append( "def assertEquals(a,b):\n"
-                        + "    print(a)\n"
-                        + "    print(b)\n"
                         + "    if ( not a==b ): raise Exception('a!=b')\n");
                 sb.append( "def assertArrayEquals(a,b):\n");
-                sb.append( "    for a1 in a: print(a1) \n");
-                sb.append( "    print(' '+str(len(a))) \n");
-                sb.append( "    for b1 in b: print(b1) \n");
-                sb.append( "    print(' '+str(len(b))) \n");
                 sb.append( "    if ( len(a)==len(b) ): \n");
                 if ( pythonTarget==PythonTarget.python_3_6 ) {
                     sb.append( "        for i in range(len(a)): \n");
