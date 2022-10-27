@@ -840,6 +840,10 @@ public class Convert {
                     String x= doConvert(indent,args.get(0));
                     String y= doConvert(indent,args.get(1));
                     return "(" + x + " - " + y + " * ( "+x+"//"+y + ") )";
+                case "floor":
+                case "ceil":
+                    additionalImports.put("import math\n", true);
+                    return "math." + name + "(" + doConvert(indent,args.get(0)) + ")";
                 case "round":
                     return name + "(" + doConvert(indent,args.get(0)) + ")";
                 default:
