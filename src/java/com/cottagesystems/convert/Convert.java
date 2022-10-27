@@ -1702,7 +1702,10 @@ public class Convert {
             
             if ( unittest ) {
                 sb.append( "\n# cheesy unittest temporary\n");
-                sb.append( "def assertEquals(a,b):\n    print(a)\n    print(b)\n    if ( not a==b ): raise Exception('a!=b')\n");
+                sb.append( "def assertEquals(a,b):\n"
+                        + "    print(a)\n"
+                        + "    print(b)\n"
+                        + "    if ( not a==b ): raise Exception('a!=b')\n");
                 sb.append( "def assertArrayEquals(a,b):\n");
                 sb.append( "    for a1 in a: print(a1) \n");
                 sb.append( "    print(' '+str(len(a))) \n");
@@ -1715,6 +1718,9 @@ public class Convert {
                     sb.append( "        for i in xrange(len(a)): \n");
                 }
                 sb.append( "            if ( a[i]!=b[i] ): raise Exception('a[%d]!=b[%d]'%(i,i))\n" );
+                sb.append( "def fail(msg):\n"
+                        + "    print(msg)\n"
+                        + "    raise Exception('fail: '+msg)\n");
             }
             String comments= utilRewriteComments(indent, classOrInterfaceDeclaration.getComment() );
             sb.append( "\n" );
