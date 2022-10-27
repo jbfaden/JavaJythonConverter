@@ -30,6 +30,7 @@ import japa.parser.ast.stmt.BlockStmt;
 import japa.parser.ast.stmt.ExpressionStmt;
 import japa.parser.ast.stmt.Statement;
 import japa.parser.ast.body.VariableDeclarator;
+import japa.parser.ast.body.VariableDeclaratorId;
 import japa.parser.ast.comments.Comment;
 import japa.parser.ast.expr.AnnotationExpr;
 import japa.parser.ast.expr.ArrayAccessExpr;
@@ -1359,6 +1360,8 @@ public class Convert {
                 return doConvertForeachStmt(indent,(ForeachStmt)n);
             case "EmptyStmt":
                 return doConvertEmptyStmt(indent,(EmptyStmt)n);
+            case "VariableDeclaratorId":
+                return indent + ((VariableDeclaratorId)n).getName();
             default:
                 return indent + "*** "+simpleName + "*** " + n.toString() + "*** end "+simpleName + "****";
         }
@@ -2137,7 +2140,12 @@ public class Convert {
         sb.append( indent ).append( "try:\n");
         sb.append( doConvert( indent, tryStmt.getTryBlock() ) );
         for ( CatchClause cc: tryStmt.getCatchs() ) {
-            sb.append(indent).append("except ").append(doConvert( "",cc.getExcept() )).append(":\n");
+            String id= doConvert( "",cc.getExcept().getId() );
+            if ( pythonTarget==PythonTarget.python_3_6 ) {
+                sb.append(indent).append("except Exception as ").append( id ).append(": # J2J: exceptions\n");
+            } else {
+                sb.append(indent).append("except ").append(doConvert( "",cc.getExcept() )).append( " as ").append(id).append(":\n");
+            }
             sb.append( doConvert( indent, cc.getCatchBlock() ) );
         }
         if ( tryStmt.getFinallyBlock()!=null ) {
