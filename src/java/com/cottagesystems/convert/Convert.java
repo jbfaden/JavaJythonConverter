@@ -1251,11 +1251,11 @@ public class Convert {
         }
         String simpleName= n.getClass().getSimpleName();
 
-        //if ( n.getBeginLine()>740 && n instanceof BinaryExpr ) {
-        //    if ( n.toString().contains("formatString") ) {
-        //        System.err.println("At methodCallExpr: "+ n); //switching to parsing end time
-        //    }
-        //}
+        if ( n.getBeginLine()>800  ) { 
+            if ( n.toString().contains("result") ) {
+                System.err.println("here is the thing you were looking for: "+ n); //switching to parsing end time
+            }
+        }
 
         switch ( simpleName ) {
             case "foo":
@@ -2077,6 +2077,19 @@ public class Convert {
                     } else {
                         if ( javaImports.keySet().contains( objectCreationExpr.getType().getName() ) ) {
                             javaImports.put( objectCreationExpr.getType().getName(), true );
+                        }
+                        if ( objectCreationExpr.getType().getName().equals("String") ) {
+                            if ( objectCreationExpr.getArgs().size()==1 ) {
+                                Expression e= objectCreationExpr.getArgs().get(0);
+                                Type t= guessType(e);
+                                if ( t instanceof ReferenceType 
+                                        && t.equals(ASTHelper.createReferenceType(ASTHelper.CHAR_TYPE,1) ) ) {
+                                    return indent + "''.join( "+ doConvert("",e) +")";
+                                } else if ( t.equals(ASTHelper.createReferenceType("StringBuilder",0) ) ) {
+                                    return  doConvert("",e); // these are just strings.
+                                }
+                                System.err.println("here "+t);
+                            }
                         }
                         return indent + objectCreationExpr.getType() + "("+ utilFormatExprList(objectCreationExpr.getArgs())+ ")";
                     }
