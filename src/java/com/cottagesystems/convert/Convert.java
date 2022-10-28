@@ -1052,7 +1052,17 @@ public class Convert {
                     }
                 }
                 case "toString": {
-                    String js= "', '.join("+doConvert("",args.get(0))+")";
+                    Type t= guessType(args.get(0));
+                    String js;
+                    if ( t instanceof ReferenceType && ((ReferenceType)t).getArrayCount()==1 && isIntegerType(((ReferenceType)t).getType()) ) {
+                        if ( pythonTarget==PythonTarget.jython_2_2 ) {
+                            js= "', '.join( map( str, "+doConvert("",args.get(0))+" ) )";
+                        } else {
+                            js= "', '.join( str(x) for x in "+doConvert("",args.get(0))+" )";
+                        }
+                    } else {
+                        js= "', '.join("+doConvert("",args.get(0))+")";
+                    }
                     return "('['+"+js + "+']')";
                 }
                 case "asList": 
