@@ -1780,6 +1780,37 @@ public class Convert {
                 }
             });
             
+            // check for unique names
+            Map<String,Node> nn= new HashMap<>();
+            for ( Node n: classOrInterfaceDeclaration.getChildrenNodes() ) {
+                if ( n instanceof ClassOrInterfaceType ) {
+                    String name1= ((ClassOrInterfaceType)n).getName();
+                    if ( nn.containsKey(name1) ) {
+                        sb.append(indent).append(s4).append("J2J: Name is used twice in class: ")
+                                .append(name).append(" ").append(name1).append("\n");
+                    }
+                    nn.put( name1, n );
+                } else if ( n instanceof FieldDeclaration ) {
+                    for ( VariableDeclarator vd : ((FieldDeclaration)n).getVariables() ) {
+                        String name1= vd.getId().getName();
+                        if ( nn.containsKey(name1) ) {
+                            sb.append(indent).append(s4).append("J2J: Name is used twice in class: ")
+                                .append(name).append(" ").append(name1).append("\n");
+                        }
+                        nn.put( name1, vd );
+                    }
+                } else if ( n instanceof MethodDeclaration ) {
+                    String name1=((MethodDeclaration)n).getName(); 
+                    if ( nn.containsKey(name1) ) {
+                            sb.append(indent).append(s4).append("J2J: Name is used twice in class: ")
+                                .append(name).append(" ").append(name1).append("\n");
+                    }
+                    nn.put( name1, n );
+                } else {
+                    System.err.println("Not supported: "+n);
+                }
+            }
+            
             classOrInterfaceDeclaration.getChildrenNodes().forEach((n) -> {
                 if ( n instanceof ClassOrInterfaceType ) {
                     // skip this strange node
