@@ -18,6 +18,7 @@ import japa.parser.ast.body.MethodDeclaration;
 import japa.parser.ast.body.ModifierSet;
 import japa.parser.ast.body.MultiTypeParameter;
 import japa.parser.ast.body.Parameter;
+import japa.parser.ast.body.TypeDeclaration;
 import japa.parser.ast.expr.AssignExpr;
 import japa.parser.ast.expr.BinaryExpr;
 import japa.parser.ast.expr.Expression;
@@ -95,11 +96,13 @@ public class Convert {
         this.stack = new Stack<>();
         this.stackFields= new Stack<>();
         this.stackMethods= new Stack<>();
+        this.stackClasses= new Stack<>();
         this.localVariablesStack = new Stack<>();
         
         this.stack.push( new HashMap<>() );
         this.stackFields.push( new HashMap<>() );
         this.stackMethods.push( new HashMap<>() );
+        this.stackClasses.push( new HashMap<>() );
         this.localVariablesStack.push( new HashMap<>() );
     }
     
@@ -171,6 +174,7 @@ public class Convert {
     Stack<Map<String,VariableDeclarationExpr>> stackVariables;
     Stack<Map<String,FieldDeclaration>> stackFields;
     Stack<Map<String,MethodDeclaration>> stackMethods;
+    Stack<Map<String,TypeDeclaration>> stackClasses;
     
     Map<String,String> nameMapForward= new HashMap<>();
     Map<String,String> nameMapReverse= new HashMap<>();
@@ -195,6 +199,11 @@ public class Convert {
     private Map<String,MethodDeclaration> getCurrentScopeMethods() {
         return stackMethods.peek();
     }
+    
+    private Map<String,TypeDeclaration> getCurrentScopeClasses() {
+        return stackClasses.peek();
+    }
+    
     /**
      * introduce a new level
      */
@@ -208,7 +217,8 @@ public class Convert {
         }
         stack.push( newScope );
         stackFields.push( new HashMap<>(getCurrentScopeFields()) );
-        stackMethods.push( new HashMap<>(getCurrentScopeMethods()) ) ;
+        stackMethods.push( new HashMap<>(getCurrentScopeMethods()) );
+        stackClasses.push( new HashMap<>(getCurrentScopeClasses()) );
     }
     
     /**
@@ -218,6 +228,7 @@ public class Convert {
         stack.pop();
         stackFields.pop();
         stackMethods.pop();
+        stackClasses.pop();
         localVariablesStack.pop();
     }
             
@@ -1225,9 +1236,7 @@ public class Convert {
         String target= doConvert( "", assign.getTarget() );
         Operator operator= assign.getOperator();
         
-        if ( null==operator ) {
-            return indent + target + " = " + doConvert( "", assign.getValue() );
-        } else switch (operator) {
+        switch (operator) {
             case minus:
                 return indent +target + " -= " + doConvert( "", assign.getValue() );
             case plus:
@@ -1240,8 +1249,10 @@ public class Convert {
                 return indent + target + " |= " + doConvert( "", assign.getValue() );
             case and:
                 return indent + target + " &= " + doConvert( "", assign.getValue() );
-            default:
+            case assign:
                 return indent + target + " = " + doConvert( "", assign.getValue() );
+            default:
+                return indent + target + " ??? " + doConvert( "", assign.getValue() ) + " (J2J AssignExpr not supported)";
         }
     }
     
@@ -1261,11 +1272,11 @@ public class Convert {
         }
         String simpleName= n.getClass().getSimpleName();
 
-        if ( n.getBeginLine()>256  ) { 
-            if ( n.toString().contains("result") ) {
-                System.err.println("here is the thing you were looking for: "+ n); //switching to parsing end time
-            }
-        }
+        //if ( n.getBeginLine()>260 && simpleName.equals("FieldAccessExpr") ) { 
+        //    if ( n.toString().contains("VersioningType") ) {
+        //        System.err.println("here is the thing you were looking for: "+ n); //switching to parsing end time
+        //    }
+        //}
 
         switch ( simpleName ) {
             case "foo":
@@ -1632,6 +1643,10 @@ public class Convert {
     private String doConvertFieldAccessExpr(String indent, FieldAccessExpr fieldAccessExpr) {
         String s= doConvert( "", fieldAccessExpr.getScope() );
         
+        if ( this.getCurrentScopeClasses().containsKey(s) ) {
+            s= this.theClassName + "." + s; 
+        }
+        
         // test to see if this is an array and "length" of the array is accessed.
         if ( fieldAccessExpr.getField().equals("length") ) {
             String inContext= s;
@@ -1707,6 +1722,9 @@ public class Convert {
             theClassName= name;
         }
         classNameStack.push(name);
+        
+        getCurrentScopeClasses().put( name, classOrInterfaceDeclaration );
+        
         pushScopeStack(false);
         getCurrentScope().put( "this", new ClassOrInterfaceType(name) );
         
@@ -2301,6 +2319,9 @@ public class Convert {
     private String doConvertEnumDeclaration(String indent, EnumDeclaration enumDeclaration) { 
         StringBuilder builder= new StringBuilder();
         if ( true ) {        
+            
+            getCurrentScopeClasses().put( enumDeclaration.getName(), enumDeclaration );
+            
             builder.append(indent).append("class ").append(enumDeclaration.getName()).append(":\n");
             List<EnumConstantDeclaration> ll = enumDeclaration.getEntries();
             
