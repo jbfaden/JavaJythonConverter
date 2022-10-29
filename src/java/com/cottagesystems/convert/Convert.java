@@ -604,6 +604,7 @@ public class Convert {
      * @return 
      */
     private Type guessType( Expression clas ) {
+        ReferenceType STRING = ASTHelper.createReferenceType("String", 0);
         if ( clas instanceof NameExpr ) {
             String clasName= ((NameExpr)clas).getName();
             if ( Character.isUpperCase(clasName.charAt(0)) ) { // Yup, we're assuming that upper case refers to a class
@@ -636,6 +637,10 @@ public class Convert {
                     be.getOperator()==BinaryExpr.Operator.lessEquals 
                     ) {
                 return ASTHelper.BOOLEAN_TYPE;
+            } else if ( be.getOperator()==BinaryExpr.Operator.plus ) { // we automatically convert ints to strings.
+                if ( leftType.equals(STRING) || rightType.equals(STRING) ) {
+                    return STRING;
+                }
             } else {
                 if ( leftType!=null && leftType.equals(rightType) ) {
                     return leftType;
