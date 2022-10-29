@@ -1514,7 +1514,7 @@ public class Convert {
                     b.append( doConvert(indent,ifStmt.getElseStmt()) );
                 } else {
                     b.append(": ");
-                    b.append( doConvert("",ifStmt.getThenStmt() ) ).append("\n");
+                    b.append( doConvert("",ifStmt.getElseStmt() ) ).append("\n");
                 }
             }
         }
