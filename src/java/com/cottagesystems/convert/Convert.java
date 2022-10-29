@@ -2181,15 +2181,19 @@ public class Convert {
     }
 
     private String doConvertConditionalExpr(String indent, ConditionalExpr conditionalExpr) {
-        //StringBuilder sb= new StringBuilder();
-        //sb.append(indent).append("# ConditionalExpr: ").append(conditionalExpr.toString());
-        //sb.append(indent).append("if ").append( doConvert("",conditionalExpr.getCondition()) ).append(": ");
-        //sb.append(s4).append(indent).append("ce_=").append(doConvert("",conditionalExpr.getThenExpr()));
-        //sb.append(indent).append("if ").append( doConvert("",conditionalExpr.getCondition()) ).append(": ");
-        //sb.append(s4).append(indent).append("ce_=").append(doConvert("",conditionalExpr.getElseExpr()));
-        return indent + doConvert("",conditionalExpr.getThenExpr())
-                + " if " + doConvert("",conditionalExpr.getCondition())
-                + " else " +  doConvert("",conditionalExpr.getElseExpr());
+        if ( pythonTarget==PythonTarget.jython_2_2 ) {
+            StringBuilder sb= new StringBuilder();
+            sb.append(indent).append("# J2J ConditionalExpr: ").append(conditionalExpr.toString()).append("\n");
+            sb.append(indent).append("if ").append( doConvert("",conditionalExpr.getCondition()) ).append(": \n");
+            sb.append(s4).append(indent).append("ce_=").append(doConvert("",conditionalExpr.getThenExpr())).append("\n");
+            sb.append(indent).append("if ").append( doConvert("",conditionalExpr.getCondition()) ).append(": \n");
+            sb.append(s4).append(indent).append("ce_=").append(doConvert("",conditionalExpr.getElseExpr())).append("\n");
+            return sb.toString();
+        } else {
+            return indent + doConvert("",conditionalExpr.getThenExpr())
+                    + " if " + doConvert("",conditionalExpr.getCondition())
+                    + " else " +  doConvert("",conditionalExpr.getElseExpr());
+        }
     }
 
     private String doConvertCastExpr(String indent, CastExpr castExpr) {
