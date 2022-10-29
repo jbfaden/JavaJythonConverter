@@ -1452,7 +1452,14 @@ public class Convert {
             if ( s.equals("fc") ) {
                 System.err.println("here fc is mistaken as local variable");
             }
-            localVariablesStack.peek().put( s, variableDeclarationExpr.getType() );
+            if ( v.getInit()!=null 
+                    && ( v.getInit() instanceof ArrayInitializerExpr ) 
+                    && ( variableDeclarationExpr.getType() instanceof PrimitiveType ) ) {
+                Type t= ASTHelper.createReferenceType( ((PrimitiveType)variableDeclarationExpr.getType()), 1 );
+                localVariablesStack.peek().put( s, t );
+            } else {
+                localVariablesStack.peek().put( s, variableDeclarationExpr.getType() );
+            }
             if ( v.getInit()!=null ) {
                 if ( v.getInit() instanceof ConditionalExpr ) {
                     ConditionalExpr cc  = (ConditionalExpr)v.getInit();
