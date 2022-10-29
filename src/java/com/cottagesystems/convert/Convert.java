@@ -638,7 +638,8 @@ public class Convert {
                     ) {
                 return ASTHelper.BOOLEAN_TYPE;
             } else if ( be.getOperator()==BinaryExpr.Operator.plus ) { // we automatically convert ints to strings.
-                if ( leftType.equals(STRING) || rightType.equals(STRING) ) {
+                if ( ( leftType!=null && leftType.equals(STRING) ) ||
+                        ( rightType!=null && rightType.equals(STRING) ) ) {
                     return STRING;
                 }
             } else {
