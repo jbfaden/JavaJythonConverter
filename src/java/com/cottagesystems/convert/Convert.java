@@ -1542,18 +1542,64 @@ public class Convert {
     private String doConvertForStmt(String indent, ForStmt forStmt) {
         StringBuilder b= new StringBuilder();
         localVariablesStack.push( new HashMap<>(localVariablesStack.peek()) );
-        forStmt.getInit().forEach((e) -> {
-            b.append(indent).append( doConvert( "", e ) ).append( "\n" );
-        });
-        b.append( indent ).append("while ").append(doConvert( "", forStmt.getCompare() )).append(":  # J2J for loop\n");
+        
+        List<Expression> init = forStmt.getInit();
+        VariableDeclarationExpr init1= null;
+        VariableDeclaratorId v=null;
+        if ( init.size()==1 && init.get(0) instanceof VariableDeclarationExpr ) {
+            init1= (VariableDeclarationExpr)init.get(0);
+            if (init1.getVars().size()!=1 ) {
+                init1= null;
+            } else {
+                v= (init1.getVars().get(0)).getId();
+            }
+        }
+        BinaryExpr compare= forStmt.getCompare() instanceof BinaryExpr ? ((BinaryExpr)forStmt.getCompare()) : null;
+        List<Expression> update= forStmt.getUpdate();
+        UnaryExpr update1= null;
+        if ( update.size()==1 && update.get(0) instanceof UnaryExpr ) {
+            update1= (UnaryExpr)update.get(0);
+            if ( !(update1.getOperator()==UnaryExpr.Operator.posIncrement) ) {
+                update1= null;
+            }
+        }
+        boolean initOkay= init1!=null;
+        boolean compareOkay= compare!=null && compare.getOperator()==BinaryExpr.Operator.less;
+        boolean updateOkay= update1!=null;
+        
+        boolean bodyOkay= false;
+        if ( initOkay && compareOkay && updateOkay ) { // check that the loop variable isn't modified within loop
+            bodyOkay= utilCheckNoVariableModification( forStmt.getBody(), v.getName() );
+        }
+        
+        if ( initOkay && compareOkay && updateOkay && bodyOkay ) {
+            b.append(indent).append( "for " ).append( v.getName() ).append(" in ");
+            if ( pythonTarget==PythonTarget.jython_2_2 ) {
+                b.append("xrange(");
+            } else if ( pythonTarget==PythonTarget.python_3_6 ) {
+                b.append("range(");
+            } else {
+                throw new IllegalArgumentException("not implemented");
+            }
+            b.append( init1.getVars().get(0).getInit()).append(",");
+            b.append( doConvert("",compare.getRight() ));
+            b.append("):\n");
+        } else {        
+            forStmt.getInit().forEach((e) -> {
+                b.append(indent).append( doConvert( "", e ) ).append( "\n" );
+            });
+            b.append( indent ).append("while ").append(doConvert( "", forStmt.getCompare() )).append(":  # J2J for loop\n");        
+        }
         if ( forStmt.getBody() instanceof ExpressionStmt ) {
             b.append(indent).append(s4).append( doConvert( "", forStmt.getBody() ) ).append("\n");
         } else {
             b.append( doConvert( indent, forStmt.getBody() ) );
         }
-        forStmt.getUpdate().forEach((e) -> {
-            b.append(indent).append(s4).append( doConvert( "", e ) ).append( "\n" );
-        });
+        if ( !( initOkay && compareOkay && updateOkay && bodyOkay ) ) {
+            forStmt.getUpdate().forEach((e) -> {
+                b.append(indent).append(s4).append( doConvert( "", e ) ).append( "\n" );
+            });
+        }
         localVariablesStack.pop();
         return b.toString();
     }
@@ -2479,6 +2525,34 @@ public class Convert {
         return exprType.equals(ASTHelper.INT_TYPE)
                 || exprType.equals(ASTHelper.LONG_TYPE) 
                 || exprType.equals(ASTHelper.SHORT_TYPE );
+    }
+
+    private boolean utilCheckNoVariableModification(BlockStmt body, String name ) {
+        for ( Statement s: body.getStmts() ) {
+            if ( !utilCheckNoVariableModification( s, name ) ) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private boolean utilCheckNoVariableModification(Statement body, String name ) {
+        for ( Node n: body.getChildrenNodes() ) {
+            if ( n instanceof BlockStmt ) {
+                return utilCheckNoVariableModification((BlockStmt)n, name );
+            } else if ( n instanceof ExpressionStmt ) {
+                if ( ((ExpressionStmt) n).getExpression() instanceof AssignExpr ) {
+                    AssignExpr ae= (AssignExpr)((ExpressionStmt) n).getExpression();
+                    Expression t= ae.getTarget();
+                    if ( t instanceof NameExpr ) {
+                        if ( ((NameExpr)t).getName().equals(name) ) {
+                            return false;
+                        }
+                    }
+                }
+            }
+        }
+        return true;
     }
     
 }
