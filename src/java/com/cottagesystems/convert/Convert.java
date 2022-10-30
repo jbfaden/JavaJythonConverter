@@ -1452,7 +1452,7 @@ public class Convert {
                 result= indent + "*** "+simpleName + "*** " + n.toString() + "*** end "+simpleName + "****";
                 break;
         }
-        //if ( result.contains("TimeUtil.TimeUtil") ) {
+        //if ( result.contains("\n\n") ) {
         //    System.err.println("here stop after convert");
         //}
         return result;
@@ -1480,7 +1480,9 @@ public class Convert {
             String aline= doConvert(indent,s);
             if ( aline.trim().length()==0 ) continue;
             result.append(aline);
-            result.append("\n");
+            if ( !aline.endsWith("\n") ) {
+                result.append("\n"); //TODO: yuck!  Why is it sometimes there and sometimes not?  Fix this.
+            }
             if ( !aline.trim().startsWith("#") ) lines++;
         }
         if ( lines==0 ) {
@@ -1501,7 +1503,10 @@ public class Convert {
 
     private String doConvertVariableDeclarationExpr(String indent, VariableDeclarationExpr variableDeclarationExpr) {
         StringBuilder b= new StringBuilder();
-        for ( VariableDeclarator v: variableDeclarationExpr.getVars() ) {
+        
+        for ( int i=0; i<variableDeclarationExpr.getVars().size(); i++ ) {
+            if ( i>0 ) b.append("\n");
+            VariableDeclarator v= variableDeclarationExpr.getVars().get(i);
             String s= v.getId().getName();
             if ( v.getInit()!=null && v.getInit().toString().startsWith("Logger.getLogger") ) {
                 //addLogger();
@@ -1540,7 +1545,7 @@ public class Convert {
                             b.append(doConvert( indent+"#J2J:", bd ) );
                         }
                     }
-                    b.append( indent ).append(s).append(" = ").append(doConvert("",v.getInit()) ).append("\n");
+                    b.append( indent ).append(s).append(" = ").append(doConvert("",v.getInit()) );
                 }
             }
         }
