@@ -1452,6 +1452,9 @@ public class Convert {
                 result= indent + "*** "+simpleName + "*** " + n.toString() + "*** end "+simpleName + "****";
                 break;
         }
+        //if ( result.contains("TimeUtil.TimeUtil") ) {
+        //    System.err.println("here stop after convert");
+        //}
         return result;
     }
     
@@ -1765,7 +1768,9 @@ public class Convert {
         String s= doConvert( "", fieldAccessExpr.getScope() );
         
         if ( this.getCurrentScopeClasses().containsKey(s) ) {
-            s= this.theClassName + "." + s; 
+            if ( !this.theClassName.equals(s) ) {
+                s= this.theClassName + "." + s; 
+            }
         }
         
         // test to see if this is an array and "length" of the array is accessed.
