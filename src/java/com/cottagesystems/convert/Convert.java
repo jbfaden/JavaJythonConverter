@@ -1431,7 +1431,12 @@ public class Convert {
     }
 
     private String doConvertExpressionStmt(String indent, ExpressionStmt expressionStmt) {
-        return doConvert(indent,expressionStmt.getExpression());
+        StringBuilder sb= new StringBuilder();
+        if ( expressionStmt.getComment()!=null ) {
+            sb.append( utilRewriteComments(indent, expressionStmt.getComment() ) );
+        }
+        sb.append( doConvert( indent, expressionStmt.getExpression() ) );
+        return sb.toString();
     }
 
     private String doConvertVariableDeclarationExpr(String indent, VariableDeclarationExpr variableDeclarationExpr) {
@@ -1461,7 +1466,7 @@ public class Convert {
                 localVariablesStack.peek().put( s, variableDeclarationExpr.getType() );
             }
             if ( v.getInit()!=null ) {
-                if ( v.getInit() instanceof ConditionalExpr ) {
+                if ( v.getInit() instanceof ConditionalExpr ) { // avoid conditional expression by rewriting
                     ConditionalExpr cc  = (ConditionalExpr)v.getInit();
                     b.append( indent ).append("if ").append(doConvert("",cc.getCondition())).append(":\n");
                     b.append(indent).append(s4).append( s );
@@ -1475,7 +1480,7 @@ public class Convert {
                             b.append(doConvert( indent+"#J2J:", bd ) );
                         }
                     }
-                    b.append( indent ).append(s).append(" = ").append(doConvert("",v.getInit()) );
+                    b.append( indent ).append(s).append(" = ").append(doConvert("",v.getInit()) ).append("\n");
                 }
             }
         }
@@ -1871,13 +1876,8 @@ public class Convert {
                     return "";
                 }
             }
-        }
-        
-        
-        if ( methodDeclaration.getName().equals("makeQualifiersCanonical") ) {
-            System.err.println("here stop");
-        }
-        
+        }        
+
         StringBuilder sb= new StringBuilder();
         String comments= utilRewriteComments( indent, methodDeclaration.getComment() );
         sb.append( comments );
@@ -1905,9 +1905,6 @@ public class Convert {
                     comma = true;
                 }
                 sb.append( name );
-                if ( name.equals("fc") ) {
-                   System.err.println("here fc is mistaken as local variable 1658");
-                }   
                 localVariablesStack.peek().put( name, p.getType() );
             }
         }
