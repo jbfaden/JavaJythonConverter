@@ -2182,12 +2182,17 @@ public class Convert {
 
     private String doConvertConditionalExpr(String indent, ConditionalExpr conditionalExpr) {
         if ( pythonTarget==PythonTarget.jython_2_2 ) {
+            String ce= "def ce2j2( condition, a, b ):\n" +
+"    if condition:\n" +
+"        return a\n" +
+"    else:\n" +
+"        return b\n";
+            additionalClasses.put( ce, true );
             StringBuilder sb= new StringBuilder();
-            sb.append(indent).append("# J2J ConditionalExpr: ").append(conditionalExpr.toString()).append("\n");
-            sb.append(indent).append("if ").append( doConvert("",conditionalExpr.getCondition()) ).append(": \n");
-            sb.append(s4).append(indent).append("ce_=").append(doConvert("",conditionalExpr.getThenExpr())).append("\n");
-            sb.append(indent).append("if ").append( doConvert("",conditionalExpr.getCondition()) ).append(": \n");
-            sb.append(s4).append(indent).append("ce_=").append(doConvert("",conditionalExpr.getElseExpr())).append("\n");
+            sb.append(indent).append("cej2j(")
+                    .append( doConvert("",conditionalExpr.getCondition())).append(", ")
+                    .append( doConvert("",conditionalExpr.getThenExpr())).append(", ")
+                    .append( doConvert("",conditionalExpr.getElseExpr())).append( ")" );
             return sb.toString();
         } else {
             return indent + doConvert("",conditionalExpr.getThenExpr())
