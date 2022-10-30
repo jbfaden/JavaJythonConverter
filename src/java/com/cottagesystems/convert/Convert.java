@@ -2182,7 +2182,7 @@ public class Convert {
 
     private String doConvertConditionalExpr(String indent, ConditionalExpr conditionalExpr) {
         if ( pythonTarget==PythonTarget.jython_2_2 ) {
-            String ce= "def ce2j2( condition, a, b ):\n" +
+            String ce= "def cej2j( condition, a, b ):\n" +
 "    if condition:\n" +
 "        return a\n" +
 "    else:\n" +
