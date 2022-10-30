@@ -1283,119 +1283,176 @@ public class Convert {
         //        System.err.println("here is the thing you were looking for: "+ n); //switching to parsing end time
         //    }
         //}
+        
+        String result;
 
         switch ( simpleName ) {
             case "foo":
-                return "foo";
+                result= "foo";
             case "CompilationUnit":
-                return doConvertCompilationUnit(indent,(CompilationUnit)n);
+                result= doConvertCompilationUnit(indent,(CompilationUnit)n);
+                break;
             case "AssignExpr":
-                return doAssignExpr(indent,(AssignExpr)n);
+                result= doAssignExpr(indent,(AssignExpr)n);
+                break;
             case "BinaryExpr":
-                return doConvertBinaryExpr(indent,(BinaryExpr)n);
+                result= doConvertBinaryExpr(indent,(BinaryExpr)n);
+                break;
             case "NameExpr":
-                return doConvertNameExpr(indent,(NameExpr)n);
+                result= doConvertNameExpr(indent,(NameExpr)n);
+                break;
             case "EnclosedExpr": 
-                return indent + "(" + doConvert( "", ((EnclosedExpr)n).getInner() ) + ")";
+                result= indent + "(" + doConvert( "", ((EnclosedExpr)n).getInner() ) + ")";
+                break;
             case "NullLiteralExpr":
-                return indent + "None";
+                result= indent + "None";
+                break;
             case "BooleanLiteralExpr":
-                return indent + ( ((BooleanLiteralExpr)n).getValue() ? "True" : "False" );
+                result= indent + ( ((BooleanLiteralExpr)n).getValue() ? "True" : "False" );
+                break;
             case "LongLiteralExpr":
                 if ( pythonTarget==PythonTarget.jython_2_2 ) {
-                    return indent + ((LongLiteralExpr)n).getValue();
+                    result= indent + ((LongLiteralExpr)n).getValue();
                 } else if ( pythonTarget==PythonTarget.python_3_6 ) {
-                    return indent + ((LongLiteralExpr)n).getValue().replace("L",""); // all ints are longs.
+                    result= indent + ((LongLiteralExpr)n).getValue().replace("L",""); // all ints are longs.
+                } else {
+                    throw new IllegalStateException("unsupported python target "+pythonTarget);
                 }
+                break;
             case "IntegerLiteralExpr":
-                return indent + ((IntegerLiteralExpr)n).getValue();
+                result= indent + ((IntegerLiteralExpr)n).getValue();
+                break;
             case "DoubleLiteralExpr":
-                return indent + ((DoubleLiteralExpr)n).getValue();
+                result= indent + ((DoubleLiteralExpr)n).getValue();
+                break;
             case "CharLiteralExpr":
-                return indent + "'" + ((CharLiteralExpr)n).getValue() +"'";
+                result= indent + "'" + ((CharLiteralExpr)n).getValue() +"'";
+                break;
             case "CastExpr":
-                return doConvertCastExpr(indent,(CastExpr)n);
+                result= doConvertCastExpr(indent,(CastExpr)n);
+                break;
             case "MethodCallExpr":
-                return doConvertMethodCallExpr(indent,(MethodCallExpr)n);
+                result= doConvertMethodCallExpr(indent,(MethodCallExpr)n);
+                break;
             case "StringLiteralExpr":
-                return doConvertStringLiteralExpr(indent,(StringLiteralExpr)n);
+                result= doConvertStringLiteralExpr(indent,(StringLiteralExpr)n);
+                break;
             case "ConditionalExpr":
-                return doConvertConditionalExpr(indent,(ConditionalExpr)n);
+                result= doConvertConditionalExpr(indent,(ConditionalExpr)n);
+                break;
             case "UnaryExpr":
-                return doConvertUnaryExpr(indent,(UnaryExpr)n);
+                result= doConvertUnaryExpr(indent,(UnaryExpr)n);
+                break;
             case "BodyDeclaration":
-                return "<Body Declaration>";
+                result= "<Body Declaration>";
+                break;
             case "BlockStmt":
-                return doConvertBlockStmt(indent+s4,(BlockStmt)n);
+                result= doConvertBlockStmt(indent+s4,(BlockStmt)n);
+                break;
             case "ExpressionStmt":
-                return doConvertExpressionStmt(indent,(ExpressionStmt)n);
+                result= doConvertExpressionStmt(indent,(ExpressionStmt)n);
+                break;
             case "VariableDeclarationExpr":
-                return doConvertVariableDeclarationExpr(indent,(VariableDeclarationExpr)n);
+                result= doConvertVariableDeclarationExpr(indent,(VariableDeclarationExpr)n);
+                break;
             case "IfStmt":
-                return doConvertIfStmt(indent,(IfStmt)n);
+                result= doConvertIfStmt(indent,(IfStmt)n);
+                break;
             case "ForStmt":
-                return doConvertForStmt(indent,(ForStmt)n);
+                result= doConvertForStmt(indent,(ForStmt)n);
+                break;
             case "WhileStmt":
-                return doConvertWhileStmt(indent,(WhileStmt)n);
+                result= doConvertWhileStmt(indent,(WhileStmt)n);
+                break;
             case "SwitchStmt":
-                return doConvertSwitchStmt(indent,(SwitchStmt)n);                
+                result= doConvertSwitchStmt(indent,(SwitchStmt)n);                
+                break;
             case "ReturnStmt":
-                return doConvertReturnStmt(indent,(ReturnStmt)n);
+                result= doConvertReturnStmt(indent,(ReturnStmt)n);
+                break;
             case "BreakStmt":
-                return indent + "break";
+                result= indent + "break";
+                break;
             case "ContinueStmt":
-                return indent + "continue";
+                result= indent + "continue";
+                break;
             case "TryStmt":
-                return doConvertTryStmt(indent,(TryStmt)n);
+                result= doConvertTryStmt(indent,(TryStmt)n);
+                break;
             case "ReferenceType":
-                return doConvertReferenceType(indent,(ReferenceType)n);
+                result= doConvertReferenceType(indent,(ReferenceType)n);
+                break;
             case "MultiTypeParameter":
-                return doConvertMultiTypeParameter(indent,(MultiTypeParameter)n);
+                result= doConvertMultiTypeParameter(indent,(MultiTypeParameter)n);
+                break;
             case "ThrowStmt":
-                return doConvertThrowStmt(indent,(ThrowStmt)n);
+                result= doConvertThrowStmt(indent,(ThrowStmt)n);
+                break;
             case "ArrayCreationExpr":
-                return doConvertArrayCreationExpr(indent,(ArrayCreationExpr)n);
+                result= doConvertArrayCreationExpr(indent,(ArrayCreationExpr)n);
+                break;
             case "ArrayInitializerExpr":
-                return doConvertArrayInitializerExpr(indent,(ArrayInitializerExpr)n);
+                result= doConvertArrayInitializerExpr(indent,(ArrayInitializerExpr)n);
+                break;
             case "ArrayAccessExpr":
-                return doConvertArrayAccessExpr(indent,(ArrayAccessExpr)n);
+                result= doConvertArrayAccessExpr(indent,(ArrayAccessExpr)n);
+                break;
             case "FieldAccessExpr":
-                return doConvertFieldAccessExpr(indent,(FieldAccessExpr)n);
+                result= doConvertFieldAccessExpr(indent,(FieldAccessExpr)n);
+                break;
             case "ThisExpr":
-                return "self";
+                result= "self";
+                break;
             case "ImportDeclaration":
-                return doConvertImportDeclaration(indent,(ImportDeclaration)n);
+                result= doConvertImportDeclaration(indent,(ImportDeclaration)n);
+                break;
             case "PackageDeclaration":
-                return "";
+                result= "";
+                break;
             case "FieldDeclaration":
-                return doConvertFieldDeclaration(indent,(FieldDeclaration)n);
+                result= doConvertFieldDeclaration(indent,(FieldDeclaration)n);
+                break;
             case "MethodDeclaration":
-                return doConvertMethodDeclaration(indent,(MethodDeclaration)n);
+                result= doConvertMethodDeclaration(indent,(MethodDeclaration)n);
+                break;
             case "ClassOrInterfaceDeclaration":
-                return doConvertClassOrInterfaceDeclaration(indent,(ClassOrInterfaceDeclaration)n);
+                result= doConvertClassOrInterfaceDeclaration(indent,(ClassOrInterfaceDeclaration)n);
+                break;
             case "ClassOrTypeInterfaceType":
-                return doConvertClassOrInterfaceType(indent,(ClassOrInterfaceType)n); // TODO: this looks suspicious
+                result= doConvertClassOrInterfaceType(indent,(ClassOrInterfaceType)n); // TODO: this looks suspicious
+                break;
             case "ConstructorDeclaration":
-                return doConvertConstructorDeclaration(indent,(ConstructorDeclaration)n);
+                result= doConvertConstructorDeclaration(indent,(ConstructorDeclaration)n);
+                break;
             case "EnumDeclaration":
-                return doConvertEnumDeclaration(indent,(EnumDeclaration)n);
+                result= doConvertEnumDeclaration(indent,(EnumDeclaration)n);
+                break;
             case "InitializerDeclaration":
-                return doConvertInitializerDeclaration(indent,(InitializerDeclaration)n);
+                result= doConvertInitializerDeclaration(indent,(InitializerDeclaration)n);
+                break;
             case "ObjectCreationExpr":
-                return doConvertObjectCreationExpr(indent,(ObjectCreationExpr)n);
+                result= doConvertObjectCreationExpr(indent,(ObjectCreationExpr)n);
+                break;
             case "ClassOrInterfaceType":
-                return doConvertClassOrInterfaceType(indent,(ClassOrInterfaceType)n);
+                result= doConvertClassOrInterfaceType(indent,(ClassOrInterfaceType)n);
+                break;
             case "Parameter":
-                return indent + ((Parameter)n).getId().getName(); // TODO: varargs, etc
+                result= indent + ((Parameter)n).getId().getName(); // TODO: varargs, etc
+                break;
             case "ForeachStmt":
-                return doConvertForeachStmt(indent,(ForeachStmt)n);
+                result= doConvertForeachStmt(indent,(ForeachStmt)n);
+                break;
             case "EmptyStmt":
-                return doConvertEmptyStmt(indent,(EmptyStmt)n);
+                result= doConvertEmptyStmt(indent,(EmptyStmt)n);
+                break;
             case "VariableDeclaratorId":
-                return indent + ((VariableDeclaratorId)n).getName();
+                result= indent + ((VariableDeclaratorId)n).getName();
+                break;
             default:
-                return indent + "*** "+simpleName + "*** " + n.toString() + "*** end "+simpleName + "****";
+                result= indent + "*** "+simpleName + "*** " + n.toString() + "*** end "+simpleName + "****";
+                break;
         }
+        return result;
     }
     
 
