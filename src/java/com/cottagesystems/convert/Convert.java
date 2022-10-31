@@ -1519,9 +1519,6 @@ public class Convert {
                 nameMapReverse.put( news, s );
                 s= news;
             }
-            if ( s.equals("fc") ) {
-                System.err.println("here fc is mistaken as local variable");
-            }
             if ( v.getInit()!=null 
                     && ( v.getInit() instanceof ArrayInitializerExpr ) 
                     && ( variableDeclarationExpr.getType() instanceof PrimitiveType ) ) {

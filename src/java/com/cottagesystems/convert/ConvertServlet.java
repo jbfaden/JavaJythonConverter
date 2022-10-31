@@ -59,8 +59,11 @@ public class ConvertServlet extends HttpServlet {
             out.println("<html>");
             out.println("<head>");
             out.println("<title>Jython Result</title>");            
+            out.println("<link rel=\"stylesheet\" href=\"styles/default.min.css\">");
             out.println("</head>");
             out.println("<body>");
+            out.println("<script language=\"javascript\" src=\"highlight.min.js\"></script>\n");
+            out.println("<script>hljs.highlightAll();</script>\n");
             out.println("<h1>Servlet ConvertServlet at " + request.getContextPath() + "</h1>");
             out.println("Please read caveats below, seriously difficult bugs could be introduced when translating code.<br><br>");
             out.println("<form action=\"ConvertServlet\" method=\"post\">");
@@ -69,8 +72,9 @@ public class ConvertServlet extends HttpServlet {
             out.println("<td>Java Code:<br>");
             out.println("<textarea rows=\"40\" cols=\"80\" id=\"code\" name=\"code\">"+code+"</textarea>");            
             out.println("</td>");
-            out.println("<td>Jython Code:<br>");
-            out.println("<textarea rows=\"40\" cols=\"132\">"+jythonCode+"</textarea>");
+            out.println("<td valign='top'>Jython Code:<br>");
+            out.println("<code class=\"language-python\"><pre>"+jythonCode+"</pre></code>");
+            //out.println("<textarea rows=\"40\" cols=\"132\">"+jythonCode+"</textarea>");
             out.println("</td>");
             out.println("</tr></table>");
             out.println( String.format( "<input type=\"checkbox\" id=\"onlyStatic\" name=\"onlyStatic\" value=\"true\" %s>Only Static Parts</input>",
