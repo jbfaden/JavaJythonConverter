@@ -2,6 +2,7 @@
 package com.cottagesystems.convert;
 
 import japa.parser.ParseException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
 import javax.servlet.ServletException;
@@ -29,6 +30,13 @@ public class ConvertServlet extends HttpServlet {
             throws ServletException, IOException {
         
         String code= request.getParameter("code");
+        String edit= request.getParameter("edit");
+        
+        edit= "1";
+        
+        if ( code==null ) {
+            code="";
+        }
         
         boolean onlyStatic = "true".equals( request.getParameter("onlyStatic") );
         request.getParameterMap();
@@ -42,6 +50,11 @@ public class ConvertServlet extends HttpServlet {
         convert.setPythonTarget(PythonTarget.valueOf(pythonTarget));
         convert.setUnittest( "true".equals( request.getParameter("unittest") ) );
         String jythonCode;
+        
+        if ( code.trim().length()==0 ) {
+            code= "class Simple {\n   public static void main( String[] args ) {\n      System.out.println(\"Hello\");\n   }\n}\n\n\n";
+        }
+        
         try {
             if (code!=null ) {
                 jythonCode = convert.doConvert(code);
@@ -51,6 +64,11 @@ public class ConvertServlet extends HttpServlet {
             }
         } catch (ParseException ex) {
             jythonCode = "*** "+ex.getMessage()+" ***";
+        }
+        
+        String hash= String.format( "%016d", Math.abs( code.hashCode() ) );
+        try (FileOutputStream foa = new FileOutputStream("/home/jbf/tmp/javajython/"+hash+".java")) {
+            foa.write( code.getBytes() );
         }
         
         try (PrintWriter out = response.getWriter()) {
@@ -70,7 +88,11 @@ public class ConvertServlet extends HttpServlet {
             out.println("<table>");
             out.println("<tr>");
             out.println("<td>Java Code:<br>");
-            out.println("<textarea rows=\"40\" cols=\"80\" id=\"code\" name=\"code\">"+code+"</textarea>");            
+            if ( "1".equals(edit) ) {
+                out.println("<textarea rows=\"40\" cols=\"80\" id=\"code\" name=\"code\">"+code+"</textarea>");
+            } else {
+                out.println("<pre><code class=\"language-java\" name=\"code\" rows=\"40\" >"+code+"</code></pre>");
+            }
             out.println("</td>");
             out.println("<td valign='top'>Jython Code:<br>");
             out.println("<pre><code class=\"language-python\">"+jythonCode+"</code></pre>");
@@ -88,7 +110,11 @@ public class ConvertServlet extends HttpServlet {
                     ( convert.getPythonTarget()==PythonTarget.python_3_6 ? "selected=1" : ""  ) ) );
             out.println("</select>");
             out.println("<button id=\"clear\" value=\"clear\" onclick=\"javascript:document.getElementById('code').value=''\">Clear</button>");
-            out.println("<input type=\"submit\" value=\"submit\"></input>");
+            if (  "1".equals(edit) ) {
+                out.println("<input type=\"submit\" value=\"submit\"></input>");
+            } else {
+                out.println("<input type=\"hidden\" name=\"edit\">T</input><input type=\"submit\" value=\"edit\"></input>");
+            }
             out.println("</form action=\"ConvertServlet\" method=\"post\">");            
             out.println("<small>Version 20221030a</small><br>\n");
             out.println("Please note:<ul>\n");
