@@ -73,7 +73,7 @@ public class ConvertServlet extends HttpServlet {
             out.println("<textarea rows=\"40\" cols=\"80\" id=\"code\" name=\"code\">"+code+"</textarea>");            
             out.println("</td>");
             out.println("<td valign='top'>Jython Code:<br>");
-            out.println("<code class=\"language-python\"><pre>"+jythonCode+"</pre></code>");
+            out.println("<pre><code class=\"language-python\">"+jythonCode+"</code></pre>");
             //out.println("<textarea rows=\"40\" cols=\"132\">"+jythonCode+"</textarea>");
             out.println("</td>");
             out.println("</tr></table>");
