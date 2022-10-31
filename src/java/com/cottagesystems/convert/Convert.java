@@ -1452,9 +1452,12 @@ public class Convert {
                 result= indent + "*** "+simpleName + "*** " + n.toString() + "*** end "+simpleName + "****";
                 break;
         }
-        //if ( result.contains("\n\n") ) {
-        //    System.err.println("here stop after convert");
-        //}
+        if ( result.startsWith("\n") ) {
+            System.err.println("here stop after convert");
+        }
+        if ( result.contains("\n\n") ) {
+            System.err.println("here stop after convert");
+        }
         return result;
     }
     
@@ -1877,9 +1880,9 @@ public class Convert {
                 sb.append( "def fail(msg):\n"
                         + "    print(msg)\n"
                         + "    raise Exception('fail: '+msg)\n");
+                sb.append( "\n" );
             }
             String comments= utilRewriteComments(indent, classOrInterfaceDeclaration.getComment() );
-            sb.append( "\n" );
             sb.append( comments );
             
             if ( classOrInterfaceDeclaration.getExtends()!=null && classOrInterfaceDeclaration.getExtends().size()==1 ) { 

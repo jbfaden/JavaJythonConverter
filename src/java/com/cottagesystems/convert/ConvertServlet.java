@@ -72,8 +72,16 @@ public class ConvertServlet extends HttpServlet {
             if ( !dd.mkdirs() ) throw new IllegalArgumentException("unable to mkdirs");
         }
         String hash= String.format( "%09d", Math.abs( code.hashCode() ) );
+        File ff= new File( dd, hash+".java");
+        if ( ff.exists() ) {
+            ff.delete();
+        }
         try (FileOutputStream foa = new FileOutputStream( new File( dd, hash+".java") ) ) {
             foa.write( code.getBytes() );
+        }
+        ff= new File( dd, hash+".python");
+        if ( ff.exists() ) {
+            ff.delete();
         }
         try (FileOutputStream foa = new FileOutputStream( new File( dd, hash+".python")) ) {
             foa.write( jythonCode.getBytes() );
@@ -102,7 +110,7 @@ public class ConvertServlet extends HttpServlet {
                 out.println("<pre><code class=\"language-java\" name=\"code\" rows=\"40\" >"+code+"</code></pre>");
             }
             out.println("</td>");
-            out.println("<td valign='top'>Jython Code:<br>");
+            out.println("<td valign='top'>Jython Code:");
             out.println("<pre><code class=\"language-python\">"+jythonCode+"</code></pre>");
             //out.println("<textarea rows=\"40\" cols=\"132\">"+jythonCode+"</textarea>");
             out.println("</td>");
@@ -133,7 +141,7 @@ public class ConvertServlet extends HttpServlet {
             out.println("<li>Some Java class use may remain, and you will need to find translations to Python.\n");
             out.println("<li>Single methods are handled by wrapping the method with a class, then this is removed.\n");
             out.println("<li>Several statements are made into a method similarly.\n");
-            out.println("<li>This currently targets Python 2.2, but will soon have a switch to use 3.6 features.\n");
+            out.println("<li>This currently targets Jython 2.2 and Python 3.6.\n");
             out.println("<li>I am a Java developer who knows enough Python to cause problems, see <a href='https://github.com/jbfaden/JavaJythonConverter'>GitHub project</a> to provide feedback\n");
             out.println("</body>");
             out.println("</html>");
