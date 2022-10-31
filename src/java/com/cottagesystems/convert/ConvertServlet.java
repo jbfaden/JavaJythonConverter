@@ -2,6 +2,7 @@
 package com.cottagesystems.convert;
 
 import japa.parser.ParseException;
+import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -66,9 +67,16 @@ public class ConvertServlet extends HttpServlet {
             jythonCode = "*** "+ex.getMessage()+" ***";
         }
         
-        String hash= String.format( "%016d", Math.abs( code.hashCode() ) );
-        try (FileOutputStream foa = new FileOutputStream("/home/jbf/tmp/javajython/"+hash+".java")) {
+        File dd= new File( "/tmp/javajython/");
+        if ( !dd.exists() ) {
+            if ( !dd.mkdirs() ) throw new IllegalArgumentException("unable to mkdirs");
+        }
+        String hash= String.format( "%09d", Math.abs( code.hashCode() ) );
+        try (FileOutputStream foa = new FileOutputStream( new File( dd, hash+".java") ) ) {
             foa.write( code.getBytes() );
+        }
+        try (FileOutputStream foa = new FileOutputStream( new File( dd, hash+".python")) ) {
+            foa.write( jythonCode.getBytes() );
         }
         
         try (PrintWriter out = response.getWriter()) {
