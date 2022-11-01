@@ -370,6 +370,10 @@ public class Convert {
             if ( additionalImports!=null ) {
                 StringBuilder sb= new StringBuilder();
                 
+                if ( unittest && pythonTarget==PythonTarget.python_3_6 ) {
+                    additionalImports.put("import unittest\n", true);
+                }
+                
                 for ( Entry<String,Boolean> e: additionalImports.entrySet() ) {
                     if ( e.getValue() ) {
                         sb.append( e.getKey() );
@@ -396,8 +400,13 @@ public class Convert {
                 
                 sb.append(src);
                 
-                if ( hasMain ) {
-                    sb.append(theClassName).append(".main([])\n");
+                if ( unittest && pythonTarget==PythonTarget.python_3_6 ) {
+                    sb.append( "if __name__ == '__main__':\n" +
+                            "    unittest.main()\n" );
+                } else {
+                    if ( hasMain ) {
+                        sb.append(theClassName).append(".main([])\n");
+                    }
                 }
                 
                 src= sb.toString();
@@ -1121,6 +1130,17 @@ public class Convert {
             }
         }
 
+        if ( pythonTarget==PythonTarget.python_3_6 && unittest && clas==null ) {
+            if ( name.equals("assertEquals") || name.equals("assertArrayEquals") ) {
+                StringBuilder sb= new StringBuilder();
+                sb.append(indent).append( "self.assertEqual(" );
+                sb.append(doConvert("",args.get(0))).append(",").append(doConvert("",args.get(1)));
+                sb.append(")");
+                return sb.toString();
+            }
+        }
+        
+        
         if ( name.equals("println") && clas instanceof FieldAccessExpr &&
                 ((FieldAccessExpr)clas).getField().equals("err") ) {
             StringBuilder sb= new StringBuilder();
@@ -1234,7 +1254,7 @@ public class Convert {
         }
     }
 
-    private String doAssignExpr(String indent, AssignExpr assign ) {
+    private String doConvertAssignExpr(String indent, AssignExpr assign ) {
         String target= doConvert( "", assign.getTarget() );
         Operator operator= assign.getOperator();
         
@@ -1289,7 +1309,7 @@ public class Convert {
                 result= doConvertCompilationUnit(indent,(CompilationUnit)n);
                 break;
             case "AssignExpr":
-                result= doAssignExpr(indent,(AssignExpr)n);
+                result= doConvertAssignExpr(indent,(AssignExpr)n);
                 break;
             case "BinaryExpr":
                 result= doConvertBinaryExpr(indent,(BinaryExpr)n);
@@ -1448,14 +1468,9 @@ public class Convert {
                 result= indent + "*** "+simpleName + "*** " + n.toString() + "*** end "+simpleName + "****";
                 break;
         }
-        
-        // here we can look at the result.
-        if ( result.contains("Math.max") ) {
-            System.err.println("here stop after convert");
-        }
-        if ( result.contains("\n\n") ) {
-            System.err.println("here stop after convert");
-        }
+        //if ( result.contains("\n\n") ) {
+        //    System.err.println("here stop after convert");
+        //}
         return result;
     }
     
@@ -1867,7 +1882,7 @@ public class Convert {
             });
         } else {
             
-            if ( unittest ) {
+            if ( unittest && pythonTarget==PythonTarget.jython_2_2 ) {
                 sb.append( "\n# cheesy unittest temporary\n");
                 sb.append( "def assertEquals(a,b):\n"
                         + "    if ( not a==b ): raise Exception('a!=b')\n");
@@ -1898,7 +1913,12 @@ public class Convert {
                 }
                 sb.append( indent ).append("class " ).append( name ).append("(" ).append(implementsName).append(")").append(":\n");
             } else {
-                sb.append( indent ).append("class " ).append( name ).append(":\n");
+                if ( unittest && pythonTarget==PythonTarget.python_3_6 ) {
+                    String extendName= "unittest.TestCase";
+                    sb.append( indent ).append("class " ).append( name ).append("(" ).append(extendName).append(")").append(":\n");
+                } else {
+                    sb.append( indent ).append("class " ).append( name ).append(":\n");
+                }
             }
 
             // check to see if any two methods can be combined.
@@ -1949,12 +1969,18 @@ public class Convert {
                     // skip this strange node
                 } else if ( n instanceof EmptyMemberDeclaration ) {
                     // skip this strange node
+                } else if ( n instanceof ConstructorDeclaration ) {
+                    if ( unittest && pythonTarget==PythonTarget.python_3_6 ) {
+                        // skip
+                    } else {
+                        sb.append( doConvert( indent+s4, n ) ).append("\n");
+                    }
                 } else {
                     sb.append( doConvert( indent+s4, n ) ).append("\n");
                 }
             });
             
-            if ( unittest ) {
+            if ( unittest && pythonTarget==PythonTarget.jython_2_2 ) {
                 sb.append("test = ").append(classOrInterfaceDeclaration.getName()).append("()\n");
                 for ( Node n : classOrInterfaceDeclaration.getChildrenNodes() ) {
                     if ( n instanceof MethodDeclaration 
