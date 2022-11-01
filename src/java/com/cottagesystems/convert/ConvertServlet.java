@@ -31,9 +31,12 @@ public class ConvertServlet extends HttpServlet {
             throws ServletException, IOException {
         
         String code= request.getParameter("code");
-        String edit= request.getParameter("edit");
+        String mode= request.getParameter("mode");
         
-        edit= "1";
+        //mode= "view";
+        if ( !"edit".equals(mode) ) {
+            mode="view";
+        }
         
         if ( code==null ) {
             code="";
@@ -98,41 +101,47 @@ public class ConvertServlet extends HttpServlet {
             out.println("<body>");
             out.println("<script language=\"javascript\" src=\"highlight.min.js\"></script>\n");
             out.println("<script>hljs.highlightAll();</script>\n");
-            out.println("<h1>Servlet ConvertServlet at " + request.getContextPath() + "</h1>");
+            out.println("<h1>Java to Python Converter</h1>");
             out.println("Please read caveats below, seriously difficult bugs could be introduced when translating code.<br><br>");
             out.println("<form action=\"ConvertServlet\" method=\"post\">");
             out.println("<table>");
             out.println("<tr>");
             out.println("<td>Java Code:<br>");
-            if ( "1".equals(edit) ) {
+            if ( "edit".equals(mode) ) {
                 out.println("<textarea rows=\"40\" cols=\"80\" id=\"code\" name=\"code\">"+code+"</textarea>");
             } else {
-                out.println("<pre><code class=\"language-java\" name=\"code\" rows=\"40\" >"+code+"</code></pre>");
+                out.println("<div style=\"height: 400px; width: 600px; overflow: scroll\"><pre><code class=\"language-java\" id=\"code\" name=\"code\" rows=\"40\" >"+code+"</code></pre></div>");
             }
             out.println("</td>");
             out.println("<td valign='top'>Jython Code:");
-            out.println("<pre><code class=\"language-python\">"+jythonCode+"</code></pre>");
+            out.println("<div style=\"height: 400px; width: 600px; overflow: scroll\"><pre><code class=\"language-python\">"+jythonCode+"</code></pre></div>");
             //out.println("<textarea rows=\"40\" cols=\"132\">"+jythonCode+"</textarea>");
             out.println("</td>");
             out.println("</tr></table>");
-            out.println( String.format( "<input type=\"checkbox\" id=\"onlyStatic\" name=\"onlyStatic\" value=\"true\" %s>Only Static Parts</input>",
-                    convert.isOnlyStatic() ? "checked" : "" ) );
-            out.println( String.format( "<input type=\"checkbox\" id=\"unittest\" name=\"unittest\" value=\"true\" %s>Unit Test</input>",
-                    convert.isUnittest() ? "checked" : "" ) );
-            out.println("<select name=\"pythonTarget\" id=\"pythonTarget\">");
-            out.println(String.format( "    <option value=\"jython_2_2\" %s>Jython 2.2</option>", 
+            
+            if (  "edit".equals(mode) ) {            
+                out.println( String.format( "<input type=\"checkbox\" id=\"onlyStatic\" name=\"onlyStatic\" value=\"true\" %s>Only Static Parts</input>",
+                        convert.isOnlyStatic() ? "checked" : "" ) );
+                out.println( String.format( "<input type=\"checkbox\" id=\"unittest\" name=\"unittest\" value=\"true\" %s>Unit Test</input>",
+                        convert.isUnittest() ? "checked" : "" ) );
+                out.println("<select name=\"pythonTarget\" id=\"pythonTarget\">");
+                out.println(String.format( "    <option value=\"jython_2_2\" %s>Jython 2.2</option>", 
                     ( convert.getPythonTarget()==PythonTarget.jython_2_2 ? "selected=1" : ""  ) ) );
-            out.println(String.format( "    <option value=\"python_3_6\" %s>Python 3.6</option>", 
+                out.println(String.format( "    <option value=\"python_3_6\" %s>Python 3.6</option>", 
                     ( convert.getPythonTarget()==PythonTarget.python_3_6 ? "selected=1" : ""  ) ) );
-            out.println("</select>");
-            out.println("<button id=\"clear\" value=\"clear\" onclick=\"javascript:document.getElementById('code').value=''\">Clear</button>");
-            if (  "1".equals(edit) ) {
+                out.println("</select>");
+                out.println("<button id=\"clear\" value=\"clear\" onclick=\"javascript:document.getElementById('code').value=''\">Clear</button>");
                 out.println("<input type=\"submit\" value=\"submit\"></input>");
             } else {
-                out.println("<input type=\"hidden\" name=\"edit\">T</input><input type=\"submit\" value=\"edit\"></input>");
+                out.println( convert.isOnlyStatic() ? "Only Static Parts" : "Not Only Static Parts" );
+                out.println( "," );
+                out.println( convert.isUnittest() ? "Unit Test" : "Not unit test" );
+                out.println( "," );
+                out.println( convert.getPythonTarget() );
+                out.println("<input name=\"mode\" type=\"hidden\" value=\"edit\"></input><input type=\"submit\" value=\"edit\"></input>");
             }
             out.println("</form action=\"ConvertServlet\" method=\"post\">");            
-            out.println("<small>Version 20221031a</small><br>\n");
+            out.println("<small>Version 20221031b</small><br>\n");
             out.println("Please note:<ul>\n");
             out.println("<li>The goal is to get something close to translated, but not perfect.\n");
             out.println("<li>The Java code must be working, this assumes that it is a functioning and correct code.\n");
