@@ -106,9 +106,10 @@ public class Convert {
         this.localVariablesStack.push( new HashMap<>() );
     }
     
-    private String doConvertInitializerDeclaration(String indent, InitializerDeclaration initializerDeclaration) {
-        return doConvert(indent,initializerDeclaration.getBlock());
-    }
+    /**
+     * the indent level.
+     */
+    private static final String s4="    ";
         
     private PythonTarget pythonTarget = PythonTarget.python_3_6;
 
@@ -303,11 +304,6 @@ public class Convert {
         return b.toString();
     }
 
-    /**
-     * the indent level.
-     */
-    private static final String s4="    ";
-    
     /**
      * wrap the methods in a dummy class to see if it compiles.  There's a goofy
      * this with this parser where I can't figure out how to get it to compile
@@ -511,7 +507,7 @@ public class Convert {
         throw throwMe;
                 
     }
-
+    
     private String doConvertBinaryExpr(String indent,BinaryExpr b) {
         String left= doConvert(indent,b.getLeft());
         String right= doConvert(indent,b.getRight());
@@ -1845,6 +1841,10 @@ public class Convert {
         }
     }
 
+    private String doConvertInitializerDeclaration(String indent, InitializerDeclaration initializerDeclaration) {
+        return doConvert(indent,initializerDeclaration.getBlock());
+    }
+    
     private String doConvertClassOrInterfaceDeclaration(String indent, ClassOrInterfaceDeclaration classOrInterfaceDeclaration) {
         StringBuilder sb= new StringBuilder();
         
