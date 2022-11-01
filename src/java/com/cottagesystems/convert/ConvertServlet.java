@@ -103,7 +103,7 @@ public class ConvertServlet extends HttpServlet {
             out.println("<script language=\"javascript\" src=\"highlight.min.js\"></script>\n");
             out.println("<script>hljs.highlightAll();</script>\n");
             out.println("<h1>Java to Python Converter</h1>");
-            out.println("Please read caveats below, seriously difficult bugs could be introduced when translating code.<br><br>");
+            out.println("Please read caveats below, seriously difficult bugs could be introduced when automatically converting code.<br><br>");
             out.println("<form action=\"ConvertServlet\" method=\"post\">");
             out.println("<table>");
             out.println("<tr>");

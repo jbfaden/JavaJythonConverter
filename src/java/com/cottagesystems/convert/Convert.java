@@ -1448,7 +1448,9 @@ public class Convert {
                 result= indent + "*** "+simpleName + "*** " + n.toString() + "*** end "+simpleName + "****";
                 break;
         }
-        if ( result.startsWith("\n") ) {
+        
+        // here we can look at the result.
+        if ( result.contains("Math.max") ) {
             System.err.println("here stop after convert");
         }
         if ( result.contains("\n\n") ) {
@@ -1642,7 +1644,7 @@ public class Convert {
             } else {
                 throw new IllegalArgumentException("not implemented");
             }
-            b.append( init1.getVars().get(0).getInit()).append(",");
+            b.append( doConvert("",init1.getVars().get(0).getInit()) ).append(",");
             b.append( doConvert("",compare.getRight() ));
             b.append("):\n");
         } else {        
