@@ -31,9 +31,10 @@ public class ConvertServlet extends HttpServlet {
             throws ServletException, IOException {
         
         String code= request.getParameter("code");
-        String mode= request.getParameter("mode");
+        String mode;
+        //mode= request.getParameter("mode");
+        mode= "edit";
         
-        //mode= "view";
         if ( !"edit".equals(mode) ) {
             mode="view";
         }
@@ -119,7 +120,7 @@ public class ConvertServlet extends HttpServlet {
             out.println("</td>");
             out.println("</tr></table>");
             
-            if (  "edit".equals(mode) ) {            
+            if (  true && "edit".equals(mode) ) {            
                 out.println( String.format( "<input type=\"checkbox\" id=\"onlyStatic\" name=\"onlyStatic\" value=\"true\" %s>Only Static Parts</input>",
                         convert.isOnlyStatic() ? "checked" : "" ) );
                 out.println( String.format( "<input type=\"checkbox\" id=\"unittest\" name=\"unittest\" value=\"true\" %s>Unit Test</input>",
