@@ -1830,9 +1830,7 @@ public class Convert {
     }
 
     private String doConvertUnaryExpr(String indent, UnaryExpr unaryExpr) {
-        if ( null==unaryExpr.getOperator() ) {
-            throw new IllegalArgumentException("not supported: "+unaryExpr);
-        } else switch (unaryExpr.getOperator()) {
+         switch (unaryExpr.getOperator()) {
             case preIncrement: {
                 additionalClasses.put("#J2J: increment used at line "+unaryExpr.getBeginLine()+", which needs human study.\n",true );
                 String n= doConvert("",unaryExpr.getExpr());
