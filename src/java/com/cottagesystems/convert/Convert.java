@@ -523,7 +523,7 @@ public class Convert {
         Type leftType = guessType(b.getLeft());
         Type rightType = guessType(b.getRight());
         
-        if ( b.getRight() instanceof IntegerLiteralExpr && b.getLeft() instanceof MethodCallExpr ) {
+        if ( b.getLeft() instanceof MethodCallExpr && b.getRight() instanceof IntegerLiteralExpr ) {
             MethodCallExpr mce= (MethodCallExpr)b.getLeft();
             if ( mce.getName().equals("compareTo") 
                     && ((IntegerLiteralExpr)b.getRight()).toString().equals("0") ) {
@@ -555,7 +555,12 @@ public class Convert {
             if ( leftType.equals(ASTHelper.INT_TYPE) && rightType.equals(ASTHelper.CHAR_TYPE) ) {
                 left= "ord("+left+")";
             }
-            if ( leftType.equals(ASTHelper.createReferenceType("String", 0)) 
+            if ( rightType.equals(STRING_TYPE) 
+                    && leftType instanceof PrimitiveType 
+                    && !leftType.equals(ASTHelper.CHAR_TYPE) ) {
+                left= "str("+left+")";
+            }
+            if ( leftType.equals(STRING_TYPE) 
                     && rightType instanceof PrimitiveType 
                     && !rightType.equals(ASTHelper.CHAR_TYPE) ) {
                 right= "str("+right+")";
