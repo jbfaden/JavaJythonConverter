@@ -1833,11 +1833,23 @@ public class Convert {
         if ( null==unaryExpr.getOperator() ) {
             throw new IllegalArgumentException("not supported: "+unaryExpr);
         } else switch (unaryExpr.getOperator()) {
+            case preIncrement: {
+                additionalClasses.put("#J2J: increment used at line "+unaryExpr.getBeginLine()+", which needs human study.\n",true );
+                String n= doConvert("",unaryExpr.getExpr());
+                return indent + n + " = " + n + " + 1";
+            }
+            case preDecrement: {
+                additionalClasses.put("#J2J: decrement used at line "+unaryExpr.getBeginLine()+", which needs human study.\n",true );
+                String n= doConvert("",unaryExpr.getExpr());
+                return indent + n + " = " + n + " - 1";
+            }
             case posIncrement: {
+                additionalClasses.put("#J2J: increment used at line "+unaryExpr.getBeginLine()+", which needs human study.\n",true );
                 String n= doConvert("",unaryExpr.getExpr());
                 return indent + n + " = " + n + " + 1";
             }
             case posDecrement: {
+                additionalClasses.put("#J2J: decrement used at line "+unaryExpr.getBeginLine()+", which needs human study.\n",true );
                 String n= doConvert("",unaryExpr.getExpr());
                 return indent + n + " = " + n + " - 1";
             }
