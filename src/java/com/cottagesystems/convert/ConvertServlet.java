@@ -145,7 +145,7 @@ public class ConvertServlet extends HttpServlet {
                 out.println("<input name=\"mode\" type=\"hidden\" value=\"edit\"></input><input type=\"submit\" value=\"edit\"></input>");
             }
             out.println("</form action=\"ConvertServlet\" method=\"post\">");        
-            out.println("<small>Version 20221102a</small><br>\n");
+            out.println("<small>Version 20221102b</small><br>\n");
             out.println("Please note:<ul>\n");
             out.println("<li>The goal is to get something close to translated, but not perfect.\n");
             out.println("<li>The Java code must be working, this assumes that it is a functioning and correct code.\n");
