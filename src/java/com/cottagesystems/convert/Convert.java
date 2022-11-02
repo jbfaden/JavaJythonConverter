@@ -1654,12 +1654,24 @@ public class Convert {
         UnaryExpr update1= null;
         if ( update.size()==1 && update.get(0) instanceof UnaryExpr ) {
             update1= (UnaryExpr)update.get(0);
-            if ( !(update1.getOperator()==UnaryExpr.Operator.posIncrement) ) {
+            if ( !(update1.getOperator()==UnaryExpr.Operator.posIncrement 
+                    || update1.getOperator()==UnaryExpr.Operator.preIncrement 
+                    || update1.getOperator()==UnaryExpr.Operator.posDecrement 
+                    || update1.getOperator()==UnaryExpr.Operator.preDecrement  ) ) {
                 update1= null;
             }
         }
         boolean initOkay= init1!=null;
-        boolean compareOkay= compare!=null && compare.getOperator()==BinaryExpr.Operator.less;
+        boolean compareOkay= compare!=null 
+                && ( compare.getOperator()==BinaryExpr.Operator.less || compare.getOperator()==BinaryExpr.Operator.lessEquals 
+                || compare.getOperator()==BinaryExpr.Operator.greater || compare.getOperator()==BinaryExpr.Operator.greaterEquals );
+        String compareTo= doConvert("",compare.getRight());
+        if ( compare.getOperator()==BinaryExpr.Operator.lessEquals ) {
+            compareTo = compareTo + "+1";
+        } else if ( compare.getOperator()==BinaryExpr.Operator.greaterEquals ) {
+            compareTo = compareTo + "-1";
+        }
+        
         boolean updateOkay= update1!=null;
         
         boolean bodyOkay= false;
@@ -1677,7 +1689,11 @@ public class Convert {
                 throw new IllegalArgumentException("not implemented");
             }
             b.append( doConvert("",init1.getVars().get(0).getInit()) ).append(",");
-            b.append( doConvert("",compare.getRight() ));
+            b.append( compareTo );
+            if (  update1.getOperator()==UnaryExpr.Operator.posDecrement 
+                    || update1.getOperator()==UnaryExpr.Operator.preDecrement ) {
+                b.append(",-1");
+            }
             b.append("):\n");
         } else {        
             forStmt.getInit().forEach((e) -> {
