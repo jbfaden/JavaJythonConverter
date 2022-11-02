@@ -1178,13 +1178,25 @@ public class Convert {
         } else if ( name.equals("print") && clas instanceof FieldAccessExpr &&
                 ((FieldAccessExpr)clas).getField().equals("out") ) {
             StringBuilder sb= new StringBuilder();
-            additionalImports.put("import sys\n",Boolean.TRUE);
-            if (  methodCallExpr.getArgs().get(0) instanceof StringLiteralExpr ) {
-                String s= doConvert( "", methodCallExpr.getArgs().get(0) );
-                sb.append(indent).append( "sys.stdout.write(" ).append( s ).append( ")" );
+            if ( pythonTarget==PythonTarget.jython_2_2 ) {
+                sb.append(indent).append("print ");
+                if ( methodCallExpr.getArgs().get(0) instanceof StringLiteralExpr ) {
+                    String s= doConvert( "", methodCallExpr.getArgs().get(0) );
+                    sb.append( s ).append(",");
+                } else {
+                    sb.append( doConvert( "", methodCallExpr.getArgs().get(0) ) );
+                }
+                
+                sb.append( "," );
             } else {
-                sb.append(indent).append( "sys.stdout.write(" ).append( doConvert( "", methodCallExpr.getArgs().get(0) ) ).append( ")" );
-            }    
+                additionalImports.put("import sys\n",Boolean.TRUE);
+                if (  methodCallExpr.getArgs().get(0) instanceof StringLiteralExpr ) {
+                    String s= doConvert( "", methodCallExpr.getArgs().get(0) );
+                    sb.append(indent).append( "sys.stdout.write(" ).append( s ).append( ")" );
+                } else {
+                    sb.append(indent).append( "sys.stdout.write(" ).append( doConvert( "", methodCallExpr.getArgs().get(0) ) ).append( ")" );
+                }    
+            }
             return sb.toString();
         } else if ( name.equals("length") && args==null ) {
             return indent + "len("+ doConvert("",clas)+")";
