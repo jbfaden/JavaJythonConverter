@@ -837,7 +837,7 @@ public class Convert {
                 String n= doConvert("",clas);
                 String i0= doConvert("",args.get(0));
                 String ins= doConvert("",args.get(1));
-                return indent + n + " = ''.join( ( " + n + "[0:"+ i0 + "], "+ins+", " + n + "["+i0+":] ) ) #J2J expr -> assignment"; // expr becomes assignment, this will cause problems
+                return indent + n + " = ''.join( ( " + n + "[0:"+ i0 + "], "+ins+", " + n + "["+i0+":] ) ) # J2J expr -> assignment"; // expr becomes assignment, this will cause problems
             }
         }
         if ( clasType.equals("Collections") ) {
@@ -955,7 +955,7 @@ public class Convert {
         }
         
         if ( clasType.equals("Logger") ) {
-            return indent + "#J2J (logger) "+methodCallExpr.toString();
+            return indent + "# J2J (logger) "+methodCallExpr.toString();
         }
         if ( clasType.equals("String") ) {
             switch (name) {
@@ -1550,7 +1550,7 @@ public class Convert {
             if ( v.getInit()!=null && v.getInit().toString().startsWith("Logger.getLogger") ) {
                 //addLogger();
                 localVariablesStack.peek().put(s,ASTHelper.createReferenceType("Logger",0) );
-                return indent + "#J2J: "+variableDeclarationExpr.toString().trim();
+                return indent + "# J2J: "+variableDeclarationExpr.toString().trim();
             }
             if ( s.equals("len") ) {
                 String news= "lenJ2J";
@@ -1578,7 +1578,7 @@ public class Convert {
                 } else {
                     if ( v.getInit() instanceof ObjectCreationExpr && ((ObjectCreationExpr)v.getInit()).getAnonymousClassBody()!=null ) {
                         for ( BodyDeclaration bd: ((ObjectCreationExpr)v.getInit()).getAnonymousClassBody() ) {
-                            b.append(doConvert( indent+"#J2J:", bd ) );
+                            b.append(doConvert( indent+"# J2J:", bd ) );
                         }
                     }
                     b.append( indent ).append(s).append(" = ").append(doConvert("",v.getInit()) );
@@ -1612,7 +1612,7 @@ public class Convert {
         //}
         if ( ifStmt.getCondition() instanceof MethodCallExpr && 
                 ((MethodCallExpr)ifStmt.getCondition()).getName().equals("isLoggable") ) {
-            return indent + "#J2J: if "+ifStmt.getCondition() + " ... removed";
+            return indent + "# J2J: if "+ifStmt.getCondition() + " ... removed";
         }
         b.append(indent).append("if ");
         b.append( doConvert("", ifStmt.getCondition() ) );
@@ -2144,7 +2144,7 @@ public class Convert {
                 if ( v.getInit()!=null && v.getInit().toString().startsWith("Logger.getLogger") ) {
                     getCurrentScope().put( v.getId().getName(), ASTHelper.createReferenceType("Logger", 0) );
                     //addLogger();
-                    sb.append( indent ).append("#J2J: ").append(fieldDeclaration.toString());
+                    sb.append( indent ).append("# J2J: ").append(fieldDeclaration.toString());
                     continue;
                 }
                 
@@ -2156,7 +2156,7 @@ public class Convert {
                     if ( implicitDeclaration!=null ) {
                         sb.append( indent ).append( v.getId() ).append(" = ").append( implicitDeclaration ).append("\n");
                     } else {
-                        sb.append( indent ).append( v.getId() ).append(" = ").append( "None  #J2J added" ).append("\n");
+                        sb.append( indent ).append( v.getId() ).append(" = ").append( "None  # J2J added" ).append("\n");
                     }
                 } else if ( v.getInit() instanceof ConditionalExpr ) {
                     ConditionalExpr ce= (ConditionalExpr)v.getInit();
@@ -2332,7 +2332,7 @@ public class Convert {
                     StringBuilder sb= new StringBuilder();
                     String body= doConvert( indent, objectCreationExpr.getAnonymousClassBody().get(0) );
                     sb.append(indent).append(objectCreationExpr.getType()).append("(").append(utilFormatExprList(objectCreationExpr.getArgs())).append(")"); 
-                    sb.append("*** #J2J: This is extended in an anonymous inner class ***");
+                    sb.append("*** # J2J: This is extended in an anonymous inner class ***");
                     return sb.toString();
                 } else {
                     if ( objectCreationExpr.getType().getName().equals("HashMap") ) { 
