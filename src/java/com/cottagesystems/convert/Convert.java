@@ -96,7 +96,7 @@ import java.util.stream.Collectors;
  */
 public class Convert {
 
-    public static final String VERSION = "20221103a";
+    public static final String VERSION = "20221103b";
     
     public Convert() {
         this.stack = new Stack<>();
