@@ -603,7 +603,11 @@ public class Convert {
             case or:
                 return left + " or " + right;
             case equals:
-                return left + " == " + right;
+                if ( b.getRight() instanceof NullLiteralExpr ) {
+                    return left + " is " + right;
+                } else {
+                    return left + " == " + right;
+                }
             case notEquals:
                 return left + " != " + right;
             case remainder:
