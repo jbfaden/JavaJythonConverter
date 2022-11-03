@@ -644,21 +644,18 @@ public class Convert {
                     be.getOperator()==BinaryExpr.Operator.greater ||
                     be.getOperator()==BinaryExpr.Operator.greaterEquals ||
                     be.getOperator()==BinaryExpr.Operator.less ||
-                    be.getOperator()==BinaryExpr.Operator.lessEquals 
-                    ) {
+                    be.getOperator()==BinaryExpr.Operator.lessEquals ) {
                 return ASTHelper.BOOLEAN_TYPE;
-            } else if ( be.getOperator()==BinaryExpr.Operator.plus ) { // we automatically convert ints to strings.
+            }
+            if ( be.getOperator()==BinaryExpr.Operator.plus ) { // we automatically convert ints to strings.
                 if ( ( leftType!=null && leftType.equals(STRING) ) ||
                         ( rightType!=null && rightType.equals(STRING) ) ) {
                     return STRING;
                 }
-            } else {
-                if ( leftType!=null && leftType.equals(rightType) ) {
-                    return leftType;
-                } else {
-                    return null;
-                }
             }
+            
+            return utilBinaryExprType( leftType, rightType );
+            
         } else if ( clas instanceof FieldAccessExpr ) {
             String fieldName= ((FieldAccessExpr)clas).getField();
             return getCurrentScope().get(fieldName);
@@ -2653,6 +2650,7 @@ public class Convert {
 
     /**
      * return true if integer division should be used.
+     * //TODO: verify short
      * @param exprType
      * @return true if it's null or it's an integer and integer division should be used.
      */
@@ -2691,6 +2689,27 @@ public class Convert {
             }
         }
         return true;
+    }
+
+    /**
+     * return the type of binary expressions +, -, /, *
+     * @param leftType
+     * @param rightType
+     * @return null or the resolved type.
+     */
+    private Type utilBinaryExprType(Type leftType, Type rightType) {
+        if ( leftType!=null && leftType.equals(rightType) ) {
+            return leftType;
+        }
+        if ( ( leftType==ASTHelper.DOUBLE_TYPE || leftType==ASTHelper.FLOAT_TYPE ) 
+            && ( isIntegerType(rightType) || rightType==ASTHelper.BYTE_TYPE ) ) {
+            return leftType;
+        }
+        if ( ( rightType==ASTHelper.DOUBLE_TYPE || rightType==ASTHelper.FLOAT_TYPE ) 
+            && ( isIntegerType(leftType) || leftType==ASTHelper.BYTE_TYPE ) ) {
+            return rightType;
+        }
+        return null;
     }
     
 }
