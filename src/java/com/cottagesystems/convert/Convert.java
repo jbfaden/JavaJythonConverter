@@ -281,7 +281,7 @@ public class Convert {
         if ( l.isEmpty() ) return "";
         StringBuilder b= new StringBuilder( doConvert("",l.get(0)) );
         for ( int i=1; i<l.size(); i++ ) {
-            b.append(",");
+            b.append(", ");
             b.append(doConvert("",l.get(i)));
         }
         return b.toString();
@@ -1867,22 +1867,22 @@ public class Convert {
     private String doConvertUnaryExpr(String indent, UnaryExpr unaryExpr) {
          switch (unaryExpr.getOperator()) {
             case preIncrement: {
-                additionalClasses.put("#J2J: increment used at line "+unaryExpr.getBeginLine()+", which needs human study.\n",true );
+                additionalClasses.put("# J2J: increment used at line "+unaryExpr.getBeginLine()+", which needs human study.\n",true );
                 String n= doConvert("",unaryExpr.getExpr());
                 return indent + n + " = " + n + " + 1";
             }
             case preDecrement: {
-                additionalClasses.put("#J2J: decrement used at line "+unaryExpr.getBeginLine()+", which needs human study.\n",true );
+                additionalClasses.put("# J2J: decrement used at line "+unaryExpr.getBeginLine()+", which needs human study.\n",true );
                 String n= doConvert("",unaryExpr.getExpr());
                 return indent + n + " = " + n + " - 1";
             }
             case posIncrement: {
-                additionalClasses.put("#J2J: increment used at line "+unaryExpr.getBeginLine()+", which needs human study.\n",true );
+                additionalClasses.put("# J2J: increment used at line "+unaryExpr.getBeginLine()+", which needs human study.\n",true );
                 String n= doConvert("",unaryExpr.getExpr());
                 return indent + n + " = " + n + " + 1";
             }
             case posDecrement: {
-                additionalClasses.put("#J2J: decrement used at line "+unaryExpr.getBeginLine()+", which needs human study.\n",true );
+                additionalClasses.put("# J2J: decrement used at line "+unaryExpr.getBeginLine()+", which needs human study.\n",true );
                 String n= doConvert("",unaryExpr.getExpr());
                 return indent + n + " = " + n + " - 1";
             }
@@ -2578,8 +2578,8 @@ public class Convert {
             for ( Node n: enumDeclaration.getChildrenNodes() ) {
                 if ( n instanceof ConstructorDeclaration ) {
                     String params= utilFormatParameterList( ((ConstructorDeclaration)n).getParameters() );
-                    builder.append( indent + s4 + "def compare( self, o1, o2 ):\n");
-                    builder.append( indent + s4 + "    raise Exception('Implement me')\n");
+                    builder.append(indent).append(s4 + "def compare( self, o1, o2 ):\n");
+                    builder.append(indent).append(s4 + "    raise Exception('Implement me')\n");
                 }
             }
 
