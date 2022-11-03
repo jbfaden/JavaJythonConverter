@@ -84,6 +84,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Stack;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 /**
@@ -165,6 +166,24 @@ public class Convert {
      */
     public void setUnittest(boolean unittest) {
         this.unittest = unittest;
+    }
+    
+    private boolean camelToSnake = false;
+
+    /**
+     * true indicates that variables should be converted to snake_case from camelCase.
+     * @return true indicates that variables should be converted to snake_case from camelCase.
+     */
+    public boolean isCamelToSnake() {
+        return camelToSnake;
+    }
+
+    /**
+     * true indicates that variables should be converted to snake_case from camelCase.
+     * @param camelToSnake 
+     */
+    public void setCamelToSnake(boolean camelToSnake) {
+        this.camelToSnake = camelToSnake;
     }
     
     private boolean hasMain= false;
@@ -412,7 +431,7 @@ public class Convert {
                             "    unittest.main()\n" );
                 } else {
                     if ( hasMain ) {
-                        sb.append(theClassName).append(".main([])\n");
+                        sb.append( javaNameToPythonName(theClassName) ).append(".main([])\n");
                     }
                 }
                 
@@ -1260,13 +1279,13 @@ public class Convert {
                     } else {
                         boolean isStatic= ModifierSet.isStatic(mm.getModifiers() );
                         if ( isStatic ) {
-                            return indent + m.getName() + "." + name + "("+ utilFormatExprList(args) +")";
+                            return indent + javaNameToPythonName( m.getName() ) + "." + javaNameToPythonName( name ) + "("+ utilFormatExprList(args) +")";
                         } else {
-                            return indent + "self." + name + "("+ utilFormatExprList(args) +")";
+                            return indent + "self." + javaNameToPythonName( name ) + "("+ utilFormatExprList(args) +")";
                         }
                     }
                 } else {
-                    return indent + name + "("+ utilFormatExprList(args) +")";
+                    return indent + javaNameToPythonName( name ) + "("+ utilFormatExprList(args) +")";
                 }                
             } else {
                 String clasName = doConvert("",clas);
@@ -1275,9 +1294,9 @@ public class Convert {
                     
                 } else {
                     if ( onlyStatic && clasName.equals(theClassName) )  {
-                        return indent            + name + "("+ utilFormatExprList(args) +")";
+                        return indent            + javaNameToPythonName( name ) + "("+ utilFormatExprList(args) +")";
                     } else {
-                        return indent + clasName +"."+name + "("+ utilFormatExprList(args) +")";
+                        return indent + clasName +"."+javaNameToPythonName( name )+ "("+ utilFormatExprList(args) +")";
                     }
                 }
             }
@@ -1562,6 +1581,10 @@ public class Convert {
                 localVariablesStack.peek().put(s,ASTHelper.createReferenceType("Logger",0) );
                 return indent + "# J2J: "+variableDeclarationExpr.toString().trim();
             }
+            if ( camelToSnake ) {
+                String news= camelToSnake(s);
+                s= news;
+            }
             if ( s.equals("len") ) {
                 String news= "lenJ2J";
                 nameMapForward.put( s, news );
@@ -1836,7 +1859,7 @@ public class Convert {
         
         if ( this.getCurrentScopeClasses().containsKey(s) ) {
             if ( !this.theClassName.equals(s) ) {
-                s= this.theClassName + "." + s; 
+                s= javaNameToPythonName( this.theClassName ) + "." + s; 
             }
         }
         
@@ -1961,22 +1984,29 @@ public class Convert {
             String comments= utilRewriteComments(indent, classOrInterfaceDeclaration.getComment() );
             sb.append( comments );
             
+            String pythonName;
+            if ( camelToSnake ) {
+                pythonName= camelToSnake(name);
+            } else {
+                pythonName= name;
+            }
+            
             if ( classOrInterfaceDeclaration.getExtends()!=null && classOrInterfaceDeclaration.getExtends().size()==1 ) { 
                 String extendName= doConvert( "", classOrInterfaceDeclaration.getExtends().get(0) );
-                sb.append( indent ).append("class " ).append( name ).append("(" ).append(extendName).append(")").append(":\n");
+                sb.append( indent ).append("class " ).append( pythonName ).append("(" ).append(extendName).append(")").append(":\n");
             } else if ( classOrInterfaceDeclaration.getImplements()!=null ) { 
                 List<ClassOrInterfaceType> impls= classOrInterfaceDeclaration.getImplements();
                 StringBuilder implementsName= new StringBuilder( doConvert( "", impls.get(0) ) );
                 for ( int i=1; i<impls.size(); i++ ) {
                     implementsName.append(",").append( doConvert( "", impls.get(i) ) );
                 }
-                sb.append( indent ).append("class " ).append( name ).append("(" ).append(implementsName).append(")").append(":\n");
+                sb.append( indent ).append("class " ).append( pythonName ).append("(" ).append(implementsName).append(")").append(":\n");
             } else {
                 if ( unittest && pythonTarget==PythonTarget.python_3_6 ) {
                     String extendName= "unittest.TestCase";
-                    sb.append( indent ).append("class " ).append( name ).append("(" ).append(extendName).append(")").append(":\n");
+                    sb.append( indent ).append("class " ).append( pythonName ).append("(" ).append(extendName).append(")").append(":\n");
                 } else {
-                    sb.append( indent ).append("class " ).append( name ).append(":\n");
+                    sb.append( indent ).append("class " ).append( pythonName ).append(":\n");
                 }
             }
 
@@ -1999,7 +2029,7 @@ public class Convert {
                     String name1= ((ClassOrInterfaceType)n).getName();
                     if ( nn.containsKey(name1) ) {
                         sb.append(indent).append(s4).append("# J2J: Name is used twice in class: ")
-                                .append(name).append(" ").append(name1).append("\n");
+                                .append(pythonName).append(" ").append(name1).append("\n");
                     }
                     nn.put( name1, n );
                 } else if ( n instanceof FieldDeclaration ) {
@@ -2007,7 +2037,7 @@ public class Convert {
                         String name1= vd.getId().getName();
                         if ( nn.containsKey(name1) ) {
                             sb.append(indent).append(s4).append("# J2J: Name is used twice in class: ")
-                                .append(name).append(" ").append(name1).append("\n");
+                                .append(pythonName).append(" ").append(name1).append("\n");
                         }
                         nn.put( name1, vd );
                     }
@@ -2021,7 +2051,7 @@ public class Convert {
                     String name1= md.getName();
                     if ( nn.containsKey(name1) ) {
                             sb.append(indent).append(s4).append("# J2J: Name is used twice in class: ")
-                                .append(name).append(" ").append(name1).append("\n");
+                                .append(pythonName).append(" ").append(name1).append("\n");
                     }
                     nn.put( name1, n );
                 } else {
@@ -2098,7 +2128,15 @@ public class Convert {
         if ( pythonTarget==PythonTarget.python_3_6 && isStatic  && !onlyStatic ) {
             sb.append( indent ).append( "@staticmethod\n" );
         }
-        sb.append( indent ).append( "def " ).append( methodDeclaration.getName() ) .append("(");
+        
+        String methodName= methodDeclaration.getName();
+        String pythonName;
+        if ( camelToSnake ) {
+            pythonName= camelToSnake(methodName);
+        } else {
+            pythonName= methodName;
+        }
+        sb.append( indent ).append( "def " ).append( pythonName ) .append("(");
         boolean comma; 
         
         if ( !isStatic ) {
@@ -2113,12 +2151,18 @@ public class Convert {
         if ( methodDeclaration.getParameters()!=null ) {
             for ( Parameter p: methodDeclaration.getParameters() ) { 
                 String name= p.getId().getName();
+                String pythonParameterName;
+                if ( camelToSnake ) {
+                    pythonParameterName= camelToSnake(name);
+                } else {
+                    pythonParameterName= name;
+                }
                 if ( comma ) {
                     sb.append(", ");
                 } else {
                     comma = true;
                 }
-                sb.append( name );
+                sb.append( pythonParameterName );
                 localVariablesStack.peek().put( name, p.getType() );
             }
         }
@@ -2132,7 +2176,7 @@ public class Convert {
         popScopeStack();
         
         if ( pythonTarget==PythonTarget.jython_2_2 && isStatic && !onlyStatic ) {
-            sb.append(indent).append(methodDeclaration.getName()).append(" = staticmethod(").append(methodDeclaration.getName()).append(")");
+            sb.append(indent).append(pythonName).append(" = staticmethod(").append(pythonName).append(")");
             sb.append(indent).append("\n");
         }
         return sb.toString();
@@ -2151,32 +2195,41 @@ public class Convert {
         sb.append( utilRewriteComments( indent, fieldDeclaration.getComment() ) );
         if ( vv!=null ) {
             for ( VariableDeclarator v: vv ) {
+                VariableDeclaratorId id= v.getId();
+                String name= id.getName();
+                String pythonName;
+                if ( camelToSnake ) {
+                    pythonName= camelToSnake(name);
+                } else {
+                    pythonName= name;
+                }
+                
                 if ( v.getInit()!=null && v.getInit().toString().startsWith("Logger.getLogger") ) {
-                    getCurrentScope().put( v.getId().getName(), ASTHelper.createReferenceType("Logger", 0) );
+                    getCurrentScope().put( name, ASTHelper.createReferenceType("Logger", 0) );
                     //addLogger();
                     sb.append( indent ).append("# J2J: ").append(fieldDeclaration.toString());
                     continue;
                 }
                 
-                getCurrentScope().put( v.getId().getName(),fieldDeclaration.getType() );
-                getCurrentScopeFields().put( v.getId().getName(),fieldDeclaration);
+                getCurrentScope().put( name,fieldDeclaration.getType() );
+                getCurrentScopeFields().put( name,fieldDeclaration);
 
                 if ( v.getInit()==null ) {
                     String implicitDeclaration = utilImplicitDeclaration( fieldDeclaration.getType() );
                     if ( implicitDeclaration!=null ) {
-                        sb.append( indent ).append( v.getId() ).append(" = ").append( implicitDeclaration ).append("\n");
+                        sb.append( indent ).append( pythonName ).append(" = ").append( implicitDeclaration ).append("\n");
                     } else {
-                        sb.append( indent ).append( v.getId() ).append(" = ").append( "None  # J2J added" ).append("\n");
+                        sb.append( indent ).append( pythonName ).append(" = ").append( "None  # J2J added" ).append("\n");
                     }
                 } else if ( v.getInit() instanceof ConditionalExpr ) {
                     ConditionalExpr ce= (ConditionalExpr)v.getInit();
                     sb.append( indent ).append("if ").append(doConvert( "",ce.getCondition() )).append(":\n");
-                    sb.append( indent ).append(s4).append( v.getId()).append(" = ").append( doConvert( "",ce.getThenExpr() ) ).append("\n");
+                    sb.append( indent ).append(s4).append(pythonName).append(" = ").append( doConvert( "",ce.getThenExpr() ) ).append("\n");
                     sb.append( indent ).append( "else:\n");
-                    sb.append( indent ).append(s4).append( v.getId()).append(" = ").append( doConvert( "",ce.getElseExpr() ) ).append("\n");
+                    sb.append( indent ).append(s4).append(pythonName).append(" = ").append( doConvert( "",ce.getElseExpr() ) ).append("\n");
                     
                 } else {
-                    sb.append( indent ) .append( v.getId() ).append(" = ").append( doConvert( "",v.getInit() ) ).append("\n");
+                    sb.append( indent ).append(pythonName).append(" = ").append( doConvert( "",v.getInit() ) ).append("\n");
                     
                 }
             }
@@ -2511,6 +2564,50 @@ public class Convert {
     }
 
     /**
+     * return the converted name, if it's been converted, otherwise return the name.
+     * @param str
+     * @return 
+     */
+    private String javaNameToPythonName( String str ) {
+        String cov= this.nameMapForward.get(str);
+        if ( cov==null ) {
+            return str;
+        } else {
+            return cov;
+        }
+    }
+    
+   /**    
+    * Function to convert camel case
+    * string to snake case string
+    * from https://www.geeksforgeeks.org/convert-camel-case-string-to-snake-case-in-java/ with modifications
+    */
+    public String camelToSnake(String str) {
+ 
+        String result = "";
+ 
+        char c = str.charAt(0);
+        result = result + Character.toLowerCase(c);
+ 
+        for (int i = 1; i < str.length(); i++) {
+ 
+            char ch = str.charAt(i);
+ 
+            if (Character.isUpperCase(ch)) {
+                result = result + '_';
+                result = result + Character.toLowerCase(ch);
+            } else {
+                result = result + ch;
+            }
+        }
+ 
+        nameMapForward.put( str, result );
+        nameMapReverse.put( result, str );
+        
+        return result;
+    }
+    
+    /**
      * wrap this with "str()" if this is not a string already.
      * @param e
      * @return doConvert(e) or "str(" + doConvert(e) + ")"
@@ -2666,18 +2763,14 @@ public class Convert {
             FieldDeclaration ss= getCurrentScopeFields().get(s);
             boolean isStatic= ModifierSet.isStatic( ss.getModifiers() );
             if ( isStatic ) {
-                scope = theClassName;
+                scope = javaNameToPythonName( theClassName );
             } else {
                 scope = "self";
             }
         } else {
             scope = ""; // local variable //TODO: review this
         }
-        if ( nameMapForward.containsKey(s) ) {
-            return indent + scope + (scope.length()==0 ? "" : ".") + nameMapForward.get(s);
-        } else {
-            return indent + scope + (scope.length()==0 ? "" : ".") + s;
-        }
+        return indent + scope + (scope.length()==0 ? "" : ".") + javaNameToPythonName(s);
 
     }
 
