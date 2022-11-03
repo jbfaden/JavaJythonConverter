@@ -82,12 +82,14 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Set;
 import java.util.Stack;
 import java.util.stream.Collectors;
 
 /**
- * Class for converting Java to Jython using an AST.
+ * Class for converting Java to Jython using an AST.  This also
+ * should format using PEP-8 (https://peps.python.org/pep-0008/)
+ * but this is a goal that will be difficult to meet.
+ * 
  * @author jbf
  */
 public class Convert {
@@ -578,7 +580,7 @@ public class Convert {
             case minus:
                 return left + " - " + right;
             case divide:
-                if ( isIntegerType( leftType ) && isIntegerType( rightType ) ) {
+                if ( pythonTarget==PythonTarget.python_3_6 && isIntegerType( leftType ) && isIntegerType( rightType ) ) {
                     return left + " // " + right;
                 } else {
                     return left + " / " + right;
