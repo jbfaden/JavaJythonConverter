@@ -1582,7 +1582,7 @@ public class Convert {
                 return indent + "# J2J: "+variableDeclarationExpr.toString().trim();
             }
             if ( camelToSnake ) {
-                String news= camelToSnake(s);
+                String news= camelToSnakeAndRegister(s);
                 s= news;
             }
             if ( s.equals("len") ) {
@@ -1986,7 +1986,7 @@ public class Convert {
             
             String pythonName;
             if ( camelToSnake ) {
-                pythonName= camelToSnake(name);
+                pythonName= camelToSnakeAndRegister(name);
             } else {
                 pythonName= name;
             }
@@ -2132,7 +2132,7 @@ public class Convert {
         String methodName= methodDeclaration.getName();
         String pythonName;
         if ( camelToSnake ) {
-            pythonName= camelToSnake(methodName);
+            pythonName= camelToSnakeAndRegister(methodName);
         } else {
             pythonName= methodName;
         }
@@ -2153,7 +2153,7 @@ public class Convert {
                 String name= p.getId().getName();
                 String pythonParameterName;
                 if ( camelToSnake ) {
-                    pythonParameterName= camelToSnake(name);
+                    pythonParameterName= camelToSnakeAndRegister(name);
                 } else {
                     pythonParameterName= name;
                 }
@@ -2199,7 +2199,7 @@ public class Convert {
                 String name= id.getName();
                 String pythonName;
                 if ( camelToSnake ) {
-                    pythonName= camelToSnake(name);
+                    pythonName= camelToSnakeAndRegister(name);
                 } else {
                     pythonName= name;
                 }
@@ -2577,34 +2577,58 @@ public class Convert {
         }
     }
     
+    /**
+     * convert the name and register it in the nameMap.
+     * @param str
+     * @return 
+     */
+    private String camelToSnakeAndRegister(String str) {
+ 
+        String snake = camelToSnake(str);
+        if ( nameMapForward.containsKey(str) ) {
+            System.err.println("name map results in collision: "+str);
+        }
+        if ( nameMapReverse.containsKey(snake) ) {
+            System.err.println("name map results in collision: "+snake);
+        }
+        nameMapForward.put( str, snake );
+        nameMapReverse.put( snake, str );
+        
+        return snake;
+    }
+
    /**    
     * Function to convert camel case
     * string to snake case string
     * from https://www.geeksforgeeks.org/convert-camel-case-string-to-snake-case-in-java/ with modifications
     */
-    public String camelToSnake(String str) {
- 
-        String result = "";
- 
+    public static String camelToSnake(String str) {
+        StringBuilder result = new StringBuilder();
         char c = str.charAt(0);
-        result = result + Character.toLowerCase(c);
- 
+        result.append( Character.toLowerCase(c) );
+        boolean lastLower= Character.isLowerCase(c);
+        boolean inUpperCaseWord = false;
         for (int i = 1; i < str.length(); i++) {
  
-            char ch = str.charAt(i);
+            c = str.charAt(i);
  
-            if (Character.isUpperCase(ch)) {
-                result = result + '_';
-                result = result + Character.toLowerCase(ch);
-            } else {
-                result = result + ch;
+            if (Character.isUpperCase(c)) {
+                if ( lastLower ) {
+                    result.append('_');
+                } else {
+                    inUpperCaseWord=true;
+                }
+                c = Character.toLowerCase(c);
+            } else if ( Character.isLowerCase(c) ) {
+                if ( inUpperCaseWord ) { // "URITemplate" -> uri_template
+                    result.insert( i-1, '_' );
+                }
+                inUpperCaseWord= false;
             }
+            result.append(c);
         }
- 
-        nameMapForward.put( str, result );
-        nameMapReverse.put( result, str );
-        
-        return result;
+        String snake= result.toString();
+        return snake;
     }
     
     /**
