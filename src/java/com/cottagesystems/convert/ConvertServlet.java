@@ -54,6 +54,8 @@ public class ConvertServlet extends HttpServlet {
         convert.setOnlyStatic(onlyStatic);
         convert.setPythonTarget(PythonTarget.valueOf(pythonTarget));
         convert.setUnittest( "true".equals( request.getParameter("unittest") ) );
+        convert.setCamelToSnake( "true".equals( request.getParameter("camelToSnake") ));
+        
         String jythonCode;
         
         if ( code.trim().length()==0 ) {
@@ -128,6 +130,8 @@ public class ConvertServlet extends HttpServlet {
                         convert.isOnlyStatic() ? "checked" : "" ) );
                 out.println( String.format( "<input type=\"checkbox\" id=\"unittest\" name=\"unittest\" value=\"true\" %s>Unit Test</input>",
                         convert.isUnittest() ? "checked" : "" ) );
+                out.println( String.format( "<input type=\"checkbox\" id=\"camelToSnake\" name=\"camelToSnake\" value=\"true\" %s>Camel to Snake</input>",
+                        convert.isCamelToSnake() ? "checked" : "" ) );
                 out.println("<select name=\"pythonTarget\" id=\"pythonTarget\">");
                 out.println(String.format( "    <option value=\"jython_2_2\" %s>Jython 2.2</option>", 
                     ( convert.getPythonTarget()==PythonTarget.jython_2_2 ? "selected=1" : ""  ) ) );
@@ -140,6 +144,8 @@ public class ConvertServlet extends HttpServlet {
                 out.println( convert.isOnlyStatic() ? "Only Static Parts" : "Not Only Static Parts" );
                 out.println( "," );
                 out.println( convert.isUnittest() ? "Unit Test" : "Not unit test" );
+                out.println( "," );
+                out.println( convert.isCamelToSnake() ? "camel_to_snake" : "Not camelToSnake" );
                 out.println( "," );
                 out.println( convert.getPythonTarget() );
                 out.println("<input name=\"mode\" type=\"hidden\" value=\"edit\"></input><input type=\"submit\" value=\"edit\"></input>");
