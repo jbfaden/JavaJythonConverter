@@ -20,6 +20,6 @@ public class Pep8Formatting {
         } else {
             c=-c;
         }
-        System.out.println(myMethod(1,2,c));
+        System.out.println((myMethod(1,2,c)));
     }
 }
