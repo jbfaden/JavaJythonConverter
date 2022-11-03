@@ -713,6 +713,10 @@ public class Convert {
             MethodCallExpr mce= (MethodCallExpr)clas;
             Type scopeType=null;
             if ( mce.getScope()!=null ) scopeType= guessType(mce.getScope());
+            MethodDeclaration md= getCurrentScopeMethods().get(mce.getName());
+            if ( md!=null ) {
+                return md.getType();
+            }
             if ( scopeType!=null ) {
                 if (  scopeType.toString().equals("Pattern") ) {
                     if ( mce.getName().equals("matcher") ) {
@@ -1187,7 +1191,13 @@ public class Convert {
                 String sWithNewLine= s.substring(0,s.length()-1) + "\\n'";
                 sb.append(indent).append( "sys.stderr.write(" ).append(sWithNewLine).append(")");
             } else {
-                sb.append(indent).append( "sys.stderr.write(" ).append( doConvert( "", methodCallExpr.getArgs().get(0) ) ).append( "+'\\n')" );
+                String strss;
+                if ( !isStringType( guessType(methodCallExpr.getArgs().get(0)) ) ) {
+                    strss= "str( "+ doConvert( "", methodCallExpr.getArgs().get(0) ) + ")";
+                } else {
+                    strss= doConvert( "", methodCallExpr.getArgs().get(0) );
+                }
+                sb.append(indent).append( "sys.stderr.write(" ).append( strss ).append( "+'\\n')" );
             }
             return sb.toString();
         } else if ( name.equals("println") && clas instanceof FieldAccessExpr &&
@@ -2813,6 +2823,19 @@ public class Convert {
                 || exprType.equals(ASTHelper.SHORT_TYPE );
     }
 
+    /**
+     * return true if the type is a String or char.
+     * // TODO: think about whether char is really a string type.  This is for Java, right?
+     * @param exprType
+     * @return 
+     */
+    private boolean isStringType(Type exprType) {
+        if ( exprType==null ) {
+            return false;
+        }
+        return exprType.equals(STRING_TYPE) || exprType.equals(ASTHelper.CHAR_TYPE);
+    }
+    
     private boolean utilCheckNoVariableModification(BlockStmt body, String name ) {
         for ( Statement s: body.getStmts() ) {
             if ( !utilCheckNoVariableModification( s, name ) ) {
