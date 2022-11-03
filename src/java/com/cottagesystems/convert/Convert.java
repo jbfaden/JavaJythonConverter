@@ -1681,9 +1681,9 @@ public class Convert {
                 || compare.getOperator()==BinaryExpr.Operator.greater || compare.getOperator()==BinaryExpr.Operator.greaterEquals );
         String compareTo= doConvert("",compare.getRight());
         if ( compare.getOperator()==BinaryExpr.Operator.lessEquals ) {
-            compareTo = compareTo + "+1";
+            compareTo = compareTo + " + 1";
         } else if ( compare.getOperator()==BinaryExpr.Operator.greaterEquals ) {
-            compareTo = compareTo + "-1";
+            compareTo = compareTo + " - 1";
         }
         
         boolean updateOkay= update1!=null;
@@ -1702,11 +1702,11 @@ public class Convert {
             } else {
                 throw new IllegalArgumentException("not implemented");
             }
-            b.append( doConvert("",init1.getVars().get(0).getInit()) ).append(",");
+            b.append( doConvert("",init1.getVars().get(0).getInit()) ).append(", ");
             b.append( compareTo );
             if (  update1.getOperator()==UnaryExpr.Operator.posDecrement 
                     || update1.getOperator()==UnaryExpr.Operator.preDecrement ) {
-                b.append(",-1");
+                b.append(", -1");
             }
             b.append("):\n");
         } else {        
