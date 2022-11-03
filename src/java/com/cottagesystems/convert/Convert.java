@@ -47,6 +47,7 @@ import japa.parser.ast.expr.DoubleLiteralExpr;
 import japa.parser.ast.expr.EnclosedExpr;
 import japa.parser.ast.expr.FieldAccessExpr;
 import japa.parser.ast.expr.LongLiteralExpr;
+import japa.parser.ast.expr.MarkerAnnotationExpr;
 import japa.parser.ast.expr.NullLiteralExpr;
 import japa.parser.ast.expr.ObjectCreationExpr;
 import japa.parser.ast.expr.QualifiedNameExpr;
@@ -167,7 +168,9 @@ public class Convert {
     private boolean hasMain= false;
     
     // Constants
-    static final ReferenceType STRING_TYPE = ASTHelper.createReferenceType( "String", 0 );
+    private static final ReferenceType STRING_TYPE = ASTHelper.createReferenceType( "String", 0 );
+    
+    private static final AnnotationExpr DEPRECATED = new MarkerAnnotationExpr( new NameExpr("Deprecated") );
     
     /*** internal parsing state ***/
     
@@ -1981,7 +1984,7 @@ public class Convert {
                 if ( n instanceof ClassOrInterfaceType ) {
                     String name1= ((ClassOrInterfaceType)n).getName();
                     if ( nn.containsKey(name1) ) {
-                        sb.append(indent).append(s4).append("J2J: Name is used twice in class: ")
+                        sb.append(indent).append(s4).append("# J2J: Name is used twice in class: ")
                                 .append(name).append(" ").append(name1).append("\n");
                     }
                     nn.put( name1, n );
@@ -1989,15 +1992,21 @@ public class Convert {
                     for ( VariableDeclarator vd : ((FieldDeclaration)n).getVariables() ) {
                         String name1= vd.getId().getName();
                         if ( nn.containsKey(name1) ) {
-                            sb.append(indent).append(s4).append("J2J: Name is used twice in class: ")
+                            sb.append(indent).append(s4).append("# J2J: Name is used twice in class: ")
                                 .append(name).append(" ").append(name1).append("\n");
                         }
                         nn.put( name1, vd );
                     }
                 } else if ( n instanceof MethodDeclaration ) {
-                    String name1=((MethodDeclaration)n).getName(); 
+                    MethodDeclaration md= (MethodDeclaration)n;
+                    if ( md.getAnnotations()!=null ) {
+                        if ( md.getAnnotations().contains( DEPRECATED ) ) {
+                            continue;
+                        }
+                    }
+                    String name1= md.getName();
                     if ( nn.containsKey(name1) ) {
-                            sb.append(indent).append(s4).append("J2J: Name is used twice in class: ")
+                            sb.append(indent).append(s4).append("# J2J: Name is used twice in class: ")
                                 .append(name).append(" ").append(name1).append("\n");
                     }
                     nn.put( name1, n );
@@ -2006,7 +2015,7 @@ public class Convert {
                 }
             }
             
-            classOrInterfaceDeclaration.getChildrenNodes().forEach((n) -> {
+            for ( Node n : classOrInterfaceDeclaration.getChildrenNodes() ) {
                 if ( n instanceof ClassOrInterfaceType ) {
                     // skip this strange node
                 } else if ( n instanceof EmptyMemberDeclaration ) {
@@ -2017,10 +2026,18 @@ public class Convert {
                     } else {
                         sb.append( doConvert( indent+s4, n ) ).append("\n");
                     }
+                } else if ( n instanceof MethodDeclaration ) {
+                    MethodDeclaration md=  (MethodDeclaration)n;
+                    if ( md.getAnnotations()!=null ) {
+                        if ( md.getAnnotations().contains( DEPRECATED ) ) {
+                            continue;
+                        }
+                    }                    
+                    sb.append( doConvert( indent+s4, n ) ).append("\n");
                 } else {
                     sb.append( doConvert( indent+s4, n ) ).append("\n");
                 }
-            });
+            };
             
             if ( unittest && pythonTarget==PythonTarget.jython_2_2 ) {
                 sb.append("test = ").append(classOrInterfaceDeclaration.getName()).append("()\n");
