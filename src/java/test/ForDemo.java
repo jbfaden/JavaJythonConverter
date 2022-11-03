@@ -12,7 +12,7 @@ public class ForDemo {
             s+= i;
         }
         System.out.println("s="+s);
-        for ( s=0; s<10; s++ ) { // should not convert -- no init
+        for ( s=0; s<10; s++ ) { // should not convert -- no init.  Also, what if s is used afterwards?
             a=a+1;
         }
         System.out.println("a="+a);
