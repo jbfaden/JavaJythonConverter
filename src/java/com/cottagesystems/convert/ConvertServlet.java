@@ -96,7 +96,7 @@ public class ConvertServlet extends HttpServlet {
             out.println("<!DOCTYPE html>");
             out.println("<html>");
             out.println("<head>");
-            out.println("<title>Jython Result</title>");            
+            out.println("<title>Java to Python Converter</title>");            
             out.println("<link rel=\"stylesheet\" href=\"styles/default.min.css\">");
             out.println("</head>");
             out.println("<body>");
