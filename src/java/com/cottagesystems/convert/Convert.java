@@ -964,7 +964,7 @@ public class Convert {
                         StringBuilder sb= new StringBuilder();
                         sb.append(indent).append(args.get(0)).append(" % (");
                         sb.append( utilFormatExprList( args.subList(1, args.size() ) ) );
-                        sb.append(" )");
+                        sb.append(")");
                         return sb.toString();
                     } else {
                         break;
@@ -1006,17 +1006,17 @@ public class Convert {
                 case "replace":
                     String search = doConvert("",args.get(0));
                     String replac = doConvert("",args.get(1));
-                    return doConvert(indent,clas)+".replace("+search+","+replac+")";
+                    return doConvert(indent,clas)+".replace("+search+", "+replac+")";
                 case "replaceAll":
                     additionalImports.put("import re\n",Boolean.TRUE);
                     search= doConvert("",args.get(0));
                     replac= utilUnquoteReplacement( doConvert("",args.get(1)) );
-                    return indent + "re.sub("+search+","+replac+","+doConvert("",clas)+")";
+                    return indent + "re.sub("+search+", "+replac+", "+doConvert("",clas)+")";
                 case "replaceFirst":
                     search= doConvert("",args.get(0));
                     replac= utilUnquoteReplacement( doConvert("",args.get(1)) );
                     additionalImports.put("import re\n",Boolean.TRUE);
-                    return indent + "re.sub("+search+","+replac+","+doConvert("",clas)+",1)";
+                    return indent + "re.sub("+search+", "+replac+", "+doConvert("",clas)+",1)";
                 case "valueOf":
                     return indent + "str("+doConvert("",args.get(0)) +")";
                 case "split":
@@ -1491,9 +1491,9 @@ public class Convert {
                 result= indent + "*** "+simpleName + "*** " + n.toString() + "*** end "+simpleName + "****";
                 break;
         }
-        //if ( result.contains("\n\n") ) {
-        //    System.err.println("here stop after convert");
-        //}
+        if ( result.contains("(int(round(nn)) )") ) {
+            System.err.println("here stop after convert");
+        }
         return result;
     }
     
@@ -1522,7 +1522,10 @@ public class Convert {
             if ( !aline.endsWith("\n") ) {
                 result.append("\n"); //TODO: yuck!  Why is it sometimes there and sometimes not?  Fix this.
             }
-            if ( !aline.trim().startsWith("#") ) lines++;
+            String[] thelines= aline.split("\\n");
+            for ( String l : thelines ) { // comment before line
+                if ( !l.trim().startsWith("#") ) lines++;
+            }
         }
         if ( lines==0 ) {
             result.append(indent).append("pass\n");
