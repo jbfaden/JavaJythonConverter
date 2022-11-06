@@ -2512,7 +2512,7 @@ public class ConvertJavaToPython {
             if ( pythonTarget==PythonTarget.python_3_6 ) {
                 sb.append(indent).append("except Exception as ").append( id ).append(": # J2J: exceptions\n");
             } else {
-                sb.append(indent).append("except ").append(doConvert( "",cc.getExcept() )).append( " as ").append(id).append(":\n");
+                sb.append(indent).append("except ").append(doConvert( "",cc.getExcept() )).append( ", ").append(id).append(":\n");
             }
             sb.append( doConvert( indent, cc.getCatchBlock() ) );
         }
