@@ -1690,7 +1690,7 @@ public class Convert {
         List<Expression> init = forStmt.getInit();
         VariableDeclarationExpr init1= null;
         VariableDeclaratorId v=null;
-        if ( init.size()==1 && init.get(0) instanceof VariableDeclarationExpr ) {
+        if ( init!=null && init.size()==1 && init.get(0) instanceof VariableDeclarationExpr ) {
             init1= (VariableDeclarationExpr)init.get(0);
             if (init1.getVars().size()!=1 ) {
                 init1= null;
@@ -1745,9 +1745,11 @@ public class Convert {
             }
             b.append("):\n");
         } else {        
-            forStmt.getInit().forEach((e) -> {
-                b.append(indent).append( doConvert( "", e ) ).append( "\n" );
-            });
+            if ( init!=null ) {
+                init.forEach((e) -> {
+                    b.append(indent).append( doConvert( "", e ) ).append( "\n" );
+                });
+            }
             b.append( indent ).append("while ").append(doConvert( "", forStmt.getCompare() )).append(":  # J2J for loop\n");        
         }
         if ( forStmt.getBody() instanceof ExpressionStmt ) {
