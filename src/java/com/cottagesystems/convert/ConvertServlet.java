@@ -59,16 +59,11 @@ public class ConvertServlet extends HttpServlet {
         String jythonCode;
         
         if ( code.trim().length()==0 ) {
-            code= "class Simple {\n   public static void main( String[] args ) {\n      System.out.println(\"Hello\");\n   }\n}\n\n\n";
+            // code= "class Simple {\n   public static void main( String[] args ) {\n      System.out.println(\"Hello\");\n   }\n}\n\n\n";
         }
         
         try {
-            if (code!=null ) {
-                jythonCode = convert.doConvert(code);
-            } else {
-                jythonCode = "";
-                code= "";
-            }
+            jythonCode = convert.doConvert(code);
         } catch (ParseException ex) {
             jythonCode = "*** "+ex.getMessage()+" ***";
         }
