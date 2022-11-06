@@ -34,6 +34,8 @@ public class FloatIntegerMathDemo {
         int b= 34;
         double x= 34.;
         double y= 1000;
+        float p = 3.14F;
+        double d = 3.14d;
         
         System.out.println( a/b );
         System.out.println( a/x );
@@ -42,6 +44,7 @@ public class FloatIntegerMathDemo {
         System.out.println( a/(int)(x+b) );
         
         System.out.println( julianDay( 1979, 1, 1 ) );
-        
+        System.out.println( p );
+        System.out.println( d);
     }
 }
