@@ -1398,7 +1398,11 @@ public class ConvertJavaToPython {
                 result= indent + ((IntegerLiteralExpr)n).getValue();
                 break;
             case "DoubleLiteralExpr":
-                result= indent + ((DoubleLiteralExpr)n).getValue();
+                String s = ((DoubleLiteralExpr)n).getValue();
+                if ( s.endsWith("d") || s.endsWith("D") || s.endsWith("f") || s.endsWith("F") ) {
+                    s= s.substring(0,s.length()-1);
+                }
+                result= indent + s;
                 break;
             case "CharLiteralExpr":
                 result= indent + "'" + ((CharLiteralExpr)n).getValue() +"'";
