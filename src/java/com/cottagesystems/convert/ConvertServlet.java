@@ -50,7 +50,7 @@ public class ConvertServlet extends HttpServlet {
                 
         response.setContentType("text/html;charset=UTF-8");
 
-        Convert convert= new Convert();
+        ConvertJavaToPython convert= new ConvertJavaToPython();
         convert.setOnlyStatic(onlyStatic);
         convert.setPythonTarget(PythonTarget.valueOf(pythonTarget));
         convert.setUnittest( "true".equals( request.getParameter("unittest") ) );
@@ -151,7 +151,7 @@ public class ConvertServlet extends HttpServlet {
                 out.println("<input name=\"mode\" type=\"hidden\" value=\"edit\"></input><input type=\"submit\" value=\"edit\"></input>");
             }
             out.println("</form action=\"ConvertServlet\" method=\"post\">");        
-            out.println("<small>Version "+Convert.VERSION+"</small><br>\n");
+            out.println("<small>Version "+ConvertJavaToPython.VERSION+"</small><br>\n");
             out.println("Please note:<ul>\n");
             out.println("<li>The goal is to get something close to translated, but not perfect.\n");
             out.println("<li>The Java code must be working, this assumes that it is a functioning and correct code.\n");

@@ -94,11 +94,11 @@ import java.util.stream.Collectors;
  * 
  * @author jbf
  */
-public class Convert {
+public class ConvertJavaToPython {
 
     public static final String VERSION = "20221103c";
     
-    public Convert() {
+    public ConvertJavaToPython() {
         this.stack = new Stack<>();
         this.stackFields= new Stack<>();
         this.stackMethods= new Stack<>();
@@ -2544,7 +2544,7 @@ public class Convert {
     }
 
     public static void main(String[] args ) throws ParseException, FileNotFoundException {
-        Convert c= new Convert();
+        ConvertJavaToPython c= new ConvertJavaToPython();
         c.setOnlyStatic(false);
         c.setUnittest(false);
 //        System.err.println("----");
