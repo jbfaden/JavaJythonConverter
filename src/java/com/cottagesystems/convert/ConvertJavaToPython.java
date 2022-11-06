@@ -51,6 +51,7 @@ import japa.parser.ast.expr.MarkerAnnotationExpr;
 import japa.parser.ast.expr.NullLiteralExpr;
 import japa.parser.ast.expr.ObjectCreationExpr;
 import japa.parser.ast.expr.QualifiedNameExpr;
+import japa.parser.ast.expr.SuperExpr;
 import japa.parser.ast.expr.UnaryExpr;
 import japa.parser.ast.stmt.BreakStmt;
 import japa.parser.ast.stmt.CatchClause;
@@ -1526,6 +1527,14 @@ public class ConvertJavaToPython {
                 break;
             case "VariableDeclaratorId":
                 result= indent + ((VariableDeclaratorId)n).getName();
+                break;
+            case "SuperExpr":
+                SuperExpr se= (SuperExpr)n;
+                if ( pythonTarget==PythonTarget.jython_2_2 ) {
+                    result= indent + "*** "+simpleName + "*** " + n.toString() + "*** end "+simpleName + "****";
+                } else {
+                    result= indent + "super()";
+                }
                 break;
             default:
                 result= indent + "*** "+simpleName + "*** " + n.toString() + "*** end "+simpleName + "****";
