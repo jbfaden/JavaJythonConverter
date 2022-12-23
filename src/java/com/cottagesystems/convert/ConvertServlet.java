@@ -6,6 +6,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.lang.management.ManagementFactory;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
@@ -19,6 +20,29 @@ import javax.servlet.http.HttpServletResponse;
 @WebServlet(name = "ConvertServlet", urlPatterns = {"/ConvertServlet"})
 public class ConvertServlet extends HttpServlet {
 
+    private static String getProcessId(final String fallback) {
+        // Note: may fail in some JVM implementations
+        // therefore fallback has to be provided
+
+        // something like '<pid>@<hostname>', at least in SUN / Oracle JVMs
+        final String jvmName = ManagementFactory.getRuntimeMXBean().getName();
+        final int index = jvmName.indexOf('@');
+
+        if (index < 1) {
+            // part before '@' empty (index = 0) / '@' not found (index = -1)
+            return fallback;
+        }
+
+        try {
+            return Long.toString(Long.parseLong(jvmName.substring(0, index)));
+        } catch (NumberFormatException e) {
+            // ignore
+        }
+        return fallback;
+    }
+    
+    private static String pid= getProcessId("000");
+    
     /**
      * Processes requests for both HTTP <code>GET</code> and <code>POST</code> methods.
      *
@@ -68,9 +92,15 @@ public class ConvertServlet extends HttpServlet {
             jythonCode = "*** "+ex.getMessage()+" ***";
         }
         
-        File dd= new File( "/tmp/javajython/");
+        
+        File dd= new File( "/tmp/javajython/"+pid+"/");
         if ( !dd.exists() ) {
-            if ( !dd.mkdirs() ) throw new IllegalArgumentException("unable to mkdirs");
+            File pp= dd.getParentFile();
+            if ( !pp.exists() ) {
+                pp.mkdirs();
+                //pp.setWritable( true, false );  // I don't think this works
+            }
+            if ( !dd.mkdir() ) throw new IllegalArgumentException("unable to mkdir");
         }
         String hash= String.format( "%09d", Math.abs( code.hashCode() ) );
         File ff= new File( dd, hash+".java");
