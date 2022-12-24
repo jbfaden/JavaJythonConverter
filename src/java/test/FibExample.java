@@ -2,7 +2,8 @@
 package test;
 
 /**
- *
+ * FibExample calculates the first ten numbers of Fibonacci sequence.
+ * https://en.wikipedia.org/wiki/Fibonacci_number
  * @author jbf
  */
 public class FibExample {
