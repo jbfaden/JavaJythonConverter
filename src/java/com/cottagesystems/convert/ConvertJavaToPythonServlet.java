@@ -17,8 +17,8 @@ import javax.servlet.http.HttpServletResponse;
  *
  * @author jbf
  */
-@WebServlet(name = "ConvertServlet", urlPatterns = {"/ConvertServlet"})
-public class ConvertServlet extends HttpServlet {
+@WebServlet(name = "ConvertJavaToPythonServlet", urlPatterns = {"/ConvertJavaToPythonServlet"})
+public class ConvertJavaToPythonServlet extends HttpServlet {
 
     private static String getProcessId(final String fallback) {
         // Note: may fail in some JVM implementations
@@ -131,7 +131,7 @@ public class ConvertServlet extends HttpServlet {
             out.println("<script>hljs.highlightAll();</script>\n");
             out.println("<h1>Java to Python Converter</h1>");
             out.println("Please read caveats below, seriously difficult bugs could be introduced when automatically converting code.<br><br>");
-            out.println("<form action=\"ConvertServlet\" method=\"post\">");
+            out.println("<form action=\"ConvertJavaToPythonServlet\" method=\"post\">");
             out.println("<table>");
             out.println("<tr>");
             out.println("<td>Java Code:<br>");
@@ -188,7 +188,7 @@ public class ConvertServlet extends HttpServlet {
             out.println("<li>This currently targets Jython 2.2 and Python 3.6.\n");
             out.println("<li>I am a Java developer who knows enough Python to cause problems, see <a href='https://github.com/jbfaden/JavaJythonConverter'>GitHub project</a> to provide feedback\n");
             out.println("<hr>");
-            out.println("<a href='ConvertServlet'>Python Conversion</a>");
+            out.println("<a href='ConvertJavaToPythonServlet'>Python Conversion</a>");
             out.println("<a href='ConvertJavaToJavascriptServlet'>JavaScript Conversion</a>");
             out.println("</body>");
             out.println("</html>");

@@ -188,7 +188,7 @@ public class ConvertJavaToJavascriptServlet extends HttpServlet {
             out.println("<li>I am a Java developer who knows enough JavaScript to cause problems, see <a href='https://github.com/jbfaden/JavaJythonConverter'>GitHub project</a> to provide feedback\n");
             out.println("</body>");
             out.println("<hr>");
-            out.println("<a href='ConvertServlet'>Python Conversion</a>");
+            out.println("<a href='ConvertJavaToPythonServlet'>Python Conversion</a>");
             out.println("<a href='ConvertJavaToJavascriptServlet'>JavaScript Conversion</a>");
             out.println("</html>");
         }
