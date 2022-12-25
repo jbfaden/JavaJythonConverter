@@ -1360,7 +1360,8 @@ public class ConvertJavaToJavascript {
     }    
     
     /**
-     * this is where most of the business happens, where language semantics differ.   This ought to be reviewed and
+     * This is somewhat the "heart" of this converter, where Java library use is translated to JavaScript use.
+     * This is where most of the business happens, where language semantics differ.   This ought to be reviewed and
      * refactored to work more independently.
      * @param indent
      * @param methodCallExpr
@@ -1375,6 +1376,90 @@ public class ConvertJavaToJavascript {
             name=""; // I don't think this happens
         }
         
+        /**
+         * try to identify the class of the scope, which could be either a static or non-static method.
+         */
+        String clasType=""; // = guessType(clas);  TODO: these should be merged
+        if ( clas instanceof NameExpr ) {
+            String contextName= ((NameExpr)clas).getName(); // sb in sb.append, or String in String.format.
+            Type contextType= localVariablesStack.peek().get(contextName); // allow local variables to override class variables.
+            if ( contextType==null ) contextType= getCurrentScope().get(contextName);
+            if ( Character.isUpperCase(contextName.charAt(0)) ) { // Yup, we're assuming that upper case refers to a class
+                clasType= contextName;
+            } else if ( stringMethods.contains(name) 
+                    && ( contextType==null || contextType.equals(ASTHelper.createReferenceType("String", 0) )) ) {
+                clasType= "String";
+            } else if ( contextType!=null ) {
+                Type t= contextType;
+                if ( t.toString().equals("StringBuilder") ) {
+                    clasType= "StringBuilder";
+                } else {
+                    clasType= t.toString();
+                }
+            }
+        } else if ( clas instanceof StringLiteralExpr ) {
+            clasType= "String";
+        } else if ( stringMethods.contains(name) ) {
+            if ( name.equals("format") ) {
+                if ( ASTHelper.createReferenceType("String", 0).equals(guessType( clas )) ) {
+                    clasType= "String";
+                }
+            } else {
+                clasType= "String";
+            }
+        } else {
+            Type t= guessType(clas);
+            if ( t==null ) {
+                clasType= "";
+            } else {
+                clasType= t.toString();
+            }
+        }
+
+        // remove diamond typing (Map<String,String> -> Map)
+        int i= clasType.indexOf("<"); 
+        if ( i>=0 ) {
+            clasType= clasType.substring(0,i);
+        }
+        
+        if ( clasType.equals("Arrays") ) {
+            switch (name) {
+                case "copyOfRange": {
+                    StringBuilder sb= new StringBuilder();
+                    sb.append(indent).append(args.get(0)).append("[");
+                    sb.append(doConvert("",args.get(1))).append(":").append(doConvert("",args.get(2)));
+                    sb.append("]");
+                    return sb.toString();
+                }
+                case "equals": {
+                    // if they are not objects, then Python == can be used.
+                    StringBuilder sb= new StringBuilder();
+                    Type t1= guessType(args.get(0)); // are both arrays containing primative objects (int,float,etc)
+                    Type t2= guessType(args.get(1));
+                    if ( t1!=null && t1.equals(ASTHelper.createReferenceType(ASTHelper.INT_TYPE,1)) 
+                            && t2!=null && t2.equals(ASTHelper.createReferenceType(ASTHelper.INT_TYPE,1)) ) {
+                        sb.append(indent).append(doConvert("",args.get(0))).append("==");
+                        sb.append(doConvert("",args.get(1)));
+                        return sb.toString();        
+                    }
+                }
+                case "toString": {
+                    Type t= guessType(args.get(0));
+                    String js;
+                    if ( t instanceof ReferenceType && ((ReferenceType)t).getArrayCount()==1 && isIntegerType(((ReferenceType)t).getType()) ) {
+                        js= "', '.join( map( str, "+doConvert("",args.get(0))+" ) )";
+                    } else {
+                        js= "', '.join("+doConvert("",args.get(0))+")";
+                    }
+                    return "('['+"+js + "+']')";
+                }
+                case "asList": 
+                    // since in Python we are treating lists and arrays as the same thing, do nothing.
+                    return doConvert("",args.get(0));
+                
+            }
+        }
+
         if ( clas==null ) {
             ClassOrInterfaceDeclaration m= classMethods.get(name);
             if ( m!=null ) {
