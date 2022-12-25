@@ -17,7 +17,7 @@ import javax.servlet.http.HttpServletResponse;
  *
  * @author jbf
  */
-@WebServlet(name = "ConvertJavaToJavaScriptServlet", urlPatterns = {"/ConvertJavaToJavaScriptServlet"})
+@WebServlet(name = "ConvertJavaToJavascriptServlet", urlPatterns = {"/ConvertJavaToJavascriptServlet"})
 public class ConvertJavaToJavascriptServlet extends HttpServlet {
 
     private static String getProcessId(final String fallback) {
@@ -131,7 +131,7 @@ public class ConvertJavaToJavascriptServlet extends HttpServlet {
             out.println("<script>hljs.highlightAll();</script>\n");
             out.println("<h1>Java to Javascript Converter</h1>");
             out.println("Please read caveats below, seriously difficult bugs could be introduced when automatically converting code.<br><br>");
-            out.println("<form action=\"ConvertServlet\" method=\"post\">");
+            out.println("<form action=\"ConvertJavaToJavascriptServlet\" method=\"post\">");
             out.println("<table>");
             out.println("<tr>");
             out.println("<td>Java Code:<br>");
@@ -175,7 +175,7 @@ public class ConvertJavaToJavascriptServlet extends HttpServlet {
                 //out.println( convert.getPythonTarget() );
                 out.println("<input name=\"mode\" type=\"hidden\" value=\"edit\"></input><input type=\"submit\" value=\"edit\"></input>");
             }
-            out.println("</form action=\"ConvertServlet\" method=\"post\">");        
+            out.println("</form>");        
             out.println("<small>Version "+ConvertJavaToPython.VERSION+"</small><br>\n");
             out.println("Please note:<ul>\n");
             out.println("<li>The goal is to get something close to translated, but not perfect.\n");

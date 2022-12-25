@@ -175,7 +175,7 @@ public class ConvertServlet extends HttpServlet {
                 out.println( convert.getPythonTarget() );
                 out.println("<input name=\"mode\" type=\"hidden\" value=\"edit\"></input><input type=\"submit\" value=\"edit\"></input>");
             }
-            out.println("</form action=\"ConvertServlet\" method=\"post\">");        
+            out.println("</form>");        
             out.println("<small>Version "+ConvertJavaToPython.VERSION+"</small><br>\n");
             out.println("Please note:<ul>\n");
             out.println("<li>The goal is to get something close to translated, but not perfect.\n");
