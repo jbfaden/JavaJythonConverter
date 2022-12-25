@@ -853,15 +853,8 @@ public class ConvertJavaToJavascript {
         String pythonName;
         pythonName= methodName;
         sb.append( indent ).append( "function " ).append( methodName ) .append("(");
-        boolean comma; 
+        boolean comma= false;
         
-        if ( !isStatic ) {
-            sb.append("self");
-            comma= true;
-        } else {
-            comma = false;
-        }
-
         pushScopeStack(false);
 
         if ( methodDeclaration.getParameters()!=null ) {
@@ -1466,8 +1459,13 @@ public class ConvertJavaToJavascript {
                     return doConvert("",args.get(0));
                 
             }
+        } else if ( clasType.equals("System") ) {
+            switch (name) {
+                case "currentTimeMillis":
+                    return indent + "Date.now()";
+            }
         }
-
+        
         if ( clas==null ) {
             ClassOrInterfaceDeclaration m= classMethods.get(name);
             if ( m!=null ) {
