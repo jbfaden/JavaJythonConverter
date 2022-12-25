@@ -240,7 +240,7 @@ public class ConvertJavaToJavascript {
         //    }
         //}
         
-        String result="<ERROR221 "+simpleName+">";
+        String result="<J2J243 "+simpleName+">";
 
         switch ( simpleName ) {
             case "foo":
@@ -344,10 +344,10 @@ public class ConvertJavaToJavascript {
                 //result= doConvertThrowStmt(indent,(ThrowStmt)n);
                 break;
             case "ArrayCreationExpr":
-                //result= doConvertArrayCreationExpr(indent,(ArrayCreationExpr)n);
+                result= doConvertArrayCreationExpr(indent,(ArrayCreationExpr)n);
                 break;
             case "ArrayInitializerExpr":
-                //result= doConvertArrayInitializerExpr(indent,(ArrayInitializerExpr)n);
+                result= doConvertArrayInitializerExpr(indent,(ArrayInitializerExpr)n);
                 break;
             case "ArrayAccessExpr":
                 //result= doConvertArrayAccessExpr(indent,(ArrayAccessExpr)n);
@@ -949,10 +949,12 @@ public class ConvertJavaToJavascript {
                 localVariablesStack.peek().put( s, variableDeclarationExpr.getType() );
             }
             if ( v.getInit()!=null ) {
-                b.append( indent ).append(s).append(" = ").append(doConvert("",v.getInit()) ).append(";");
+                b.append( indent ).append("var ").append(s).append(" = ").append(doConvert("",v.getInit()) );
+            } else {
+                b.append( indent ).append("var ").append(s);
             }
         }
-        return b.substring(0,b.length()-1); // remove the last semicolon, because it will be added later.
+        return b.toString();
     }
 
     private String doConvertForStmt(String indent, ForStmt forStmt) {
@@ -1458,5 +1460,31 @@ public class ConvertJavaToJavascript {
 
     }
     
+    private String doConvertArrayCreationExpr(String indent, ArrayCreationExpr arrayCreationExpr) {
+        if ( arrayCreationExpr.getInitializer()!=null ) {
+            if ( arrayCreationExpr.getDimensions()!=null && arrayCreationExpr.getDimensions().size()==1 ) {
+                Expression e1= arrayCreationExpr.getDimensions().get(0);
+                if ( e1 instanceof IntegerLiteralExpr ) {
+                    int len= Integer.parseInt(((IntegerLiteralExpr)e1).getValue());
+                    if ( len<15 ) {
+                        StringBuilder sb= new StringBuilder(indent);
+                        sb.append("[0");
+                        for ( int i=1; i<len; i++ ) {
+                            sb.append(",0");
+                        }
+                        sb.append("]");
+                        return sb.toString();
+                    }
+                }
+            } else {
+                return doConvert( indent, arrayCreationExpr.getInitializer() );
+            }
+        }
+        return indent + "[]";
+    }
+    
+    private String doConvertArrayInitializerExpr(String indent, ArrayInitializerExpr arrayInitializerExpr) {
+        return indent + "[" + utilFormatExprList( arrayInitializerExpr.getValues() ) + "]";
+    }    
     
 }
