@@ -292,7 +292,7 @@ public class ConvertJavaToJavascript {
                 result= doConvertStringLiteralExpr(indent,(StringLiteralExpr)n);
                 break;
             case "ConditionalExpr":
-                //result= doConvertConditionalExpr(indent,(ConditionalExpr)n);
+                result= doConvertConditionalExpr(indent,(ConditionalExpr)n);
                 break;
             case "UnaryExpr":
                 result= doConvertUnaryExpr(indent,(UnaryExpr)n);
@@ -311,7 +311,7 @@ public class ConvertJavaToJavascript {
                 result= doConvertVariableDeclarationExpr(indent,(VariableDeclarationExpr)n);
                 break;
             case "IfStmt":
-                //result= doConvertIfStmt(indent,(IfStmt)n);
+                result= doConvertIfStmt(indent,(IfStmt)n);
                 break;
             case "ForStmt":
                 result= doConvertForStmt(indent,(ForStmt)n);
@@ -323,7 +323,7 @@ public class ConvertJavaToJavascript {
                 //result= doConvertSwitchStmt(indent,(SwitchStmt)n);                
                 break;
             case "ReturnStmt":
-                //result= doConvertReturnStmt(indent,(ReturnStmt)n);
+                result= doConvertReturnStmt(indent,(ReturnStmt)n);
                 break;
             case "BreakStmt":
                 //result= indent + "break";
@@ -350,7 +350,7 @@ public class ConvertJavaToJavascript {
                 result= doConvertArrayInitializerExpr(indent,(ArrayInitializerExpr)n);
                 break;
             case "ArrayAccessExpr":
-                //result= doConvertArrayAccessExpr(indent,(ArrayAccessExpr)n);
+                result= doConvertArrayAccessExpr(indent,(ArrayAccessExpr)n);
                 break;
             case "FieldAccessExpr":
                 result= doConvertFieldAccessExpr(indent,(FieldAccessExpr)n);
@@ -386,7 +386,7 @@ public class ConvertJavaToJavascript {
                 //result= doConvertInitializerDeclaration(indent,(InitializerDeclaration)n);
                 break;
             case "ObjectCreationExpr":
-                //result= doConvertObjectCreationExpr(indent,(ObjectCreationExpr)n);
+                result= doConvertObjectCreationExpr(indent,(ObjectCreationExpr)n);
                 break;
             case "ClassOrInterfaceType":
                 //result= doConvertClassOrInterfaceType(indent,(ClassOrInterfaceType)n);
@@ -410,6 +410,9 @@ public class ConvertJavaToJavascript {
             default:
                 result= indent + "*** "+simpleName + "*** " + n.toString() + "*** end "+simpleName + "****";
                 break;
+        }
+        if ( result.startsWith("<J2J") ) {
+            System.err.println("Here stop");
         }
         return result;
     }
@@ -696,7 +699,9 @@ public class ConvertJavaToJavascript {
                 sb.append( "\n" );
             }
             String comments= utilRewriteComments(indent, classOrInterfaceDeclaration.getComment(), true );
-            sb.append( comments );
+            if ( comments.trim().length()>0 ) {
+                sb.append( "// " + comments );
+            }
             
             String className;
             className= name;
@@ -836,7 +841,10 @@ public class ConvertJavaToJavascript {
 
         StringBuilder sb= new StringBuilder();
         String comments= utilRewriteComments( indent, methodDeclaration.getComment() );
-        sb.append( comments );
+        if ( comments.trim().length()>0 ) {
+            sb.append(indent).append("//").append( comments );
+        }
+        
         if ( isStatic  && !onlyStatic ) {
             //sb.append( indent ).append( "@staticmethod\n" );
         }
@@ -922,7 +930,7 @@ public class ConvertJavaToJavascript {
     private String doConvertExpressionStmt(String indent, ExpressionStmt expressionStmt) {
         StringBuilder sb= new StringBuilder();
         if ( expressionStmt.getComment()!=null ) {
-            sb.append("//").append(utilRewriteComments(indent, expressionStmt.getComment() ));
+            sb.append(indent).append("//").append(utilRewriteComments(indent, expressionStmt.getComment() ));
         }
         sb.append( doConvert( indent, expressionStmt.getExpression() ) ).append(";");
         return sb.toString();
@@ -996,7 +1004,7 @@ public class ConvertJavaToJavascript {
             sincrement.append(",").append( doConvert( "", e ) );
         });
         
-        b.append( indent ).append("for ( let ").append(sinit.substring(1)).append("; ").append(scompare).append("; ") 
+        b.append( indent ).append("for ( ").append(sinit.substring(1)).append("; ").append(scompare).append("; ") 
                 .append(sincrement.substring(1)). append(")");
 
         if ( forStmt.getBody() instanceof BlockStmt ) {
@@ -1218,26 +1226,26 @@ public class ConvertJavaToJavascript {
             }
         }
         BinaryExpr.Operator op= b.getOperator();
-        if (  rightType!=null && rightType.equals(ASTHelper.CHAR_TYPE) && left.startsWith("ord(") && left.endsWith(")") ) {
+        if (  rightType!=null && rightType.equals(ASTHelper.CHAR_TYPE) && left.startsWith("(") && left.endsWith(")") ) {
             left= left.substring(4,left.length()-1);
         }
         
         if ( leftType!=null && rightType!=null ) {
             if ( leftType.equals(ASTHelper.CHAR_TYPE) && rightType.equals(ASTHelper.INT_TYPE) ) {
-                left= "ord("+left+")";
+                left= "("+left+")";
             }
             if ( leftType.equals(ASTHelper.INT_TYPE) && rightType.equals(ASTHelper.CHAR_TYPE) ) {
-                left= "ord("+left+")";
+                left= "("+left+")";
             }
             if ( rightType.equals(STRING_TYPE) 
                     && leftType instanceof PrimitiveType 
                     && !leftType.equals(ASTHelper.CHAR_TYPE) ) {
-                left= "str("+left+")";
+                left= "("+left+")";
             }
             if ( leftType.equals(STRING_TYPE) 
                     && rightType instanceof PrimitiveType 
                     && !rightType.equals(ASTHelper.CHAR_TYPE) ) {
-                right= "str("+right+")";
+                right= "("+right+")";
             }
         }
         
@@ -1571,5 +1579,57 @@ public class ConvertJavaToJavascript {
     private String doConvertArrayInitializerExpr(String indent, ArrayInitializerExpr arrayInitializerExpr) {
         return indent + "[" + utilFormatExprList( arrayInitializerExpr.getValues() ) + "]";
     }    
+
+    private String doConvertReturnStmt(String indent, ReturnStmt returnStmt) {
+        if ( returnStmt.getExpr()==null ) {
+            return indent + "return";
+        } else {
+            return indent + "return " + doConvert("", returnStmt.getExpr());
+        }        
+    }
+
+    private String doConvertConditionalExpr(String indent, ConditionalExpr conditionalExpr) {
+        return indent + doConvert("",conditionalExpr.getCondition()) + " ? " + 
+                doConvert("",conditionalExpr.getThenExpr()) + " : " + 
+                doConvert("",conditionalExpr.getElseExpr());
+    }
+
+    private String doConvertIfStmt(String indent, IfStmt ifStmt) {
+        if ( ifStmt.getElseStmt()!=null ) {
+            if ( ifStmt.getThenStmt() instanceof BlockStmt ) {
+                if ( ifStmt.getElseStmt() instanceof BlockStmt ) {
+                    return indent + "if (" + doConvert("",ifStmt.getCondition()) +
+                            ") {\n" + doConvert(indent+s4,ifStmt.getThenStmt() ) + indent + "} else"
+                            + "{\n" + doConvert(indent+s4,ifStmt.getElseStmt() ) + indent + "}";
+                            
+                } else {
+                    return indent + "if (" + doConvert("",ifStmt.getCondition()) +
+                            ") {\n" + doConvert(indent+s4,ifStmt.getThenStmt() ) + indent + "} else"
+                            + "{\n" + doConvert(indent+s4,ifStmt.getElseStmt() ) + indent + "}";
+                    
+                }
+            } else {
+                return indent + "if (" + doConvert("",ifStmt.getCondition()) +
+                    ") " + doConvert("",ifStmt.getThenStmt() ) + "";
+            }
+        } else {
+            if ( ifStmt.getThenStmt() instanceof BlockStmt ) {
+                return indent + "if (" + doConvert("",ifStmt.getCondition()) +
+                    ") {\n" + doConvert(indent+s4,ifStmt.getThenStmt() ) + indent + "}";
+            } else {
+                return indent + "if (" + doConvert("",ifStmt.getCondition()) +
+                    ") " + doConvert("",ifStmt.getThenStmt() ) + "";
+            }
+        }
+    }
+
+    private String doConvertArrayAccessExpr(String indent, ArrayAccessExpr arrayAccessExpr) {
+        String sindex= doConvert("",arrayAccessExpr.getIndex());
+        return indent + doConvert("",arrayAccessExpr.getName())+"["+sindex+"]";
+    }
+
+    private String doConvertObjectCreationExpr(String indent, ObjectCreationExpr objectCreationExpr) {
+        return indent + "new " + objectCreationExpr.getType().getName() + "("+ utilFormatExprList(objectCreationExpr.getArgs()) + ")"; // TODO: CHEAT
+    }
     
 }
