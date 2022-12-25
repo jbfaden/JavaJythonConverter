@@ -1462,11 +1462,13 @@ public class ConvertJavaToJavascript {
     
     private String doConvertArrayCreationExpr(String indent, ArrayCreationExpr arrayCreationExpr) {
         if ( arrayCreationExpr.getInitializer()!=null ) {
+            return doConvert( indent, arrayCreationExpr.getInitializer() );
+        } else {
             if ( arrayCreationExpr.getDimensions()!=null && arrayCreationExpr.getDimensions().size()==1 ) {
                 Expression e1= arrayCreationExpr.getDimensions().get(0);
                 if ( e1 instanceof IntegerLiteralExpr ) {
                     int len= Integer.parseInt(((IntegerLiteralExpr)e1).getValue());
-                    if ( len<15 ) {
+                    if ( len<15 ) { // TimeUtil.java has 14-element arrays for storing time.
                         StringBuilder sb= new StringBuilder(indent);
                         sb.append("[0");
                         for ( int i=1; i<len; i++ ) {
@@ -1476,10 +1478,8 @@ public class ConvertJavaToJavascript {
                         return sb.toString();
                     }
                 }
-            } else {
-                return doConvert( indent, arrayCreationExpr.getInitializer() );
-            }
-        }
+            }  
+}
         return indent + "[]";
     }
     
