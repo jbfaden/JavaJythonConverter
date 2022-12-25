@@ -850,9 +850,7 @@ public class ConvertJavaToJavascript {
         }
         
         String methodName= methodDeclaration.getName();
-        String pythonName;
-        pythonName= methodName;
-        sb.append( indent ).append( "function " ).append( methodName ) .append("(");
+        sb.append( indent ).append( methodName ) .append("(");
         boolean comma= false;
         
         pushScopeStack(false);
