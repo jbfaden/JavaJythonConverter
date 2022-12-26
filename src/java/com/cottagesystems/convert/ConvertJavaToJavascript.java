@@ -485,12 +485,69 @@ public class ConvertJavaToJavascript {
         System.err.println( c.doConvert(text) );
     }
 
-    private String utilMakeClass(String javasrc) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    private String utilQualifyClassName( ClassOrInterfaceType clas ) {
+        if ( getCurrentScope().containsKey(clas.getName())) {
+            return ((ClassOrInterfaceType)getCurrentScope().get("this")).getName() +"." + clas.getName();
+        } else {
+            return null;
+        }
     }
+    
+    /**
+     * wrap the methods in a dummy class to see if it compiles.  There's a goofy
+     * this with this parser where I can't figure out how to get it to compile
+     * just one method, so I have to create a class around it to get it to compile.
+     * I'm sure I'm missing something, but for now this is my solution.
+     * 
+     * If the first line does not contain a brace, then the assumption is that 
+     * lines of code are to be wrapped to make a method.
+     * @param javasrc
+     * @return
+     * @throws ParseException 
+     */
+    public String utilMakeClass( String javasrc ) throws ParseException {
+        javasrc= javasrc.trim();
+        int ibrace;
+        int i= javasrc.indexOf("\n");
+        if ( i==-1 ) {
+            ibrace = -1;
+        } else {
+            String firstLine= javasrc.substring(0,i);
+            ibrace= firstLine.indexOf("{");
+        }
+        if ( ibrace==-1 ) {
+            javasrc= "void foo99() {\n" + javasrc + "\n}";
+        }
+        String modSrc= "class Foo99 { \n"+javasrc + "}\n";
+        return modSrc;
+    }
+    
+    /**
+     * remove the extra lines we added and unindent
+     * @param src
+     * @return 
+     */
+    public String utilUnMakeClass( String src ) {
+        // pop off the "class Foo" we added to make it into a class
+        src= src.trim();
+        int i= src.indexOf("\n");
+        src= src.substring(i+1);
+        i= src.indexOf("\n");
+        if ( src.substring(0,i).contains("def foo99(") ) {
+            src= src.substring(i+1);
+        }
+        String[] ss= src.split("\n");
 
-    private String utilUnMakeClass(String src) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        String search= ss[0].trim().substring(0,1);
+        int indent= ss[0].indexOf(search);
+
+        StringBuilder sb= new StringBuilder();
+        for ( String s: ss ) {
+            if ( s.length()>indent ) {
+                sb.append( s.substring(indent) ).append("\n");
+            }
+        }
+        return sb.toString();
     }
     
     Stack<Map<String,Type>> stack;
@@ -1465,7 +1522,18 @@ public class ConvertJavaToJavascript {
                 case "currentTimeMillis":
                     return indent + "Date.now()";
             }
-        }
+        } else if ( clasType.equals("StringBuilder") ) {
+            if ( name.equals("append") ) {
+                return indent + doConvert("",clas) + "+= " + utilAssertStr(args.get(0)) ;
+            } else if ( name.equals("toString") ) {
+                return indent + doConvert("",clas);
+            } else if ( name.equals("insert") ) {
+                String n= doConvert("",clas);
+                String i0= doConvert("",args.get(0));
+                String ins= doConvert("",args.get(1));
+                return indent + n + " = ''.join( ( " + n + "[0:"+ i0 + "], "+ins+", " + n + "["+i0+":] ) ) # J2J expr -> assignment"; // expr becomes assignment, this will cause problems
+            }  
+        } 
         
         if ( clas==null ) {
             ClassOrInterfaceDeclaration m= classMethods.get(name);
@@ -1628,7 +1696,67 @@ public class ConvertJavaToJavascript {
     }
 
     private String doConvertObjectCreationExpr(String indent, ObjectCreationExpr objectCreationExpr) {
-        return indent + "new " + objectCreationExpr.getType().getName() + "("+ utilFormatExprList(objectCreationExpr.getArgs()) + ")"; // TODO: CHEAT
+        if ( objectCreationExpr.getType().toString().equals("StringBuilder") ) {
+            if ( objectCreationExpr.getArgs()!=null ) {
+                if ( objectCreationExpr.getArgs().size()==1 ) {
+                    Expression e= objectCreationExpr.getArgs().get(0);
+                    if ( ASTHelper.INT_TYPE.equals(guessType(e)) ) { // new StringBuilder(100);
+                        return "\"\"";
+                    } else {
+                        return indent + utilAssertStr(e);
+                    }
+                } else {
+                    return indent + "\"\""; // TODO: are there any stringbuilder methods which take more than one arg?
+                }
+            } else {
+                return indent + "\"\"";
+            }
+        } else if ( objectCreationExpr.getType().toString().endsWith("Exception") ) {
+            if ( objectCreationExpr.getArgs()==null ) {
+                return indent + "Exception()";
+            } else {
+                return indent + "Exception("+ doConvert("",objectCreationExpr.getArgs().get(0))+")";
+            }
+        } else {
+            String qualifiedName= utilQualifyClassName(objectCreationExpr.getType());
+            if ( qualifiedName!=null ) {
+                return indent + qualifiedName + "("+ utilFormatExprList(objectCreationExpr.getArgs())+ ")";
+            } else {
+                if ( objectCreationExpr.getAnonymousClassBody()!=null ) {
+                    StringBuilder sb= new StringBuilder();
+                    String body= doConvert( indent, objectCreationExpr.getAnonymousClassBody().get(0) );
+                    sb.append(indent).append(objectCreationExpr.getType()).append("(").append(utilFormatExprList(objectCreationExpr.getArgs())).append(")"); 
+                    sb.append("*** # J2J: This is extended in an anonymous inner class ***");
+                    return sb.toString();
+                } else {
+                    if ( objectCreationExpr.getType().getName().equals("HashMap") ) { 
+                        return indent + "{}";
+                    } else if ( objectCreationExpr.getType().getName().equals("ArrayList") ) { 
+                        return indent + "[]";
+                    } else if ( objectCreationExpr.getType().getName().equals("HashSet") ) {
+                        return indent + "{}"; // to support Jython 2.2, use dictionary for now
+                    } else {
+                        if ( javaImports.keySet().contains( objectCreationExpr.getType().getName() ) ) {
+                            javaImports.put( objectCreationExpr.getType().getName(), true );
+                        }
+                        if ( objectCreationExpr.getType().getName().equals("String") ) {
+                            if ( objectCreationExpr.getArgs().size()==1 ) {
+                                Expression e= objectCreationExpr.getArgs().get(0);
+                                Type t= guessType(e);
+                                if ( t instanceof ReferenceType 
+                                        && t.equals(ASTHelper.createReferenceType(ASTHelper.CHAR_TYPE,1) ) ) {
+                                    return indent + "''.join( "+ doConvert("",e) +")";
+                                } else if ( t.equals(ASTHelper.createReferenceType("StringBuilder",0) ) ) {
+                                    return  doConvert("",e); // these are just strings.
+                                }
+                                System.err.println("here "+t);
+                            }
+                        }
+                        return indent + "new " + objectCreationExpr.getType().getName() + "("+ utilFormatExprList(objectCreationExpr.getArgs()) + ")"; 
+                    }
+                }
+            }
+        }        
     }
 
     private String doConvertFieldDeclaration(String indent, FieldDeclaration fieldDeclaration) {
