@@ -1,4 +1,6 @@
-class Foo {
+package test;
+        
+class AnotherBug {
     static boolean isLeapYear(String yr) {
         return true;
     }
