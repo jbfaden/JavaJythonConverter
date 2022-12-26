@@ -1531,7 +1531,9 @@ public class ConvertJavaToJavascript {
                 String n= doConvert("",clas);
                 String i0= doConvert("",args.get(0));
                 String ins= doConvert("",args.get(1));
-                return indent + n + " = ''.join( ( " + n + "[0:"+ i0 + "], "+ins+", " + n + "["+i0+":] ) ) # J2J expr -> assignment"; // expr becomes assignment, this will cause problems
+                String expr1= n+".substring(0,"+i0+")";
+                String expr2= n+".substring("+i0+")";
+                return indent + n + " = " + expr1 + "+" + ins +"+" + expr2 + "  // J2J expr -> assignment"; // expr becomes assignment, this will cause problems
             }  
         } 
         
