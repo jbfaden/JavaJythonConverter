@@ -174,7 +174,7 @@ public class ConvertJavaToJavascript {
         }
 
         try {
-            if ( javasrc.split("\\n").length < 2 ) {
+            if ( javasrc.split("\n").length < 2 ) {
                 BodyDeclaration parsed = japa.parser.JavaParser.parseBodyDeclaration(javasrc);
                 return doConvert("", parsed);
             }
