@@ -272,7 +272,7 @@ public class ConvertJavaToJavascript {
                 result= indent + "null";
                 break;
             case "BooleanLiteralExpr":
-                result= indent + ( ((BooleanLiteralExpr)n).getValue() ? "True" : "False" );
+                result= indent + ( ((BooleanLiteralExpr)n).getValue() ? "true" : "false" );
                 break;
             case "LongLiteralExpr":
                 result= indent + ((LongLiteralExpr)n).getValue();
