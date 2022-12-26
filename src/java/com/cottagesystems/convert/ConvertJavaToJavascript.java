@@ -349,7 +349,7 @@ public class ConvertJavaToJavascript {
                 //result= doConvertMultiTypeParameter(indent,(MultiTypeParameter)n);
                 break;
             case "ThrowStmt":
-                //result= doConvertThrowStmt(indent,(ThrowStmt)n);
+                result= doConvertThrowStmt(indent,(ThrowStmt)n);
                 break;
             case "ArrayCreationExpr":
                 result= doConvertArrayCreationExpr(indent,(ArrayCreationExpr)n);
@@ -1492,6 +1492,12 @@ public class ConvertJavaToJavascript {
             clasType= clasType.substring(0,i);
         }
         
+        if ( clasType.equals("String") ) {
+            if ( name.equals("length") ) {
+                return indent + doConvert( "",clas ) + ".length";
+            }
+        }
+        
         if ( clasType.equals("Arrays") ) {
             switch (name) {
                 case "copyOfRange": {
@@ -1609,7 +1615,7 @@ public class ConvertJavaToJavascript {
                 t= getCurrentScope().get(inContext);
             }
             if ( t!=null && t instanceof ReferenceType && ((ReferenceType)t).getArrayCount()>0 ) { 
-                return indent + "len("+ s + ")";
+                return indent + s + ".length"; // don't change
             }
         }
         if ( onlyStatic && s.equals(classNameStack.peek()) ) {
@@ -1726,9 +1732,9 @@ public class ConvertJavaToJavascript {
             }
         } else if ( objectCreationExpr.getType().toString().endsWith("Exception") ) {
             if ( objectCreationExpr.getArgs()==null ) {
-                return indent + "Exception()";
+                return indent + "\"Error\"";
             } else {
-                return indent + "Exception("+ doConvert("",objectCreationExpr.getArgs().get(0))+")";
+                return indent + doConvert("",objectCreationExpr.getArgs().get(0));
             }
         } else {
             String qualifiedName= utilQualifyClassName(objectCreationExpr.getType());
@@ -1829,6 +1835,10 @@ public class ConvertJavaToJavascript {
         }
         b.append( indent ).append("}\n");
         return b.toString();
+    }
+
+    private String doConvertThrowStmt(String indent, ThrowStmt throwStmt) {
+        return indent + "throw "+ doConvert("",throwStmt.getExpr());
     }
     
 }
