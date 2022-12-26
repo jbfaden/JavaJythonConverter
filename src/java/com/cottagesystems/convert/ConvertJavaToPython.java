@@ -498,8 +498,10 @@ public class ConvertJavaToPython {
         }
 
         try {
-            BodyDeclaration parsed = japa.parser.JavaParser.parseBodyDeclaration(javasrc);
-            return doConvert("", parsed);
+            if ( javasrc.split("\n").length<2 ) {
+                BodyDeclaration parsed = japa.parser.JavaParser.parseBodyDeclaration(javasrc);
+                return doConvert("", parsed);
+            }
         } catch (ParseException ex3 ) {
             throwMe= ex3;
         }
