@@ -446,8 +446,12 @@ public class ConvertJavaToPython {
         }
         
         
+        int numLinesIn = 0;
+        
         try {
                 String[] lines= javasrc.split("\n");
+                numLinesIn= lines.length;
+                        
                 int offset=0;
                 Expression parseExpression = japa.parser.JavaParser.parseExpression(javasrc);
                 StringBuilder bb= new StringBuilder( doConvert( "", parseExpression ) );
@@ -491,21 +495,22 @@ public class ConvertJavaToPython {
         }
         
         try {
-            Statement parsed = japa.parser.JavaParser.parseStatement(javasrc);
-            return doConvert("", parsed);
+            if ( numLinesIn < 2 ) {
+                Statement parsed = japa.parser.JavaParser.parseStatement(javasrc);
+                return doConvert("", parsed);
+            }
         } catch (ParseException ex2) {
             throwMe= ex2;
         }
 
         try {
-            if ( javasrc.split("\n").length<2 ) {
+            if ( numLinesIn < 2 ) {
                 BodyDeclaration parsed = japa.parser.JavaParser.parseBodyDeclaration(javasrc);
                 return doConvert("", parsed);
             }
         } catch (ParseException ex3 ) {
             throwMe= ex3;
         }
-
         try {
             Statement parsed = japa.parser.JavaParser.parseBlock(javasrc);
             return doConvert("", parsed);
