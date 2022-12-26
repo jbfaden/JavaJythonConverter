@@ -59,6 +59,7 @@ import japa.parser.ast.stmt.ForeachStmt;
 import japa.parser.ast.stmt.IfStmt;
 import japa.parser.ast.stmt.ReturnStmt;
 import japa.parser.ast.stmt.Statement;
+import japa.parser.ast.stmt.SwitchEntryStmt;
 import japa.parser.ast.stmt.SwitchStmt;
 import japa.parser.ast.stmt.ThrowStmt;
 import japa.parser.ast.stmt.TryStmt;
@@ -320,7 +321,7 @@ public class ConvertJavaToJavascript {
                 //result= doConvertWhileStmt(indent,(WhileStmt)n);
                 break;
             case "SwitchStmt":
-                //result= doConvertSwitchStmt(indent,(SwitchStmt)n);                
+                result= doConvertSwitchStmt(indent,(SwitchStmt)n);                
                 break;
             case "ReturnStmt":
                 result= doConvertReturnStmt(indent,(ReturnStmt)n);
@@ -812,7 +813,9 @@ public class ConvertJavaToJavascript {
         
         }
         
-        sb.append( indent ).append( "}" ).append("\n");
+        if ( !onlyStatic ) {
+            sb.append( indent ).append( "}" ).append("\n");
+        }
         popScopeStack();
         classNameStack.pop();
         
@@ -840,9 +843,9 @@ public class ConvertJavaToJavascript {
         }        
 
         StringBuilder sb= new StringBuilder();
-        String comments= utilRewriteComments( indent, methodDeclaration.getComment() );
+        String comments= utilRewriteComments( indent, methodDeclaration.getComment(), true );
         if ( comments.trim().length()>0 ) {
-            sb.append(indent).append("//").append( comments );
+            sb.append( comments );
         }
         
         if ( isStatic  && !onlyStatic ) {
@@ -1658,6 +1661,33 @@ public class ConvertJavaToJavascript {
             }
         }
         return sb.toString();        
+    }
+
+    private String doConvertSwitchStmt(String indent, SwitchStmt switchStmt) {
+        StringBuilder b= new StringBuilder();
+        b.append( indent ).append( "switch (" );
+        b.append( doConvert("",switchStmt.getSelector()) ).append(") {\n");
+        String nextIndent= indent + s4;
+        String nextNextIndent = nextIndent + s4;
+        for ( SwitchEntryStmt ses: switchStmt.getEntries() ) {
+            Expression label= ses.getLabel();
+            String slabel;
+            if ( label==null ) {
+                b.append( nextIndent ).append( "default:\n");
+            } else {
+                slabel= doConvert("",ses.getLabel());
+                b.append( nextIndent ).append( "case ").append( slabel ).append(":\n");
+            }
+            
+            if ( ses.getStmts()!=null ) {
+                for ( Statement s : ses.getStmts() ) {
+                    b.append( doConvert( nextNextIndent,s) );
+                    b.append( "\n" );
+                }
+            }
+        }
+        b.append( indent ).append("}\n");
+        return b.toString();
     }
     
 }
