@@ -365,7 +365,7 @@ public class ConvertJavaToJavascript {
                 result= "";
                 break;
             case "FieldDeclaration":
-                //result= doConvertFieldDeclaration(indent,(FieldDeclaration)n);
+                result= doConvertFieldDeclaration(indent,(FieldDeclaration)n);
                 break;
             case "MethodDeclaration":
                 result= doConvertMethodDeclaration(indent,(MethodDeclaration)n);
@@ -647,7 +647,7 @@ public class ConvertJavaToJavascript {
     private static String utilRewriteComments(String indent, Comment comments, boolean docs ) {
         if ( comments==null ) return "";
         StringBuilder b= new StringBuilder();
-        if ( docs ) b.append("/**\n");
+        if ( docs ) b.append(indent).append("/**\n");
         String[] ss= comments.getContent().split("\n");
         if ( ss[0].trim().length()==0 ) {
             ss= Arrays.copyOfRange( ss, 1, ss.length );
@@ -656,9 +656,9 @@ public class ConvertJavaToJavascript {
             ss= Arrays.copyOfRange( ss, 0, ss.length-1 );
         }
         for ( String s : ss ) {
-            b.append(s).append("\n");
+            b.append(s).append("\n"); // Note comments have indent in them already
         }
-        if (docs ) b.append(" */\n");
+        if (docs ) b.append(indent).append(" */\n");
         return b.toString();
     }    
     
@@ -700,7 +700,7 @@ public class ConvertJavaToJavascript {
             }
             String comments= utilRewriteComments(indent, classOrInterfaceDeclaration.getComment(), true );
             if ( comments.trim().length()>0 ) {
-                sb.append( "// " + comments );
+                sb.append( comments );
             }
             
             String className;
@@ -1626,6 +1626,38 @@ public class ConvertJavaToJavascript {
 
     private String doConvertObjectCreationExpr(String indent, ObjectCreationExpr objectCreationExpr) {
         return indent + "new " + objectCreationExpr.getType().getName() + "("+ utilFormatExprList(objectCreationExpr.getArgs()) + ")"; // TODO: CHEAT
+    }
+
+    private String doConvertFieldDeclaration(String indent, FieldDeclaration fieldDeclaration) {
+        boolean s= ModifierSet.isStatic( fieldDeclaration.getModifiers() ); 
+        StringBuilder sb= new StringBuilder();
+        
+        List<VariableDeclarator> vv= fieldDeclaration.getVariables();
+        sb.append( utilRewriteComments( indent, fieldDeclaration.getComment(), true ) );
+        if ( vv!=null ) {
+            for ( VariableDeclarator v: vv ) {
+                VariableDeclaratorId id= v.getId();
+                String name= id.getName();
+                
+                if ( v.getInit()!=null && v.getInit().toString().startsWith("Logger.getLogger") ) {
+                    getCurrentScope().put( name, ASTHelper.createReferenceType("Logger", 0) );
+                    //addLogger();
+                    sb.append( indent ).append("# J2J: ").append(fieldDeclaration.toString());
+                    continue;
+                }
+                
+                getCurrentScope().put( name,fieldDeclaration.getType() );
+                getCurrentScopeFields().put( name,fieldDeclaration);
+
+                if ( v.getInit()==null ) {
+                    sb.append( indent ).append("var ").append( name ).append("\n");
+                } else {
+                    sb.append( indent ).append("var ").append(name).append(" = ").append( doConvert( "",v.getInit() ) ).append("\n");
+                    
+                }
+            }
+        }
+        return sb.toString();        
     }
     
 }
