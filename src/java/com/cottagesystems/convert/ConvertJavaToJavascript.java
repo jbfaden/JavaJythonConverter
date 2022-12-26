@@ -269,7 +269,7 @@ public class ConvertJavaToJavascript {
                 result= indent + "(" + doConvert( "", ((EnclosedExpr)n).getInner() ) + ")";
                 break;
             case "NullLiteralExpr":
-                result= indent + "None";
+                result= indent + "null";
                 break;
             case "BooleanLiteralExpr":
                 result= indent + ( ((BooleanLiteralExpr)n).getValue() ? "True" : "False" );
@@ -1313,7 +1313,7 @@ public class ConvertJavaToJavascript {
         
         if ( leftType!=null && !( b.getRight() instanceof NullLiteralExpr )
                 && leftType.equals(ASTHelper.createReferenceType("String", 0)) && rightType==null ) {
-            right= "str("+right+")";
+            right= "("+right+")";
         }
         
         switch (op) {
@@ -1552,7 +1552,33 @@ public class ConvertJavaToJavascript {
                 String expr2= n+".substring("+i0+")";
                 return indent + n + " = " + expr1 + "+" + ins +"+" + expr2 + "  // J2J expr -> assignment"; // expr becomes assignment, this will cause problems
             }  
-        } 
+        } else if ( clasType.equals("Pattern") ) {
+            switch ( name ) {
+                case "compile":
+                    return "new RegExp("+doConvert("",args.get(0))+")";
+                case "quote":
+                    return "re.escape("+doConvert("",args.get(0))+")";
+            }
+        }
+        if ( clasType.equals("Pattern") 
+                && name.equals("matcher") ) {
+            return doConvert("",clas) + ".exec(" + doConvert("",args.get(0) ) + ")";
+        }
+        if ( clasType.equals("Matcher") ) {
+            if ( name.equals("matches") ) {
+                return doConvert("",clas) + "!=null";
+            } else if ( name.equals("find") ) {
+                if ( clas instanceof MethodCallExpr ) {
+                    return doConvert("",clas).replaceAll("match", "search") + "!=null";
+                } else {
+                    return doConvert("",clas) + "!=null) {  //J2J: USE search not match above";
+                }
+            } else if ( name.equals("groupCount") ) {
+                return doConvert("",clas) + ".length";
+            } else if ( name.equals("group") ) {
+                return doConvert("",clas) + "["+ doConvert("",args.get(0))+"]";
+            }
+        }        
         
         if ( clas==null ) {
             ClassOrInterfaceDeclaration m= classMethods.get(name);
