@@ -174,8 +174,10 @@ public class ConvertJavaToJavascript {
         }
 
         try {
-            BodyDeclaration parsed = japa.parser.JavaParser.parseBodyDeclaration(javasrc);
-            return doConvert("", parsed);
+            if ( javasrc.split("\\n").length < 2 ) {
+                BodyDeclaration parsed = japa.parser.JavaParser.parseBodyDeclaration(javasrc);
+                return doConvert("", parsed);
+            }
         } catch (ParseException ex3 ) {
             throwMe= ex3;
         }
@@ -531,9 +533,13 @@ public class ConvertJavaToJavascript {
         // pop off the "class Foo" we added to make it into a class
         src= src.trim();
         int i= src.indexOf("\n");
+        if ( i==-1 ) {
+            return src;
+        }
         src= src.substring(i+1);
         i= src.indexOf("\n");
-        if ( src.substring(0,i).contains("def foo99(") ) {
+        //if ( src.substring(0,i).contains("function foo99(") ) {
+        if ( src.substring(0,i).contains("foo99(") ) {            
             src= src.substring(i+1);
         }
         String[] ss= src.split("\n");
