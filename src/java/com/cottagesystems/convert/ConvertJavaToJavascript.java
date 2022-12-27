@@ -1844,10 +1844,12 @@ public class ConvertJavaToJavascript {
                 getCurrentScope().put( name,fieldDeclaration.getType() );
                 getCurrentScopeFields().put( name,fieldDeclaration);
 
+                String modifiers= s ? "static " : "";
+                
                 if ( v.getInit()==null ) {
-                    sb.append( indent ).append("").append( name ).append("\n");
+                    sb.append( indent ).append(modifiers).append( name ).append("\n");
                 } else {
-                    sb.append( indent ).append("").append(name).append(" = ").append( doConvert( "",v.getInit() ) ).append("\n");
+                    sb.append( indent ).append(modifiers).append(name).append(" = ").append( doConvert( "",v.getInit() ) ).append("\n");
                     
                 }
             }
