@@ -875,7 +875,7 @@ public class ConvertJavaToJavascript {
                         if ( md.getAnnotations().contains( DEPRECATED ) ) {
                             continue;
                         }
-                    }                    
+                    }
                     sb.append( doConvert( indent+s4, n ) ).append("\n");
                 } else {
                     sb.append( doConvert( indent+s4, n ) ).append("\n");
@@ -1626,13 +1626,13 @@ public class ConvertJavaToJavascript {
                 } else {
                     boolean isStatic= ModifierSet.isStatic(mm.getModifiers() );
                     if ( isStatic ) {
-                        return indent + javaNameToPythonName( m.getName() ) + "." + javaNameToPythonName( name ) + "("+ utilFormatExprList(args) +")";
+                        return indent + name + "("+ utilFormatExprList(args) +")";
                     } else {
-                        return indent + "self." + javaNameToPythonName( name ) + "("+ utilFormatExprList(args) +")";
+                        return indent + "self." + name + "("+ utilFormatExprList(args) +")";
                     }
                 }
             } else {
-                return indent + javaNameToPythonName( name ) + "("+ utilFormatExprList(args) +")";
+                return indent + name + "("+ utilFormatExprList(args) +")";
             }                
         } else {
             String clasName = doConvert("",clas);
@@ -1682,6 +1682,8 @@ public class ConvertJavaToJavascript {
             }
         }
         if ( onlyStatic && s.equals(classNameStack.peek()) ) {
+            return fieldAccessExpr.getField();
+        } else if ( s.equals(classNameStack.peek()) ) {
             return fieldAccessExpr.getField();
         } else {
             if ( s.equals("Collections") ) {
