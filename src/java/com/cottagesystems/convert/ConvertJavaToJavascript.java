@@ -1508,7 +1508,29 @@ public class ConvertJavaToJavascript {
                 return indent + doConvert( "",clas ) + ".length";
             }
         }
-        
+        if ( clasType.equals("Character") ) {
+            String s;
+            switch ( name ) {
+                case "isDigit":
+                    s= doConvert( "",args.get(0) );
+                    return "/[0-9]/.test(" + s + ")";
+                case "isSpace":
+                    s= doConvert( "",args.get(0) );
+                    return "/ /.test(" + s + ")";
+                case "isWhitespace":
+                    s= doConvert( "",args.get(0) );
+                    return "/\\s/.test(" + s + ")";
+                case "isLetter":
+                    s= doConvert( "",args.get(0) );
+                    return "/[a-z]/i.test(" + s + ")";
+                case "isAlphabetic": //TODO
+                    s= doConvert( "",args.get(0) );
+                    return "/[a-z]/i.test(" + s + ")";
+                default: 
+                    break;
+            }
+        }
+
         if ( clasType.equals("Arrays") ) {
             switch (name) {
                 case "copyOfRange": {
