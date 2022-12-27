@@ -1647,7 +1647,7 @@ public class ConvertJavaToJavascript {
     }
 
     private String doConvertFieldAccessExpr(String indent, FieldAccessExpr fieldAccessExpr) {
-                String s= doConvert( "", fieldAccessExpr.getScope() );
+        String s= doConvert( "", fieldAccessExpr.getScope() );
                 
         // test to see if this is an array and "length" of the array is accessed.
         if ( fieldAccessExpr.getField().equals("length") ) {
@@ -1845,9 +1845,9 @@ public class ConvertJavaToJavascript {
                 getCurrentScopeFields().put( name,fieldDeclaration);
 
                 if ( v.getInit()==null ) {
-                    sb.append( indent ).append("var ").append( name ).append("\n");
+                    sb.append( indent ).append("").append( name ).append("\n");
                 } else {
-                    sb.append( indent ).append("var ").append(name).append(" = ").append( doConvert( "",v.getInit() ) ).append("\n");
+                    sb.append( indent ).append("").append(name).append(" = ").append( doConvert( "",v.getInit() ) ).append("\n");
                     
                 }
             }
