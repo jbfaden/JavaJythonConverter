@@ -1309,20 +1309,20 @@ public class ConvertJavaToJavascript {
         
         if ( leftType!=null && rightType!=null ) {
             if ( leftType.equals(ASTHelper.CHAR_TYPE) && rightType.equals(ASTHelper.INT_TYPE) ) {
-                left= "("+left+")";
+                left= left + ".charCodeAt(0)";
             }
             if ( leftType.equals(ASTHelper.INT_TYPE) && rightType.equals(ASTHelper.CHAR_TYPE) ) {
-                left= "("+left+")";
+                left= left + ".charCodeAt(0)";
             }
             if ( rightType.equals(STRING_TYPE) 
                     && leftType instanceof PrimitiveType 
                     && !leftType.equals(ASTHelper.CHAR_TYPE) ) {
-                left= "("+left+")";
+                //left= "("+left+")";
             }
             if ( leftType.equals(STRING_TYPE) 
                     && rightType instanceof PrimitiveType 
                     && !rightType.equals(ASTHelper.CHAR_TYPE) ) {
-                right= "("+right+")";
+                //right= "("+right+")";
             }
         }
         
@@ -1349,15 +1349,11 @@ public class ConvertJavaToJavascript {
             case lessEquals:
                 return left + " <= " + right;
             case and:
-                return left + " and " + right;
+                return left + " && " + right;
             case or:
-                return left + " or " + right;
+                return left + " || " + right;
             case equals:
-                if ( b.getRight() instanceof NullLiteralExpr ) {
-                    return left + " is " + right;
-                } else {
-                    return left + " == " + right;
-                }
+                return left + " == " + right;
             case notEquals:
                 return left + " != " + right;
             case remainder:
