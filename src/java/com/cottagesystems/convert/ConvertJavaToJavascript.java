@@ -140,46 +140,46 @@ public class ConvertJavaToJavascript {
         int numLinesIn=0;
         
         try {
-                String[] lines= javasrc.split("\n");
-                numLinesIn= lines.length;
-                int offset=0;
-                Expression parseExpression = japa.parser.JavaParser.parseExpression(javasrc);
-                StringBuilder bb= new StringBuilder( doConvert( "", parseExpression ) );
-                int linesHandled=0;
-                while ( (linesHandled+parseExpression.getEndLine())<lines.length ) {
-                    int additionalLinesHandled=0;
-                    for ( int i=0; i<parseExpression.getEndLine(); i++ ) {
-                        offset += lines[i].length() ;
-                        offset += 1;
-                        additionalLinesHandled++;
-                    }
-                    if ( offset>javasrc.length() ) {
-                        // something went wrong...
-                        break;
-                    }
-                    linesHandled+= additionalLinesHandled;
-                    parseExpression = japa.parser.JavaParser.parseExpression(javasrc.substring(offset));
-                    bb.append( "\n" ).append( doConvert( "", parseExpression ) );
+            String[] lines= javasrc.split("\n");
+            numLinesIn= lines.length;
+            int offset=0;
+            Expression parseExpression = japa.parser.JavaParser.parseExpression(javasrc);
+            StringBuilder bb= new StringBuilder( doConvert( "", parseExpression ) );
+            int linesHandled=0;
+            while ( (linesHandled+parseExpression.getEndLine())<lines.length ) {
+                int additionalLinesHandled=0;
+                for ( int i=0; i<parseExpression.getEndLine(); i++ ) {
+                    offset += lines[i].length() ;
+                    offset += 1;
+                    additionalLinesHandled++;
                 }
-                String src= bb.toString();
-
-                StringBuilder sb= new StringBuilder();
-                for ( Map.Entry<String,Boolean> e: additionalImports.entrySet() ) {
-                    if ( e.getValue() ) {
-                        sb.append( e.getKey() );
-                    }
+                if ( offset>javasrc.length() ) {
+                    // something went wrong...
+                    break;
                 }
+                linesHandled+= additionalLinesHandled;
+                parseExpression = japa.parser.JavaParser.parseExpression(javasrc.substring(offset));
+                bb.append( "\n" ).append( doConvert( "", parseExpression ) );
+            }
+            String src= bb.toString();
 
-                for (  Map.Entry<String,Boolean> e: additionalClasses.entrySet() ) {
-                    if ( e.getValue() ) {
-                        sb.append( e.getKey() );
-                    }
+            StringBuilder sb= new StringBuilder();
+            for ( Map.Entry<String,Boolean> e: additionalImports.entrySet() ) {
+                if ( e.getValue() ) {
+                    sb.append( e.getKey() );
                 }
-                sb.append(src);
-                src= sb.toString();
+            }
 
-                return src;
-            
+            for (  Map.Entry<String,Boolean> e: additionalClasses.entrySet() ) {
+                if ( e.getValue() ) {
+                    sb.append( e.getKey() );
+                }
+            }
+            sb.append(src);
+            src= sb.toString();
+
+            return src;
+
         } catch (ParseException ex1) {
             throwMe= ex1;
         }
@@ -340,7 +340,7 @@ public class ConvertJavaToJavascript {
                 result= doConvertForStmt(indent,(ForStmt)n);
                 break;
             case "WhileStmt":
-                //result= doConvertWhileStmt(indent,(WhileStmt)n);
+                result= doConvertWhileStmt(indent,(WhileStmt)n);
                 break;
             case "SwitchStmt":
                 result= doConvertSwitchStmt(indent,(SwitchStmt)n);                
@@ -1571,6 +1571,14 @@ public class ConvertJavaToJavascript {
             switch (name) {
                 case "currentTimeMillis":
                     return indent + "Date.now()";
+                case "arraycopy":
+                    additionalImports.put( "import formatPack.js", true );
+                    String a1= doConvert("",args.get(0));
+                    String a2= doConvert("",args.get(1));
+                    String a3= doConvert("",args.get(2));
+                    String a4= doConvert("",args.get(3));
+                    String a5= doConvert("",args.get(4));
+                    return indent + String.format( "arraycopy( %s, %s, %s, %s, %s )", a1, a2, a3, a4, a5 );
             }
         } else if ( clasType.equals("StringBuilder") ) {
             if ( name.equals("append") ) {
@@ -1833,7 +1841,6 @@ public class ConvertJavaToJavascript {
                                 } else if ( t.equals(ASTHelper.createReferenceType("StringBuilder",0) ) ) {
                                     return  doConvert("",e); // these are just strings.
                                 }
-                                System.err.println("here1754 "+t);
                             }
                         }
                         return indent + "new " + objectCreationExpr.getType().getName() + "("+ utilFormatExprList(objectCreationExpr.getArgs()) + ")"; 
@@ -1926,6 +1933,20 @@ public class ConvertJavaToJavascript {
         } catch (UnsupportedEncodingException ex) {
             throw new RuntimeException(ex);
         }
+    }
+
+    private String doConvertWhileStmt(String indent, WhileStmt whileStmt) {
+        StringBuilder sb= new StringBuilder();
+        sb.append( indent) .append( "while (");
+        sb.append( doConvert( "", whileStmt.getCondition() ) );
+        sb.append( ") {\n" );
+        if ( whileStmt.getBody() instanceof ExpressionStmt ) {
+            sb.append( doConvert( indent+s4, whileStmt.getBody() ) );
+        } else {
+            sb.append( doConvert( indent+s4, whileStmt.getBody() ) );
+        }
+        sb.append(indent).append("}");
+        return sb.toString();
     }
 
     
