@@ -70,21 +70,29 @@ import japa.parser.ast.type.ReferenceType;
 import japa.parser.ast.type.Type;
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Stack;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 /**
@@ -116,6 +124,13 @@ public class ConvertJavaToJavascript {
             ByteArrayInputStream ins= new ByteArrayInputStream( javasrc.getBytes(Charset.forName("UTF-8")) );
             CompilationUnit unit= japa.parser.JavaParser.parse(ins,"UTF-8");
             String src= doConvert( "", unit );
+            if ( !additionalClasses.isEmpty() ) {
+                for ( Entry<String,Boolean> ent : additionalClasses.entrySet() ) {
+                    if ( ent.getValue() ) {
+                        src= ent.getKey() + src;
+                    }
+                }
+            }
             return src;
         } catch ( ParseException ex ) {
             throwMe= ex;
@@ -1558,13 +1573,10 @@ public class ConvertJavaToJavascript {
                     return "new RegExp("+doConvert("",args.get(0))+")";
                 case "quote":
                     return "re.escape("+doConvert("",args.get(0))+")";
+                case "matcher":
+                    return doConvert("",clas) + ".exec(" + doConvert("",args.get(0) ) + ")";
             }
-        }
-        if ( clasType.equals("Pattern") 
-                && name.equals("matcher") ) {
-            return doConvert("",clas) + ".exec(" + doConvert("",args.get(0) ) + ")";
-        }
-        if ( clasType.equals("Matcher") ) {
+        } else if ( clasType.equals("Matcher") ) {
             if ( name.equals("matches") ) {
                 return doConvert("",clas) + "!=null";
             } else if ( name.equals("find") ) {
@@ -1578,7 +1590,14 @@ public class ConvertJavaToJavascript {
             } else if ( name.equals("group") ) {
                 return doConvert("",clas) + "["+ doConvert("",args.get(0))+"]";
             }
-        }        
+        } else if ( clasType.equals("String") ) {
+            if ( name.equals("format") ) {
+                additionalImports.put("//import sprintf.js",true);
+                if ( args.size()>1 ) {
+                    return "sprintf("+doConvert("",args.get(0))+","+utilFormatExprList( args.subList(1,args.size()) ) + ")"; 
+                }
+            }
+        }
         
         if ( clas==null ) {
             ClassOrInterfaceDeclaration m= classMethods.get(name);
@@ -1866,5 +1885,26 @@ public class ConvertJavaToJavascript {
     private String doConvertThrowStmt(String indent, ThrowStmt throwStmt) {
         return indent + "throw "+ doConvert("",throwStmt.getExpr());
     }
+
+    private String readFromFile(URL resource) {
+        int size= 1024;
+        ByteArrayOutputStream outs= new ByteArrayOutputStream(size);
+        try ( InputStream ins= resource.openStream() ) {
+            byte[] buf= new byte[size];
+            int bytesRead= ins.read(buf);
+            while ( bytesRead>-1 ) {
+                outs.write( buf, 0, bytesRead );
+                bytesRead= ins.read(buf);
+            }
+        } catch (IOException ex) {
+            Logger.getLogger(ConvertJavaToJavascript.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        try {
+            return outs.toString("US-ASCII");
+        } catch (UnsupportedEncodingException ex) {
+            throw new RuntimeException(ex);
+        }
+    }
+
     
 }
