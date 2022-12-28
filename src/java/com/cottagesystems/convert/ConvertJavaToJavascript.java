@@ -1099,7 +1099,7 @@ public class ConvertJavaToJavascript {
     }
 
     private String doConvertAssignExpr(String indent, AssignExpr assignExpr) {
-        return indent + doConvert("",assignExpr.getTarget()) + " = " + doConvert("",assignExpr.getValue()) + ";";
+        return indent + doConvert("",assignExpr.getTarget()) + " = " + doConvert("",assignExpr.getValue());
     }
 
     private String doConvertNameExpr(String indent, NameExpr nameExpr) {
