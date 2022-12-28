@@ -1750,9 +1750,9 @@ public class ConvertJavaToJavascript {
 
     private String doConvertReturnStmt(String indent, ReturnStmt returnStmt) {
         if ( returnStmt.getExpr()==null ) {
-            return indent + "return";
+            return indent + "return;";
         } else {
-            return indent + "return " + doConvert("", returnStmt.getExpr());
+            return indent + "return " + doConvert("", returnStmt.getExpr()) + ";";
         }        
     }
 
@@ -1873,7 +1873,7 @@ public class ConvertJavaToJavascript {
                 if ( v.getInit()!=null && v.getInit().toString().startsWith("Logger.getLogger") ) {
                     getCurrentScope().put( name, ASTHelper.createReferenceType("Logger", 0) );
                     //addLogger();
-                    sb.append( indent ).append("# J2J: ").append(fieldDeclaration.toString());
+                    sb.append( indent ).append("// J2J: ").append(fieldDeclaration.toString());
                     continue;
                 }
                 
@@ -1883,9 +1883,9 @@ public class ConvertJavaToJavascript {
                 String modifiers= s ? "static " : "";
                 
                 if ( v.getInit()==null ) {
-                    sb.append( indent ).append(modifiers).append( name ).append("\n");
+                    sb.append( indent ).append(modifiers).append( name ).append(";\n");
                 } else {
-                    sb.append( indent ).append(modifiers).append(name).append(" = ").append( doConvert( "",v.getInit() ) ).append("\n");
+                    sb.append( indent ).append(modifiers).append(name).append(" = ").append( doConvert( "",v.getInit() ) ).append(";\n");
                     
                 }
             }
@@ -1921,7 +1921,7 @@ public class ConvertJavaToJavascript {
     }
 
     private String doConvertThrowStmt(String indent, ThrowStmt throwStmt) {
-        return indent + "throw "+ doConvert("",throwStmt.getExpr());
+        return indent + "throw "+ doConvert("",throwStmt.getExpr()) + ";";
     }
 
     private String readFromFile(URL resource) {
