@@ -1291,17 +1291,18 @@ public class ConvertJavaToJavascript {
             MethodCallExpr mce= (MethodCallExpr)b.getLeft();
             if ( mce.getName().equals("compareTo") 
                     && ((IntegerLiteralExpr)b.getRight()).toString().equals("0") ) {
+                Expression a0= mce.getArgs().get(0);
                 if ( null!=b.getOperator() ) switch (b.getOperator()) {
                     case greater:
-                        return doConvert("",mce.getScope()) + " > " + doConvert("",mce.getArgs().get(0));
+                        return doConvert("",mce.getScope()) + " > " + doConvert("",a0);
                     case greaterEquals:
-                        return doConvert("",mce.getScope()) + " >= " + doConvert("",mce.getArgs().get(0));
+                        return doConvert("",mce.getScope()) + " >= " + doConvert("",a0);
                     case less:
-                        return doConvert("",mce.getScope()) + " < " + doConvert("",mce.getArgs().get(0));
+                        return doConvert("",mce.getScope()) + " < " + doConvert("",a0);
                     case lessEquals:
-                        return doConvert("",mce.getScope()) + " <= " + doConvert("",mce.getArgs().get(0));
-                    case equals:                    
-                        return doConvert("",mce.getScope()) + " == " + doConvert("",mce.getArgs().get(0));
+                        return doConvert("",mce.getScope()) + " <= " + doConvert("",a0);
+                    case equals:
+                        return doConvert("",mce.getScope()) + " == " + doConvert("",a0);
                     default:
                         break;
                 }
@@ -1358,9 +1359,17 @@ public class ConvertJavaToJavascript {
             case or:
                 return left + " || " + right;
             case equals:
-                return left + " == " + right;
+                if ( right.equals("null") || rightType.equals(ASTHelper.INT_TYPE) ) {
+                    return left + " === " + right;
+                } else {
+                    return left + " == " + right;
+                }
             case notEquals:
-                return left + " != " + right;
+                if ( right.equals("null") || rightType.equals(ASTHelper.INT_TYPE) ) {
+                    return left + " !== " + right;
+                } else {
+                    return left + " != " + right;
+                }
             case remainder:
                 return left + " % " + right;
             default:
