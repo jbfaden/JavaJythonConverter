@@ -2558,7 +2558,7 @@ public class ConvertJavaToPython {
             case 3:
                 return referenceType.getType().toString()+"[][][]";
             default:
-                return "***" + referenceType.toString() +"***";
+                return "***J2J" + referenceType.toString() +"***J2J";
         }
         
     }
