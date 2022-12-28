@@ -937,7 +937,11 @@ public class ConvertJavaToJavascript {
         }
         
         String methodName= methodDeclaration.getName();
-        sb.append( indent ).append( methodName ) .append("(");
+        if ( isStatic ) {
+            sb.append( indent ).append("static ").append( methodName ) .append("(");
+        } else {
+            sb.append( indent ).append( methodName ) .append("(");
+        }
         boolean comma= false;
         
         pushScopeStack(false);
