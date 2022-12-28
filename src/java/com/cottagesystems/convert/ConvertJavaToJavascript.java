@@ -1506,6 +1506,10 @@ public class ConvertJavaToJavascript {
         if ( clasType.equals("String") ) {
             if ( name.equals("length") ) {
                 return indent + doConvert( "",clas ) + ".length";
+            } else if ( name.equals("equalsIgnoreCase") ) {
+                String aaa= doConvert("",clas)+".toUpperCase()";
+                String bbb= doConvert("",args.get(0))+".toUpperCase()"; // TODO: we can check if literal is already upper case.
+                return indent + aaa + "===" + bbb;
             }
         }
         if ( clasType.equals("Character") ) {
