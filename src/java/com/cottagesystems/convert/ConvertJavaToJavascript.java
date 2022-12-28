@@ -349,10 +349,10 @@ public class ConvertJavaToJavascript {
                 result= doConvertReturnStmt(indent,(ReturnStmt)n);
                 break;
             case "BreakStmt":
-                //result= indent + "break";
+                result= indent + "break";
                 break;
             case "ContinueStmt":
-                //result= indent + "continue";
+                result= indent + "continue";
                 break;
             case "TryStmt":
                 //result= doConvertTryStmt(indent,(TryStmt)n);
@@ -400,7 +400,7 @@ public class ConvertJavaToJavascript {
                 //result= doConvertClassOrInterfaceType(indent,(ClassOrInterfaceType)n); // TODO: this looks suspicious
                 break;
             case "ConstructorDeclaration":
-                //result= doConvertConstructorDeclaration(indent,(ConstructorDeclaration)n);
+                result= doConvertConstructorDeclaration(indent,(ConstructorDeclaration)n);
                 break;
             case "EnumDeclaration":
                 //result= doConvertEnumDeclaration(indent,(EnumDeclaration)n);
@@ -1950,6 +1950,28 @@ public class ConvertJavaToJavascript {
             sb.append( doConvert( indent+s4, whileStmt.getBody() ) );
         }
         sb.append(indent).append("}");
+        return sb.toString();
+    }
+
+    private String doConvertConstructorDeclaration(String indent, ConstructorDeclaration constructorDeclaration) {
+        StringBuilder sb= new StringBuilder();
+        String comments= utilRewriteComments( indent, constructorDeclaration.getComment(), true );
+        if ( comments.trim().length()>0 ) {
+            sb.append( comments );
+        }
+        String params= utilFormatParameterList( constructorDeclaration.getParameters() );
+        sb.append(indent).append("constructor(");
+        if ( params.trim().length()>0 ) sb.append(",").append(params);
+        sb.append(") {\n");
+        if ( constructorDeclaration.getParameters()!=null ) {
+            for ( Parameter p: constructorDeclaration.getParameters() ) { 
+                String name= p.getId().getName();
+                localVariablesStack.peek().put( name, p.getType() );
+            }
+        }
+        sb.append( doConvert(indent,constructorDeclaration.getBlock()) );
+        sb.append( indent ).append("}\n");
+        
         return sb.toString();
     }
 
