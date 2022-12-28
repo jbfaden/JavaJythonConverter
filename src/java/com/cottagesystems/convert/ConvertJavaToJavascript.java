@@ -52,6 +52,7 @@ import japa.parser.ast.expr.SuperExpr;
 import japa.parser.ast.expr.UnaryExpr;
 import japa.parser.ast.expr.VariableDeclarationExpr;
 import japa.parser.ast.stmt.BlockStmt;
+import japa.parser.ast.stmt.CatchClause;
 import japa.parser.ast.stmt.EmptyStmt;
 import japa.parser.ast.stmt.ExpressionStmt;
 import japa.parser.ast.stmt.ForStmt;
@@ -355,13 +356,13 @@ public class ConvertJavaToJavascript {
                 result= indent + "continue";
                 break;
             case "TryStmt":
-                //result= doConvertTryStmt(indent,(TryStmt)n);
+                result= doConvertTryStmt(indent,(TryStmt)n);
                 break;
             case "ReferenceType":
-                //result= doConvertReferenceType(indent,(ReferenceType)n);
+                result= doConvertReferenceType(indent,(ReferenceType)n);
                 break;
             case "MultiTypeParameter":
-                //result= doConvertMultiTypeParameter(indent,(MultiTypeParameter)n);
+                result= doConvertMultiTypeParameter(indent,(MultiTypeParameter)n);
                 break;
             case "ThrowStmt":
                 result= doConvertThrowStmt(indent,(ThrowStmt)n);
@@ -1973,6 +1974,42 @@ public class ConvertJavaToJavascript {
         sb.append( indent ).append("}\n");
         
         return sb.toString();
+    }
+
+    private String doConvertTryStmt(String indent, TryStmt tryStmt) {
+        StringBuilder sb= new StringBuilder();
+        sb.append( indent ).append( "try {\n");
+        sb.append( doConvert( indent+s4, tryStmt.getTryBlock() ) );
+        for ( CatchClause cc: tryStmt.getCatchs() ) {
+            String id= doConvert( "",cc.getExcept().getId() );
+            sb.append(indent).append("} catch (").append(id).append(") {\n");
+            sb.append( doConvert( indent+s4, cc.getCatchBlock() ) );
+            sb.append(indent).append("}\n");
+        }
+        if ( tryStmt.getFinallyBlock()!=null ) {
+            sb.append( indent ).append( "finally:\n");
+            sb.append( doConvert( indent, tryStmt.getFinallyBlock() ) );
+        }
+        return sb.toString();
+    }
+
+    private String doConvertMultiTypeParameter(String indent, MultiTypeParameter multiTypeParameter) {
+        return indent + utilFormatTypeList( multiTypeParameter.getTypes() );
+    }
+
+    private String doConvertReferenceType(String indent, ReferenceType referenceType) {
+        switch (referenceType.getArrayCount()) {
+            case 0:
+                return referenceType.getType().toString();
+            case 1:
+                return referenceType.getType().toString()+"[]";
+            case 2:
+                return referenceType.getType().toString()+"[][]";
+            case 3:
+                return referenceType.getType().toString()+"[][][]";
+            default:
+                return "***" + referenceType.toString() +"***";
+        }
     }
 
     
