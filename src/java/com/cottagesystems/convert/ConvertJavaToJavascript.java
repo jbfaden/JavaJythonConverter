@@ -307,7 +307,7 @@ public class ConvertJavaToJavascript {
                 result= indent + "'" + ((CharLiteralExpr)n).getValue() +"'";
                 break;
             case "CastExpr":
-                //result= doConvertCastExpr(indent,(CastExpr)n);
+                result= doConvertCastExpr(indent,(CastExpr)n);
                 break;
             case "MethodCallExpr":
                 result= doConvertMethodCallExpr(indent,(MethodCallExpr)n);
@@ -2014,6 +2014,45 @@ public class ConvertJavaToJavascript {
             default:
                 return "***" + referenceType.toString() +"***";
         }
+    }
+
+    private String doConvertCastExpr(String indent, CastExpr castExpr) {
+        String type= castExpr.getType().toString();
+        switch (type) {
+            case "String":
+                type= "str";
+                break;
+            case "char":
+                if ( isIntegerType(guessType(castExpr.getExpr())) ) {
+                    type = "chr";
+                } else {
+                    type = "str";
+                }   
+                break;
+            case "int":
+                type= "int";
+                break;
+            case "long":
+                type= "long";
+                break;
+            default:
+                type = ""; // (FieldHandler)fh
+                break;
+        }
+        String scastExpr= doConvert("", castExpr.getExpr() );
+        
+        Type argType= guessType(castExpr.getExpr());
+        if ( argType!=null ) {
+            if ( argType.equals( ASTHelper.DOUBLE_TYPE ) ) {
+                if ( type.equals("int") || type.equals("long") ) {
+                    return indent + "Math.trunc( "+scastExpr+" )";
+                }
+            }
+            return indent + scastExpr + " //J2J: cast type//";
+        } else {
+            return indent + type + "(" + scastExpr + ")" + " //J2J: cast type//";
+        }
+        
     }
 
     
