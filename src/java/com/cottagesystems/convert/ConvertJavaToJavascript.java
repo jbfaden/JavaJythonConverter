@@ -1,8 +1,4 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
+
 package com.cottagesystems.convert;
 
 import static com.cottagesystems.convert.ConvertJavaToPython.stringMethods;
@@ -291,7 +287,8 @@ public class ConvertJavaToJavascript {
                 result= indent + ( ((BooleanLiteralExpr)n).getValue() ? "true" : "false" );
                 break;
             case "LongLiteralExpr":
-                result= indent + ((LongLiteralExpr)n).getValue();
+                String slong= ((LongLiteralExpr)n).getValue();
+                result= indent + slong.substring(0,slong.length()-1);
                 break;
             case "IntegerLiteralExpr":
                 result= indent + ((IntegerLiteralExpr)n).getValue();
@@ -771,16 +768,23 @@ public class ConvertJavaToJavascript {
         } else {
             
             if ( unittest ) {
-                sb.append( "\n# cheesy unittest temporary\n");
-                sb.append( "def assertEquals(a,b):\n"
-                        + "    if ( not a==b ): raise Exception('a!=b')\n");
-                sb.append( "def assertArrayEquals(a,b):\n");
-                sb.append( "    if ( len(a)==len(b) ): \n");
-                sb.append( "        for i in xrange(len(a)): \n");
-                sb.append( "            if ( a[i]!=b[i] ): raise Exception('a[%d]!=b[%d]'%(i,i))\n" );
-                sb.append( "def fail(msg):\n"
-                        + "    print(msg)\n"
-                        + "    raise Exception('fail: '+msg)\n");
+                sb.append( "// cheesy unittest temporary\n");
+                sb.append( "function assertEquals(a,b) {\n");
+                sb.append( "    if ( a!=b ) throw new Exception('a!=b');\n");
+                sb.append( "}\n");
+                sb.append( "function assertArrayEquals(a,b) {\n");
+                sb.append( "    if ( a.length===b.length ) {\n");
+                sb.append( "        for ( i=0; i<a.length; i++ ) {\n");
+                sb.append( "            if ( a[i]!=b[i] ) throw new Exception('a[%d]!=b[%d]'%(i,i));\n");
+                sb.append( "        }\n");
+                sb.append( "    } else {\n");
+                sb.append( "        throw new Exception('array lengths differ');\n");
+                sb.append( "    }\n");
+                sb.append( "}\n");
+                sb.append( "function fail(msg) {\n");
+                sb.append( "    console.log(msg);\n");
+                sb.append( "    throw Exception('fail: '+msg);\n");
+                sb.append( "}                \n");
                 sb.append( "\n" );
             }
             String comments= utilRewriteComments(indent, classOrInterfaceDeclaration.getComment(), true );
@@ -802,12 +806,7 @@ public class ConvertJavaToJavascript {
                 }
                 sb.append( indent ).append("class " ).append( className ).append("(" ).append(implementsName).append(")").append("{\n");
             } else {
-                if ( unittest ) {
-                    String extendName= "unittest.TestCase";
-                    sb.append( indent ).append("class " ).append( className ).append("(" ).append(extendName).append(")").append("{\n");
-                } else {
-                    sb.append( indent ).append("class " ).append( className ).append(" {\n");
-                }
+                sb.append( indent ).append("class " ).append( className ).append(" {\n");
             }
 
             // check to see if any two methods can be combined.
@@ -884,12 +883,13 @@ public class ConvertJavaToJavascript {
             };
             
             if ( unittest ) {
-                sb.append("test = ").append(classOrInterfaceDeclaration.getName()).append("()\n");
+                sb.append( indent ).append( "}" ).append("\n");
+                sb.append("test = new ").append(classOrInterfaceDeclaration.getName()).append("();\n");
                 for ( Node n : classOrInterfaceDeclaration.getChildrenNodes() ) {
                     if ( n instanceof MethodDeclaration 
                             && ((MethodDeclaration)n).getName().startsWith("test") 
                             && ((MethodDeclaration)n).getParameters()==null ) {
-                        sb.append("test.").append(((MethodDeclaration) n).getName()).append("()\n");
+                        sb.append("test.").append(((MethodDeclaration) n).getName()).append("();\n");
                     }
                 }
             }
@@ -897,7 +897,7 @@ public class ConvertJavaToJavascript {
         
         }
         
-        if ( !onlyStatic ) {
+        if ( !onlyStatic && !unittest) {
             sb.append( indent ).append( "}" ).append("\n");
         }
         popScopeStack();
