@@ -1103,8 +1103,28 @@ public class ConvertJavaToJavascript {
 
     }
 
-    private String doConvertAssignExpr(String indent, AssignExpr assignExpr) {
-        return indent + doConvert("",assignExpr.getTarget()) + " = " + doConvert("",assignExpr.getValue());
+    private String doConvertAssignExpr(String indent, AssignExpr assign) {
+        String target= doConvert( "", assign.getTarget() );
+        AssignExpr.Operator operator= assign.getOperator();
+        
+        switch (operator) {
+            case minus:
+                return indent + target + " -= " + doConvert( "", assign.getValue() );
+            case plus:
+                return indent + target + " += " + doConvert( "", assign.getValue() );
+            case star:
+                return indent + target + " *= " + doConvert( "", assign.getValue() );
+            case slash:
+                return indent + target + " /= " + doConvert( "", assign.getValue() );
+            case or:
+                return indent + target + " |= " + doConvert( "", assign.getValue() );
+            case and:
+                return indent + target + " &= " + doConvert( "", assign.getValue() );
+            case assign:
+                return indent + target + " = " + doConvert( "", assign.getValue() );
+            default:
+                return indent + target + " ??? " + doConvert( "", assign.getValue() ) + " (J2J AssignExpr not supported)";
+        }
     }
 
     private String doConvertNameExpr(String indent, NameExpr nameExpr) {
