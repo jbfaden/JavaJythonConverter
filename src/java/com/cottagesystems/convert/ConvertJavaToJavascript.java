@@ -770,12 +770,12 @@ public class ConvertJavaToJavascript {
             if ( unittest ) {
                 sb.append( "// cheesy unittest temporary\n");
                 sb.append( "function assertEquals(a,b) {\n");
-                sb.append( "    if ( a!=b ) throw new Exception('a!=b');\n");
+                sb.append( "    if ( a!==b ) throw new Exception('a!==b');\n");
                 sb.append( "}\n");
                 sb.append( "function assertArrayEquals(a,b) {\n");
                 sb.append( "    if ( a.length===b.length ) {\n");
                 sb.append( "        for ( i=0; i<a.length; i++ ) {\n");
-                sb.append( "            if ( a[i]!=b[i] ) throw new Exception('a[%d]!=b[%d]'%(i,i));\n");
+                sb.append( "            if ( a[i]!==b[i] ) throw new Exception('a[%d]!==b[%d]'%(i,i));\n");
                 sb.append( "        }\n");
                 sb.append( "    } else {\n");
                 sb.append( "        throw new Exception('array lengths differ');\n");
