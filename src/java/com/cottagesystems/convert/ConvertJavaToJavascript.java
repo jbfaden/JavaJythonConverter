@@ -1108,7 +1108,11 @@ public class ConvertJavaToJavascript {
     }
 
     private String doConvertNameExpr(String indent, NameExpr nameExpr) {
-        return indent + nameExpr.getName();
+        if ( getCurrentScopeFields().containsKey(nameExpr.getName()) ) {
+            return indent + theClassName + "." + nameExpr.getName(); //TODO: usually correct, nested classes.
+        } else {
+            return indent + nameExpr.getName();
+        }
     }
     
     /**
@@ -1645,6 +1649,10 @@ public class ConvertJavaToJavascript {
                     return "sprintf("+doConvert("",args.get(0))+","+utilFormatExprList( args.subList(1,args.size()) ) + ")"; 
                 }
             }
+        } else if ( clasType.equals("Double") ) {
+            if ( name.equals("parseDouble") ) {
+                return "parseFloat("+doConvert("",args.get(0))+")";
+            }
         }
         
         //if ( name.equals("normalizeTime") ) {
@@ -1699,6 +1707,9 @@ public class ConvertJavaToJavascript {
     }
 
     private String doConvertFieldAccessExpr(String indent, FieldAccessExpr fieldAccessExpr) {
+        if ( fieldAccessExpr.toString().contains("iso8601") ) {
+            System.err.println("here stop");
+        }
         String s= doConvert( "", fieldAccessExpr.getScope() );
                 
         // test to see if this is an array and "length" of the array is accessed.
