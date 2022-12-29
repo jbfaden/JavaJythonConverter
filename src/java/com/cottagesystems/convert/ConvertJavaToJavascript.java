@@ -121,7 +121,17 @@ public class ConvertJavaToJavascript {
             ByteArrayInputStream ins= new ByteArrayInputStream( javasrc.getBytes(Charset.forName("UTF-8")) );
             CompilationUnit unit= japa.parser.JavaParser.parse(ins,"UTF-8");
             String src= doConvert( "", unit );
+            if ( !additionalImports.isEmpty() ) {
+                src= src + "\n";
+                for ( Entry<String,Boolean> ent : additionalImports.entrySet() ) {
+                    if ( ent.getValue() ) {
+                        src= ent.getKey() + src;
+                    }
+                }
+                
+            }
             if ( !additionalClasses.isEmpty() ) {
+                src= src + "\n";
                 for ( Entry<String,Boolean> ent : additionalClasses.entrySet() ) {
                     if ( ent.getValue() ) {
                         src= ent.getKey() + src;
@@ -1622,7 +1632,17 @@ public class ConvertJavaToJavascript {
                 case "currentTimeMillis":
                     return indent + "Date.now()";
                 case "arraycopy":
-                    additionalImports.put( "import formatPack.js", true );
+                    additionalImports.put( "function arraycopy( srcPts, srcOff, dstPts, dstOff, size) {  // private\n" +
+"    if (srcPts !== dstPts || dstOff >= srcOff + size) {\n" +
+"        while (--size >= 0)\n" +
+"            dstPts[dstOff++] = srcPts[srcOff++];\n" +
+"    }\n" +
+"    else {\n" +
+"        var tmp = srcPts.slice(srcOff, srcOff + size);\n" +
+"        for (var i = 0; i < size; i++)\n" +
+"            dstPts[dstOff++] = tmp[i];\n" +
+"    } \n" +
+"}", true );
                     String a1= doConvert("",args.get(0));
                     String a2= doConvert("",args.get(1));
                     String a3= doConvert("",args.get(2));
@@ -1668,7 +1688,7 @@ public class ConvertJavaToJavascript {
             }
         } else if ( clasType.equals("String") ) {
             if ( name.equals("format") ) {
-                additionalImports.put("//import sprintf.js",true);
+                additionalImports.put("// import sprintf.js\n",true);
                 if ( args.size()>1 ) {
                     return "sprintf("+doConvert("",args.get(0))+","+utilFormatExprList( args.subList(1,args.size()) ) + ")"; 
                 }
