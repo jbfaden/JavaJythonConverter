@@ -2075,7 +2075,11 @@ public class ConvertJavaToJavascript {
             }
             return indent + scastExpr + " //J2J: cast type//";
         } else {
-            return indent + type + "(" + scastExpr + ")" + " //J2J: cast type//";
+            if ( type.equals("int") || type.equals("long") ) { 
+                return indent + "Math.trunc( "+scastExpr+" )";
+            } else {
+                return indent + type + "(" + scastExpr + ")" + " //J2J: cast type//";
+            }
         }
         
     }
