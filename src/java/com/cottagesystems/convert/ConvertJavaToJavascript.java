@@ -767,23 +767,23 @@ public class ConvertJavaToJavascript {
             });
         } else {
             
-            if ( unittest ) {
+            if ( unittest ) {     
                 sb.append( "// cheesy unittest temporary\n");
                 sb.append( "function assertEquals(a,b) {\n");
-                sb.append( "    if ( a!==b ) throw new Exception('a!==b');\n");
+                sb.append( "     if ( a!==b ) throw 'a!==b : ' + a + ' != ' + b;\n");
                 sb.append( "}\n");
                 sb.append( "function assertArrayEquals(a,b) {\n");
                 sb.append( "    if ( a.length===b.length ) {\n");
                 sb.append( "        for ( i=0; i<a.length; i++ ) {\n");
-                sb.append( "            if ( a[i]!==b[i] ) throw new Exception('a[%d]!==b[%d]'%(i,i));\n");
+                sb.append( "            if ( a[i]!==b[i] ) throw 'a['+i+']!==b['+i+'] : ' +a[i] + ' != ' + b[i];\n");
                 sb.append( "        }\n");
                 sb.append( "    } else {\n");
-                sb.append( "        throw new Exception('array lengths differ');\n");
+                sb.append( "        throw 'array lengths differ';\n");
                 sb.append( "    }\n");
                 sb.append( "}\n");
                 sb.append( "function fail(msg) {\n");
                 sb.append( "    console.log(msg);\n");
-                sb.append( "    throw Exception('fail: '+msg);\n");
+                sb.append( "    throw 'fail: '+msg;\n");
                 sb.append( "}                \n");
                 sb.append( "\n" );
             }
@@ -1707,9 +1707,6 @@ public class ConvertJavaToJavascript {
     }
 
     private String doConvertFieldAccessExpr(String indent, FieldAccessExpr fieldAccessExpr) {
-        if ( fieldAccessExpr.toString().contains("iso8601") ) {
-            System.err.println("here stop");
-        }
         String s= doConvert( "", fieldAccessExpr.getScope() );
                 
         // test to see if this is an array and "length" of the array is accessed.
@@ -1795,13 +1792,13 @@ public class ConvertJavaToJavascript {
             if ( ifStmt.getThenStmt() instanceof BlockStmt ) {
                 if ( ifStmt.getElseStmt() instanceof BlockStmt ) {
                     return indent + "if (" + doConvert("",ifStmt.getCondition()) +
-                            ") {\n" + doConvert(indent+s4,ifStmt.getThenStmt() ) + indent + "} else"
-                            + "{\n" + doConvert(indent+s4,ifStmt.getElseStmt() ) + indent + "}";
+                            ") {\n" + doConvert(indent+s4,ifStmt.getThenStmt() ) + indent + "} else "
+                            + "{\n" + doConvert(indent+s4,ifStmt.getElseStmt() ) + indent + "}\n";
                             
                 } else {
                     return indent + "if (" + doConvert("",ifStmt.getCondition()) +
-                            ") {\n" + doConvert(indent+s4,ifStmt.getThenStmt() ) + indent + "} else"
-                            + "{\n" + doConvert(indent+s4,ifStmt.getElseStmt() ) + indent + "}";
+                            ") {\n" + doConvert(indent+s4,ifStmt.getThenStmt() ) + indent + "} else "
+                            + "{\n" + doConvert(indent+s4,ifStmt.getElseStmt() ) + indent + "}\n";
                     
                 }
             } else {
@@ -1811,7 +1808,7 @@ public class ConvertJavaToJavascript {
         } else {
             if ( ifStmt.getThenStmt() instanceof BlockStmt ) {
                 return indent + "if (" + doConvert("",ifStmt.getCondition()) +
-                    ") {\n" + doConvert(indent+s4,ifStmt.getThenStmt() ) + indent + "}";
+                    ") {\n" + doConvert(indent+s4,ifStmt.getThenStmt() ) + indent + "}\n";
             } else {
                 return indent + "if (" + doConvert("",ifStmt.getCondition()) +
                     ") " + doConvert("",ifStmt.getThenStmt() ) + "";
