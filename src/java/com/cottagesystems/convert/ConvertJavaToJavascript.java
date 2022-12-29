@@ -1539,6 +1539,10 @@ public class ConvertJavaToJavascript {
             }
         }
 
+        if ( name.equals("equals") && args.size()==1 ) {
+            return indent + doConvert( "",clas ) + "==" + doConvert( "",args.get(0) );
+        }
+        
         // remove diamond typing (Map<String,String> -> Map)
         int i= clasType.indexOf("<"); 
         if ( i>=0 ) {
