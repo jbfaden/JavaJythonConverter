@@ -272,6 +272,12 @@ public class ConvertJavaToJavascript {
         
         String result="<J2J243 "+simpleName+">";
 
+//        if ( simpleName.equals("NameExpr") && n.toString().contains("DAY_OFFSET") ) {
+//            System.err.println("here");
+//        }
+//        if ( simpleName.equals("FieldDeclaration") && n.toString().contains("DAY_OFFSET") ) {
+//            System.err.println("here");
+//        }
         switch ( simpleName ) {
             case "foo":
                 result= "foo";
@@ -1662,7 +1668,9 @@ public class ConvertJavaToJavascript {
                 String expr1= n+".substring(0,"+i0+")";
                 String expr2= n+".substring("+i0+")";
                 return indent + n + " = " + expr1 + "+" + ins +"+" + expr2 + "  // J2J expr -> assignment"; // expr becomes assignment, this will cause problems
-            }  
+            } else if ( name.equals("length") ) {
+                return indent + doConvert("",clas) + ".length";
+            }
         } else if ( clasType.equals("Pattern") ) {
             switch ( name ) {
                 case "compile":
@@ -1807,9 +1815,11 @@ public class ConvertJavaToJavascript {
                         sb.append("]");
                         return sb.toString();
                     }
+                } else if ( e1 instanceof NameExpr && getCurrentScopeFields().containsKey(((NameExpr)e1).getName()) ) {
+                    return indent + "[]";
                 }
             }  
-}
+        }
         return indent + "[]";
     }
     
