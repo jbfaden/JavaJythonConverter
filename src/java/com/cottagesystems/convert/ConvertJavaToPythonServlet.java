@@ -100,7 +100,7 @@ public class ConvertJavaToPythonServlet extends HttpServlet {
                 pp.mkdirs();
                 //pp.setWritable( true, false );  // I don't think this works
             }
-            if ( !dd.mkdir() ) throw new IllegalArgumentException("unable to mkdir");
+            if ( !dd.mkdir() ) throw new IllegalArgumentException("unable to mkdir: "+dd);
         }
         String hash= String.format( "%09d", Math.abs( code.hashCode() ) );
         File ff= new File( dd, hash+".java");
