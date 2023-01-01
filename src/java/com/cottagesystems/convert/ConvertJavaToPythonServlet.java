@@ -56,8 +56,8 @@ public class ConvertJavaToPythonServlet extends HttpServlet {
         
         String code= request.getParameter("code");
         String mode;
-        //mode= request.getParameter("mode");
-        mode= "edit";
+        mode= request.getParameter("mode");
+        //mode= "edit";
         
         if ( !"edit".equals(mode) ) {
             mode="view";
@@ -139,6 +139,7 @@ public class ConvertJavaToPythonServlet extends HttpServlet {
                 out.println("<textarea rows=\"40\" cols=\"80\" id=\"code\" name=\"code\">"+code+"</textarea>");
             } else {
                 out.println("<div style=\"height: 400px; width: 600px; overflow: scroll\"><pre><code class=\"language-java\" id=\"code\" name=\"code\" rows=\"40\" >"+code+"</code></pre></div>");
+                out.println("<textarea rows=\"40\" cols=\"80\" id=\"code\" name=\"code\" hidden=\"true\">"+code+"</textarea>");
             }
             out.println("</td>");
             out.println("<td valign='top'>Jython Code:<br>");
@@ -173,7 +174,7 @@ public class ConvertJavaToPythonServlet extends HttpServlet {
                 out.println( convert.isCamelToSnake() ? "camel_to_snake" : "Not camelToSnake" );
                 out.println( "," );
                 out.println( convert.getPythonTarget() );
-                out.println("<input name=\"mode\" type=\"hidden\" value=\"edit\"></input><input type=\"submit\" value=\"edit\"></input>");
+                out.println("<input name=\"mode\" value=\"edit\" hidden=\"true\"></input><input type=\"submit\" value=\"edit\"></input>");
             }
             out.println("</form>");        
             out.println("<small>Version "+ConvertJavaToPython.VERSION+"</small><br>\n");

@@ -56,8 +56,8 @@ public class ConvertJavaToJavascriptServlet extends HttpServlet {
         
         String code= request.getParameter("code");
         String mode;
-        //mode= request.getParameter("mode");
-        mode= "edit";
+        mode= request.getParameter("mode");
+        //mode= "edit";
         
         if ( !"edit".equals(mode) ) {
             mode="view";
@@ -139,13 +139,14 @@ public class ConvertJavaToJavascriptServlet extends HttpServlet {
                 out.println("<textarea rows=\"40\" cols=\"80\" id=\"code\" name=\"code\">"+code+"</textarea>");
             } else {
                 out.println("<div style=\"height: 400px; width: 600px; overflow: scroll\"><pre><code class=\"language-java\" id=\"code\" name=\"code\" rows=\"40\" >"+code+"</code></pre></div>");
+                out.println("<textarea rows=\"40\" cols=\"80\" id=\"code\" name=\"code\" hidden=\"true\">"+code+"</textarea>");
             }
             out.println("</td>");
             out.println("<td valign='top'>Javascript Code:<br>");
             if ( "edit".equals(mode) ) {
                 out.println("<textarea rows=\"40\" cols=\"132\">"+javascriptCode+"</textarea>");
             } else {
-                out.println("<div style=\"height: 400px; width: 600px; overflow: scroll\"><pre><code class=\"language-python\">"+javascriptCode+"</code></pre></div>");
+                out.println("<div style=\"height: 400px; width: 600px; overflow: scroll\"><pre><code class=\"language-js\">"+javascriptCode+"</code></pre></div>");
             }
             out.println("</td>");
             out.println("</tr></table>");
@@ -173,8 +174,7 @@ public class ConvertJavaToJavascriptServlet extends HttpServlet {
                 //out.println( convert.isCamelToSnake() ? "camel_to_snake" : "Not camelToSnake" );
                 //out.println( "," );
                 //out.println( convert.getPythonTarget() );
-                out.println("<input name=\"mode\" type=\"hidden\" value=\"edit\"></input><input type=\"submit\" value=\"edit\"></input>");
-            }
+                out.println("<input name=\"mode\" value=\"edit\" hidden=\"true\"></input><input type=\"submit\" value=\"edit\"></input>");            }
             out.println("</form>");        
             out.println("<small>Version "+ConvertJavaToPython.VERSION+"</small><br>\n");
             out.println("Please note:<ul>\n");
@@ -186,10 +186,10 @@ public class ConvertJavaToJavascriptServlet extends HttpServlet {
             out.println("<li>Single methods are handled by wrapping the method with a class, then this is removed.\n");
             out.println("<li>Several statements are made into a method similarly.\n");
             out.println("<li>I am a Java developer who knows enough JavaScript to cause problems, see <a href='https://github.com/jbfaden/JavaJythonConverter'>GitHub project</a> to provide feedback\n");
-            out.println("</body>");
             out.println("<hr>");
             out.println("<a href='ConvertJavaToPythonServlet'>Python Conversion</a>");
             out.println("<a href='ConvertJavaToJavascriptServlet'>JavaScript Conversion</a>");
+            out.println("</body>");
             out.println("</html>");
         }
     }
