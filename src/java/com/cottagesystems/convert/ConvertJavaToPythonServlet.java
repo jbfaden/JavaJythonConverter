@@ -177,7 +177,6 @@ public class ConvertJavaToPythonServlet extends HttpServlet {
                 out.println("<input name=\"mode\" value=\"edit\" hidden=\"true\"></input><input type=\"submit\" value=\"edit\"></input>");
             }
             out.println("</form>");        
-            out.println("<small>Version "+ConvertJavaToPython.VERSION+"</small><br>\n");
             out.println("Please note:<ul>\n");
             out.println("<li>The goal is to get something close to translated, but not perfect.\n");
             out.println("<li>The Java code must be working, this assumes that it is a functioning and correct code.\n");
@@ -191,6 +190,7 @@ public class ConvertJavaToPythonServlet extends HttpServlet {
             out.println("<hr>");
             out.println("<a href='ConvertJavaToPythonServlet'>Python Conversion</a>");
             out.println("<a href='ConvertJavaToJavascriptServlet'>JavaScript Conversion</a>");
+            out.println("<a href='index.jsp'>Home</a>");
             out.println("</body>");
             out.println("</html>");
         }

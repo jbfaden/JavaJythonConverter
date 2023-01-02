@@ -4,6 +4,7 @@
     Author     : jbf
 --%>
 
+<%@page import="com.cottagesystems.convert.ConvertJavaToPython"%>
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 <!DOCTYPE html>
 <html>
@@ -13,6 +14,8 @@
     </head>
     <body>
         <h1>Java to Python Converter</h1>
+    <sm>version <%=ConvertJavaToPython.VERSION%></sm><br><br>
+        
         This was motivated when I couldn't find a satisfactory Java to Jython
         converter online, so I found a Java AST and wrote a Jython-generating
         code using it.
@@ -30,6 +33,9 @@
         I'd still like for the editor to have syntax highliting. See 
             <a href="https://css-tricks.com/creating-an-editable-textarea-that-supports-syntax-highlighted-code/">https://css-tricks.com/creating-an-editable-textarea-that-supports-syntax-highlighted-code/</a>
         for how this might be done.
+
+        
+
         </p>
     </body>
 </html>

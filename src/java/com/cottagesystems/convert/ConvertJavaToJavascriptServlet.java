@@ -176,12 +176,11 @@ public class ConvertJavaToJavascriptServlet extends HttpServlet {
                 //out.println( convert.getPythonTarget() );
                 out.println("<input name=\"mode\" value=\"edit\" hidden=\"true\"></input><input type=\"submit\" value=\"edit\"></input>");            }
             out.println("</form>");        
-            out.println("<small>Version "+ConvertJavaToPython.VERSION+"</small><br>\n");
             out.println("Please note:<ul>\n");
             out.println("<li>The goal is to get something close to translated, but not perfect.\n");
             out.println("<li>The Java code must be working, this assumes that it is a functioning and correct code.\n");
             out.println("<li>Semmantics are considered, for example s.substring is assumed to be using the substring method of string.\n");
-            out.println("<li>Other assumptions like xx.length -> len(xx) are made.\n");
+            out.println("<li>sprintf.js used to implement String.format.\n");
             out.println("<li>Some Java class use may remain, and you will need to find translations to JavaScript.\n");
             out.println("<li>Single methods are handled by wrapping the method with a class, then this is removed.\n");
             out.println("<li>Several statements are made into a method similarly.\n");
@@ -189,6 +188,7 @@ public class ConvertJavaToJavascriptServlet extends HttpServlet {
             out.println("<hr>");
             out.println("<a href='ConvertJavaToPythonServlet'>Python Conversion</a>");
             out.println("<a href='ConvertJavaToJavascriptServlet'>JavaScript Conversion</a>");
+            out.println("<a href='index.jsp'>Home</a>");
             out.println("</body>");
             out.println("</html>");
         }
