@@ -138,6 +138,13 @@ public class ConvertJavaToJavascript {
                     }
                 }
             }
+            
+            if ( hasMain ) {
+                StringBuilder sb = new StringBuilder(src);
+                sb.append( theClassName ).append(".main([])\n");
+                src= sb.toString();
+            }
+            
             return src;
         } catch ( ParseException ex ) {
             throwMe= ex;
@@ -183,6 +190,11 @@ public class ConvertJavaToJavascript {
                 }
             }
             sb.append(src);
+            
+            if ( hasMain ) {
+                sb.append( theClassName ).append(".main([])\n");
+            }
+            
             src= sb.toString();
 
             return src;
