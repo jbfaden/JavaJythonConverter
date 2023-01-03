@@ -2383,7 +2383,6 @@ public class ConvertJavaToPython {
     }
 
     private String doConvertClassOrInterfaceType(String indent, ClassOrInterfaceType classOrInterfaceType) {
-        //classOrInterfaceType
         return indent + classOrInterfaceType.getName();
     }
 
