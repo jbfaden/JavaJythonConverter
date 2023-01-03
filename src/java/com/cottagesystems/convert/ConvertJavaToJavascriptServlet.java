@@ -129,6 +129,7 @@ public class ConvertJavaToJavascriptServlet extends HttpServlet {
             out.println("<body>");
             out.println("<script language=\"javascript\" src=\"highlight.min.js\"></script>\n");
             out.println("<script>hljs.highlightAll();</script>\n");
+            out.println("<script language=\"javascript\" src=\"copytext.js\"></script>\n");
             out.println("<h1>Java to Javascript Converter</h1>");
             out.println("Please read caveats below, seriously difficult bugs could be introduced when automatically converting code.<br><br>");
             out.println("<form action=\"ConvertJavaToJavascriptServlet\" method=\"post\">");
@@ -144,10 +145,11 @@ public class ConvertJavaToJavascriptServlet extends HttpServlet {
             out.println("</td>");
             out.println("<td valign='top'>Javascript Code:<br>");
             if ( "edit".equals(mode) ) {
-                out.println("<textarea rows=\"40\" cols=\"132\">"+javascriptCode+"</textarea>");
+                out.println("<textarea rows=\"40\" cols=\"132\" id=\"outputcode\">"+javascriptCode+"</textarea>");
             } else {
                 out.println("<div style=\"height: 400px; width: 600px; overflow: scroll\"><pre><code class=\"language-js\">"+javascriptCode+"</code></pre></div>");
             }
+            out.println("<button onclick=\"copytext()\">Copy JavaScript</button>");
             out.println("</td>");
             out.println("</tr></table>");
             
@@ -175,7 +177,7 @@ public class ConvertJavaToJavascriptServlet extends HttpServlet {
                 //out.println( "," );
                 //out.println( convert.getPythonTarget() );
                 out.println("<input name=\"mode\" value=\"edit\" hidden=\"true\"></input><input type=\"submit\" value=\"edit\"></input>");            }
-            out.println("</form>");        
+            out.println("</form>");      
             out.println("Please note:<ul>\n");
             out.println("<li>The goal is to get something close to translated, but not perfect.\n");
             out.println("<li>The Java code must be working, this assumes that it is a functioning and correct code.\n");
