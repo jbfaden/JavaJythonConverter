@@ -2237,7 +2237,7 @@ public class ConvertJavaToJavascript {
      * @return 
      */
     private String unindent(String indent, String code) {
-        String[] ss= code.split("\n");
+        String[] ss= code.split("\n",-2);
         for ( int i=0; i<ss.length; i++ ) {
             if ( !ss[i].startsWith(indent) && ss[i].length()>0 ) {
                 return code;
