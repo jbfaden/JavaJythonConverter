@@ -438,7 +438,7 @@ public class ConvertJavaToJavascript {
                 result= doConvertObjectCreationExpr(indent,(ObjectCreationExpr)n);
                 break;
             case "ClassOrInterfaceType":
-                //result= doConvertClassOrInterfaceType(indent,(ClassOrInterfaceType)n);
+                result= doConvertClassOrInterfaceType(indent,(ClassOrInterfaceType)n);
                 break;
             case "Parameter":
                 result= indent + ((Parameter)n).getId().getName(); // TODO: varargs, etc
@@ -825,14 +825,14 @@ public class ConvertJavaToJavascript {
             
             if ( classOrInterfaceDeclaration.getExtends()!=null && classOrInterfaceDeclaration.getExtends().size()==1 ) { 
                 String extendName= doConvert( "", classOrInterfaceDeclaration.getExtends().get(0) );
-                sb.append( indent ).append("class " ).append( className ).append("(" ).append(extendName).append(")").append("{\n");
-            } else if ( classOrInterfaceDeclaration.getImplements()!=null ) { 
+                sb.append( indent ).append("class " ).append( className ).append(" extends " ).append(extendName).append(" {\n");
+            } else if ( classOrInterfaceDeclaration.getImplements()!=null && classOrInterfaceDeclaration.getImplements().size()==1 ) { 
                 List<ClassOrInterfaceType> impls= classOrInterfaceDeclaration.getImplements();
                 StringBuilder implementsName= new StringBuilder( doConvert( "", impls.get(0) ) );
                 for ( int i=1; i<impls.size(); i++ ) {
                     implementsName.append(",").append( doConvert( "", impls.get(i) ) );
                 }
-                sb.append( indent ).append("class " ).append( className ).append("(" ).append(implementsName).append(")").append("{\n");
+                sb.append( indent ).append("class " ).append( className ).append(" extends " ).append(implementsName).append(" {\n");
             } else {
                 sb.append( indent ).append("class " ).append( className ).append(" {\n");
             }
@@ -2148,6 +2148,10 @@ public class ConvertJavaToJavascript {
             }
         }
         
+    }
+
+    private String doConvertClassOrInterfaceType(String indent, ClassOrInterfaceType classOrInterfaceType) {
+        return indent + classOrInterfaceType.getName();
     }
 
     
