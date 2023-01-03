@@ -122,21 +122,22 @@ public class ConvertJavaToJavascript {
             CompilationUnit unit= japa.parser.JavaParser.parse(ins,"UTF-8");
             String src= doConvert( "", unit );
             if ( !additionalImports.isEmpty() ) {
-                src= src + "\n";
+                StringBuilder additionalImportsSrc= new StringBuilder();
                 for ( Entry<String,Boolean> ent : additionalImports.entrySet() ) {
                     if ( ent.getValue() ) {
-                        src= ent.getKey() + src;
+                        additionalImportsSrc.append( ent.getKey() );
                     }
                 }
-                
+                src= additionalImportsSrc.toString() + src;
             }
             if ( !additionalClasses.isEmpty() ) {
-                src= src + "\n";
+                StringBuilder additionalClassesSrc= new StringBuilder();
                 for ( Entry<String,Boolean> ent : additionalClasses.entrySet() ) {
                     if ( ent.getValue() ) {
-                        src= ent.getKey() + src;
+                        additionalClassesSrc.append( ent.getKey() );
                     }
                 }
+                src=  additionalClassesSrc.toString() + src;
             }
             
             if ( hasMain ) {
@@ -779,9 +780,15 @@ public class ConvertJavaToJavascript {
         StringBuilder sb= new StringBuilder();
         
         String name = classOrInterfaceDeclaration.getName();
+        
+        boolean makeInnerOuter= false;
+        
         if ( classNameStack.isEmpty() ) {
             theClassName= name;
+        } else {
+            makeInnerOuter= true; // JavaScript doesn't support inner classes, so bring it out and print a warning.
         }
+        
         classNameStack.push(name);
         
         getCurrentScopeClasses().put( name, classOrInterfaceDeclaration );
@@ -931,7 +938,13 @@ public class ConvertJavaToJavascript {
         popScopeStack();
         classNameStack.pop();
         
-        return sb.toString();
+        if ( makeInnerOuter ) {
+            String outerClass= unindent( indent, sb.toString() );
+            additionalClasses.put( outerClass, true );
+            return "";
+        } else {
+            return sb.toString();
+        }
         
     }
 
@@ -1787,9 +1800,9 @@ public class ConvertJavaToJavascript {
                 return indent + s + ".length"; // don't change
             }
         }
-        if ( onlyStatic && s.equals(classNameStack.peek()) ) {
+        if ( onlyStatic && !classNameStack.isEmpty() && s.equals(classNameStack.peek()) ) {
             return fieldAccessExpr.getField();
-        } else if ( s.equals(classNameStack.peek()) ) {            
+        } else if ( !classNameStack.isEmpty() && s.equals(classNameStack.peek()) ) {            
             return doConvert("",fieldAccessExpr.getScope()) + "."+  fieldAccessExpr.getField();
         } else {
             if ( s.equals("Collections") ) {
@@ -2152,6 +2165,29 @@ public class ConvertJavaToJavascript {
 
     private String doConvertClassOrInterfaceType(String indent, ClassOrInterfaceType classOrInterfaceType) {
         return indent + classOrInterfaceType.getName();
+    }
+
+    /**
+     * remove the indent from the lines of code, for example when making inner class an outer class.
+     * If one of the lines doesn't start with the indent, then no lines are indented.
+     * @param indent
+     * @param code
+     * @return 
+     */
+    private String unindent(String indent, String code) {
+        String[] ss= code.split("\n");
+        for ( int i=0; i<ss.length; i++ ) {
+            if ( !ss[i].startsWith(indent) && ss[i].length()>0 ) {
+                return code;
+            }
+        }
+        int n= indent.length();
+        for ( int i=0; i<ss.length; i++ ) {
+            if ( ss[i].length()>0 ) {
+                ss[i]= ss[i].substring(n);
+            }
+        }
+        return String.join( "\n", ss );
     }
 
     
