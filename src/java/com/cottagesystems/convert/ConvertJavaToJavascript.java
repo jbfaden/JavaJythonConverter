@@ -1808,7 +1808,7 @@ public class ConvertJavaToJavascript {
                     if ( isStatic ) {
                         return indent + m.getName() + "." + name + "("+ utilFormatExprList(args) +")";
                     } else {
-                        return indent + "self." + name + "("+ utilFormatExprList(args) +")";
+                        return indent + "this." + name + "("+ utilFormatExprList(args) +")";
                     }
                 }
             } else {
@@ -1850,7 +1850,7 @@ public class ConvertJavaToJavascript {
         // test to see if this is an array and "length" of the array is accessed.
         if ( fieldAccessExpr.getField().equals("length") ) {
             String inContext= s;
-            if ( inContext.startsWith("self.") ) {
+            if ( inContext.startsWith("this.") ) {
                 inContext= inContext.substring(5);
             }
             Type t= localVariablesStack.peek().get(inContext);
