@@ -1731,6 +1731,67 @@ public class ConvertJavaToJavascript {
                 return "parseFloat("+doConvert("",args.get(0))+")";
             }
         }
+
+        if ( clasType.equals("HashMap") || clasType.equals("Map") ) {
+            
+            switch (name) {
+                case "put":
+                    return indent + doConvert("",clas) + ".set("+doConvert("",args.get(0))+", "+doConvert("",args.get(1))+")";
+                case "get":
+                    return indent + doConvert("",clas) + ".get("+doConvert("",args.get(0))+")";
+                case "containsKey": // Note that unlike Java, getting a key which doesn't exist is a runtime error.
+                    return indent + doConvert("",clas) + ".has(" + doConvert("",args.get(0)) + ")";
+                case "remove":
+                    return indent + doConvert("",clas) + ".delete(" + doConvert("",args.get(0)) + ")";
+                case "size":
+                    return indent + "len(" + doConvert("",clas) + ")";
+                    
+                default:
+                    break;
+            }
+        }
+        
+        if ( clasType.equals("HashSet") || clasType.equals("Set") ) {
+            switch (name) {
+                case "contains":
+                    return indent + doConvert("",clas) + ".has(" + doConvert("",args.get(0)) + ")";
+                case "add":
+                    return indent + doConvert("",clas) + ".add("+doConvert("",args.get(0))+")";
+                case "remove":
+                    return indent + doConvert("",clas) + ".delete(" + doConvert("",args.get(0)) + ")";  
+                case "size":
+                    return indent + doConvert("",clas) + ".size()"; 
+            }
+        }
+        
+        if ( clasType.equals("ArrayList") || clasType.equals("List") ) {
+            switch (name) {
+                case "size":
+                    return indent + doConvert("",clas) + ".length";
+                case "add":
+                    if ( args.size()==2 ) {
+                        return indent + doConvert("",clas) + "["+doConvert("",args.get(0))+"]="+doConvert("",args.get(1))+"";
+                    } else {
+                        return indent + doConvert("",clas) + ".push("+doConvert("",args.get(0))+")";
+                    }
+                case "remove":
+                    if ( guessType(args.get(0)).equals(ASTHelper.INT_TYPE) ) {
+                        return indent + doConvert("",clas) + ".pop("+doConvert("",args.get(0))+")";
+                    } else {
+                        return indent + doConvert("",clas) + ".remove(" + doConvert("",args.get(0)) + ")";
+                    }
+                case "get":
+                    return indent + doConvert("",clas) + "at("+doConvert("",args.get(0))+")";
+                case "contains":
+                    return indent + "(" + doConvert("",args.get(0)) + ".index("+ doConvert("",args.get(0))+") > -1)";
+                case "indexOf":
+                    return indent + doConvert("",clas) + ".index(" + doConvert("",args.get(0)) + ")";
+                case "toArray":
+                    return indent + doConvert("",clas); // It's already an array (a list really).
+                default:
+                    break;
+            }
+        }
         
         //if ( name.equals("normalizeTime") ) {
         //    System.err.println("line1647");
@@ -1800,6 +1861,7 @@ public class ConvertJavaToJavascript {
                 return indent + s + ".length"; // don't change
             }
         }
+        
         if ( onlyStatic && !classNameStack.isEmpty() && s.equals(classNameStack.peek()) ) {
             return fieldAccessExpr.getField();
         } else if ( !classNameStack.isEmpty() && s.equals(classNameStack.peek()) ) {            
@@ -1809,11 +1871,11 @@ public class ConvertJavaToJavascript {
                 String f= fieldAccessExpr.getField();
                 switch (f) {
                     case "EMPTY_MAP":
-                        return indent + "{}";
+                        return indent + "new Map()";
                     case "EMPTY_SET":
-                        return indent + "{}"; // Jython 2.2 does not have sets.
+                        return indent + "new Set()";
                     case "EMPTY_LIST":
-                        return indent + "[]";
+                        return indent + "new Array()";
                     default:
                         break;
                 }
@@ -1935,11 +1997,11 @@ public class ConvertJavaToJavascript {
                     return sb.toString();
                 } else {
                     if ( objectCreationExpr.getType().getName().equals("HashMap") ) { 
-                        return indent + "{}";
+                        return indent + "new Map()";
                     } else if ( objectCreationExpr.getType().getName().equals("ArrayList") ) { 
-                        return indent + "[]";
+                        return indent + "new Array()";
                     } else if ( objectCreationExpr.getType().getName().equals("HashSet") ) {
-                        return indent + "{}"; // to support Jython 2.2, use dictionary for now
+                        return indent + "new Set()"; 
                     } else {
                         if ( javaImports.keySet().contains( objectCreationExpr.getType().getName() ) ) {
                             javaImports.put( objectCreationExpr.getType().getName(), true );
