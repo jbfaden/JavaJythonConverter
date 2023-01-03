@@ -445,7 +445,7 @@ public class ConvertJavaToJavascript {
                 result= indent + ((Parameter)n).getId().getName(); // TODO: varargs, etc
                 break;
             case "ForeachStmt":
-                //result= doConvertForeachStmt(indent,(ForeachStmt)n);
+                result= doConvertForeachStmt(indent,(ForeachStmt)n);
                 break;
             case "EmptyStmt":
                 //result= doConvertEmptyStmt(indent,(EmptyStmt)n);
@@ -2132,7 +2132,7 @@ public class ConvertJavaToJavascript {
         }
         String params= utilFormatParameterList( constructorDeclaration.getParameters() );
         sb.append(indent).append("constructor(");
-        if ( params.trim().length()>0 ) sb.append(",").append(params);
+        if ( params.trim().length()>0 ) sb.append(params);
         sb.append(") {\n");
         if ( constructorDeclaration.getParameters()!=null ) {
             for ( Parameter p: constructorDeclaration.getParameters() ) { 
@@ -2140,7 +2140,7 @@ public class ConvertJavaToJavascript {
                 localVariablesStack.peek().put( name, p.getType() );
             }
         }
-        sb.append( doConvert(indent,constructorDeclaration.getBlock()) );
+        sb.append( doConvert(indent+s4,constructorDeclaration.getBlock()) );
         sb.append( indent ).append("}\n");
         
         return sb.toString();
@@ -2250,6 +2250,16 @@ public class ConvertJavaToJavascript {
             }
         }
         return String.join( "\n", ss );
+    }
+
+    private String doConvertForeachStmt(String indent, ForeachStmt foreachStmt) {
+        String vv= foreachStmt.getVariable().getVars().get(0).getId().getName();
+        StringBuilder sb= new StringBuilder(indent);
+        sb.append( doConvert( "", foreachStmt.getIterable() ) );
+        sb.append(".forEach( function j2j( ").append(vv).append(" ) {\n ");
+        sb.append(  doConvert( indent + s4, foreachStmt.getBody() ) );
+        sb.append( indent ).append("} )");
+        return sb.toString();
     }
 
     
