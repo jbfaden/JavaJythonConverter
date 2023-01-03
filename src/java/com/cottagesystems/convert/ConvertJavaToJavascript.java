@@ -2256,7 +2256,7 @@ public class ConvertJavaToJavascript {
         String vv= foreachStmt.getVariable().getVars().get(0).getId().getName();
         StringBuilder sb= new StringBuilder(indent);
         sb.append( doConvert( "", foreachStmt.getIterable() ) );
-        sb.append(".forEach( function j2j( ").append(vv).append(" ) {\n ");
+        sb.append(".forEach( function ( ").append(vv).append(" ) {\n ");
         sb.append(  doConvert( indent + s4, foreachStmt.getBody() ) );
         sb.append( indent ).append("} )");
         return sb.toString();
