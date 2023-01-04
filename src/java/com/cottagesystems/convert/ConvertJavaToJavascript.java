@@ -11,6 +11,7 @@ import japa.parser.ast.body.BodyDeclaration;
 import japa.parser.ast.body.ClassOrInterfaceDeclaration;
 import japa.parser.ast.body.ConstructorDeclaration;
 import japa.parser.ast.body.EmptyMemberDeclaration;
+import japa.parser.ast.body.EnumConstantDeclaration;
 import japa.parser.ast.body.EnumDeclaration;
 import japa.parser.ast.body.FieldDeclaration;
 import japa.parser.ast.body.InitializerDeclaration;
@@ -430,7 +431,7 @@ public class ConvertJavaToJavascript {
                 result= doConvertConstructorDeclaration(indent,(ConstructorDeclaration)n);
                 break;
             case "EnumDeclaration":
-                //result= doConvertEnumDeclaration(indent,(EnumDeclaration)n);
+                result= doConvertEnumDeclaration(indent,(EnumDeclaration)n);
                 break;
             case "InitializerDeclaration":
                 //result= doConvertInitializerDeclaration(indent,(InitializerDeclaration)n);
@@ -448,7 +449,7 @@ public class ConvertJavaToJavascript {
                 result= doConvertForeachStmt(indent,(ForeachStmt)n);
                 break;
             case "EmptyStmt":
-                //result= doConvertEmptyStmt(indent,(EmptyStmt)n);
+                result= doConvertEmptyStmt(indent,(EmptyStmt)n);
                 break;
             case "VariableDeclaratorId":
                 result= indent + ((VariableDeclaratorId)n).getName();
@@ -2262,5 +2263,71 @@ public class ConvertJavaToJavascript {
         return sb.toString();
     }
 
+    private String doConvertEnumDeclaration(String indent, EnumDeclaration enumDeclaration) {
+        StringBuilder builder= new StringBuilder();
+        if ( true ) {        
+            
+            getCurrentScopeClasses().put( enumDeclaration.getName(), enumDeclaration );
+            
+            builder.append(indent).append("class ").append(enumDeclaration.getName()).append(" {\n");
+            List<EnumConstantDeclaration> ll = enumDeclaration.getEntries();
+            
+            for ( Node n: enumDeclaration.getChildrenNodes() ) {
+                if ( n instanceof ConstructorDeclaration ) {
+                    String params= utilFormatParameterList( ((ConstructorDeclaration)n).getParameters() );
+                    builder.append(indent).append(s4 + "compare( o1, o2 ) {\n");
+                    builder.append(indent).append(s4 + "    throw Exception(\"Implement me\");\n");
+                    builder.append(indent).append(s4 + "}");
+                }
+            }
+
+            for ( EnumConstantDeclaration l : ll ) {
+                String args = utilFormatExprList(l.getArgs()); 
+                args= "";// we drop the args
+                builder.append(indent).append(s4).append("static ").append(l.getName()).append(" = new ")
+                        .append(enumDeclaration.getName()).append("(").append(args).append(")") .append(";\n");
+                String methodName=null;
+                if ( l.getArgs()!=null && l.getArgs().get(0).getChildrenNodes()!=null ) {
+                    for ( Node n: l.getArgs().get(0).getChildrenNodes() ) {
+                        if ( n instanceof MethodDeclaration ) {
+                            methodName= ((MethodDeclaration)n).getName();
+                            builder.append( doConvert( indent, n ) );
+                        }
+                    }
+                }
+                if (methodName!=null) {
+                    builder.append(indent).append(enumDeclaration.getName()).append(".").append(l.getName()).append(".")
+                            .append(methodName).append('=').append(methodName).append(";\n");
+                }
+                
+            }
+            builder.append("}\n");
+            
+        } else {
+            List<EnumConstantDeclaration> ll = enumDeclaration.getEntries();
+            for ( EnumConstantDeclaration l : ll ) {
+                builder.append(indent).append( "def " ).append(enumDeclaration.getName()).append("_").append(l.getName()) .append(":\n");
+                if ( l.getClassBody()!=null ) {            
+                    if ( l.getClassBody().size()==1 ) {
+                        builder.append( doConvert(indent,l.getClassBody().get(0)) );
+                    }
+                } else {
+                    builder.append(indent).append(s4).append("pass\n");
+                }
+            }
+            builder.append(indent).append(enumDeclaration.getName()).append(" = {}\n");
+            for ( EnumConstantDeclaration l : ll ) {
+                builder.append(indent).append(enumDeclaration.getName()).append("[").append(l.getName()).append("]=")
+                        .append(enumDeclaration.getName()).append("_").append(l.getName()).append("\n");
+            }
+        }
+        additionalClasses.put( builder.toString(), true );
+        return "";
+        //return builder.toString();
+    }
+
+    private String doConvertEmptyStmt(String indent, EmptyStmt emptyStmt) {
+        return "";
+    }
     
 }
