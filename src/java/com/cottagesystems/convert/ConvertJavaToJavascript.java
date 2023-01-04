@@ -2172,16 +2172,24 @@ public class ConvertJavaToJavascript {
         StringBuilder sb= new StringBuilder();
         sb.append( indent ).append( "try {\n");
         sb.append( doConvert( indent+s4, tryStmt.getTryBlock() ) );
+        int count=0;
         for ( CatchClause cc: tryStmt.getCatchs() ) {
+            count++;
             String id= doConvert( "",cc.getExcept().getId() );
-            sb.append(indent).append("} catch (").append(id).append(") {\n");
+            sb.append(indent).append("} catch (").append(id).append(") {");
+            if ( count==1 ) {
+                sb.append("\n");
+            } else {
+                sb.append(" // J2J: these must be combined\n");
+            }
+            
             sb.append( doConvert( indent+s4, cc.getCatchBlock() ) );
-            sb.append(indent).append("}\n");
         }
         if ( tryStmt.getFinallyBlock()!=null ) {
-            sb.append( indent ).append( "finally:\n");
-            sb.append( doConvert( indent, tryStmt.getFinallyBlock() ) );
+            sb.append( indent ).append( "} finally {\n");
+            sb.append( doConvert( indent+s4, tryStmt.getFinallyBlock() ) );
         }
+        sb.append(indent).append("}\n");
         return sb.toString();
     }
 
