@@ -1747,6 +1747,10 @@ public class ConvertJavaToJavascript {
                 return doConvert("",args.get(1)) + ".join(" + doConvert("",args.get(0)) + ")";
             } else if ( name.equals("split") ) {
                 return doConvert("",clas ) + ".split(" + utilUnquoteReplacement( doConvert("",args.get(0)) ) + ")";
+            } else if ( name.equals("replaceAll") ) {
+                String search= utilUnquoteReplacement( doConvert("",args.get(0)) );
+                String replac= utilUnquoteReplacement( doConvert("",args.get(1)) );
+                return indent + clas + ".replaceAll("+search+", "+replac+")";
             }
         } else if ( clasType.equals("Double") ) {
             if ( name.equals("parseDouble") ) {
