@@ -147,7 +147,7 @@ public class ConvertJavaToJavascriptServlet extends HttpServlet {
             if ( "edit".equals(mode) ) {
                 out.println("<textarea rows=\"40\" cols=\"132\" id=\"outputcode\">"+javascriptCode+"</textarea>");
             } else {
-                out.println("<div style=\"height: 400px; width: 600px; overflow: scroll\"><pre><code class=\"language-js\">"+javascriptCode+"</code></pre></div>");
+                out.println("<div style=\"height: 400px; width: 600px; overflow: scroll\"><pre><code >"+javascriptCode+"</code></pre></div>");
             }
             out.println("<button onclick=\"copytext()\">Copy JavaScript</button>");
             out.println("</td>");
