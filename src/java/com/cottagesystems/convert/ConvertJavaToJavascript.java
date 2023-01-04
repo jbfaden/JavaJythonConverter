@@ -1613,6 +1613,8 @@ public class ConvertJavaToJavascript {
                 String aaa= doConvert("",clas)+".toUpperCase()";
                 String bbb= doConvert("",args.get(0))+".toUpperCase()"; // TODO: we can check if literal is already upper case.
                 return indent + aaa + "===" + bbb;
+            } else if ( name.equals("contains") ) {
+                return indent +  doConvert( "",clas ) + ".indexOf(" + doConvert("",args.get(0))+")!==-1";
             }
         }
         if ( clasType.equals("Character") ) {
