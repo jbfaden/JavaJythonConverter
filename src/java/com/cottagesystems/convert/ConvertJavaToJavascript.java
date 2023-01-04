@@ -1491,6 +1491,21 @@ public class ConvertJavaToJavascript {
         
     }
     
+    /**
+     * turn a quoted replacement string into an raw string.  This
+     * is beyond my mental capacity because it's code not interpretted
+     * code, but I know "\\" needs to return "".
+     * @param s for example "\\$"
+     * @return for example "$"
+     * @see java.util.regex.Matcher#quoteReplacement(s)
+     */
+    private String utilUnquoteReplacement( String s ) {
+        if ((!s.contains("\\\\")) && (!s.contains("\\$"))) {
+            return s;
+        }
+        return s.replaceAll("\\\\", "");
+    }    
+    
     private String utilFormatExprList( List<Expression> l ) {
         if ( l==null ) return "";
         if ( l.isEmpty() ) return "";
@@ -1726,6 +1741,10 @@ public class ConvertJavaToJavascript {
                 if ( args.size()>1 ) {
                     return "sprintf("+doConvert("",args.get(0))+","+utilFormatExprList( args.subList(1,args.size()) ) + ")"; 
                 }
+            } else if ( name.equals("join") ) {
+                return doConvert("",args.get(1)) + ".join(" + doConvert("",args.get(0)) + ")";
+            } else if ( name.equals("split") ) {
+                return doConvert("",clas ) + ".split(" + utilUnquoteReplacement( doConvert("",args.get(0)) ) + ")";
             }
         } else if ( clasType.equals("Double") ) {
             if ( name.equals("parseDouble") ) {
