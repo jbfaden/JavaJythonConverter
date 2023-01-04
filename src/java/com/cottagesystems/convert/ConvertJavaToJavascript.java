@@ -1627,9 +1627,9 @@ public class ConvertJavaToJavascript {
             switch (name) {
                 case "copyOfRange": {
                     StringBuilder sb= new StringBuilder();
-                    sb.append(indent).append(args.get(0)).append("[");
-                    sb.append(doConvert("",args.get(1))).append(":").append(doConvert("",args.get(2)));
-                    sb.append("]");
+                    sb.append(indent).append(args.get(0)).append(".slice(");
+                    sb.append(doConvert("",args.get(1))).append(",").append(doConvert("",args.get(2)));
+                    sb.append(")");
                     return sb.toString();
                 }
                 case "equals": {
