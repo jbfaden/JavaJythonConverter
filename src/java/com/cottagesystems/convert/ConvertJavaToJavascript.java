@@ -1429,13 +1429,13 @@ public class ConvertJavaToJavascript {
             case or:
                 return left + " || " + right;
             case equals:
-                if ( right.equals("null") || rightType.equals(ASTHelper.INT_TYPE) ) {
+                if ( right.equals("null") || ASTHelper.INT_TYPE.equals(rightType) ) {
                     return left + " === " + right;
                 } else {
                     return left + " == " + right;
                 }
             case notEquals:
-                if ( right.equals("null") || rightType.equals(ASTHelper.INT_TYPE) ) {
+                if ( right.equals("null") || ASTHelper.INT_TYPE.equals(rightType) ) {
                     return left + " !== " + right;
                 } else {
                     return left + " != " + right;
