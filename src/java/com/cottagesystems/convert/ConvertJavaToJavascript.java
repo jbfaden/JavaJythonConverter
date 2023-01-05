@@ -1323,6 +1323,7 @@ public class ConvertJavaToJavascript {
                         case "concat": 
                         case "replace": 
                         case "replaceAll": 
+                        case "replaceFirst":
                         case "toLowerCase": 
                         case "toUpperCase": 
                             return scopeType;
@@ -1493,7 +1494,7 @@ public class ConvertJavaToJavascript {
     
     /**
      * turn a quoted replacement string into an raw string.  This
-     * is beyond my mental capacity because it's code not interpretted
+     * is beyond my mental capacity because it's code not interpreted
      * code, but I know "\\" needs to return "".
      * @param s for example "\\$"
      * @return for example "$"
@@ -1505,6 +1506,20 @@ public class ConvertJavaToJavascript {
         }
         return s.replaceAll("\\\\", "");
     }    
+    
+    /**
+     * convert the string into a Javascript regex expression.  For example,
+     * '"[ab]{2}"' becomes '/[ab]{2}/'
+     * @param s
+     * @return 
+     */
+    private String utilMakeRegex( String s ) {
+        if ( !( s.startsWith("\"") && s.endsWith("\"")) ) {
+            throw new IllegalArgumentException("expected quotes on string constant");
+        }
+        String unquote= s.substring(1,s.length()-1);
+        return "/"+unquote+"/g";
+    }
     
     private String utilFormatExprList( List<Expression> l ) {
         if ( l==null ) return "";
@@ -1748,9 +1763,17 @@ public class ConvertJavaToJavascript {
             } else if ( name.equals("split") ) {
                 return doConvert("",clas ) + ".split(" + utilUnquoteReplacement( doConvert("",args.get(0)) ) + ")";
             } else if ( name.equals("replaceAll") ) {
-                String search= utilUnquoteReplacement( doConvert("",args.get(0)) );
+                String search= utilMakeRegex( doConvert("",args.get(0)) );
                 String replac= utilUnquoteReplacement( doConvert("",args.get(1)) );
                 return indent + clas + ".replaceAll("+search+", "+replac+")";
+            } else if ( name.equals("replace") ) {
+                String search= doConvert("",args.get(0));
+                String replac= doConvert("",args.get(1));
+                return indent + clas + ".replaceAll("+search+", "+replac+")";
+            } else if ( name.equals("replaceFirst") ) {
+                String search= utilMakeRegex( doConvert("",args.get(0)) );
+                String replac= utilUnquoteReplacement( doConvert("",args.get(1)) );
+                return indent + clas + ".replace("+search+", "+replac+")";
             }
         } else if ( clasType.equals("Double") ) {
             if ( name.equals("parseDouble") ) {
