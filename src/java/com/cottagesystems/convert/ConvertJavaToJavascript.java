@@ -2043,7 +2043,7 @@ public class ConvertJavaToJavascript {
         } else {
             String qualifiedName= utilQualifyClassName(objectCreationExpr.getType());
             if ( qualifiedName!=null ) {
-                return indent + qualifiedName + "("+ utilFormatExprList(objectCreationExpr.getArgs())+ ")";
+                return indent + "new " + qualifiedName + "("+ utilFormatExprList(objectCreationExpr.getArgs())+ ")";
             } else {
                 if ( objectCreationExpr.getAnonymousClassBody()!=null ) {
                     StringBuilder sb= new StringBuilder();
@@ -2278,12 +2278,12 @@ public class ConvertJavaToJavascript {
                     return indent + "Math.trunc( "+scastExpr+" )";
                 }
             }
-            return indent + scastExpr + " //J2J: cast type//";
+            return indent + scastExpr;
         } else {
             if ( type.equals("int") || type.equals("long") ) { 
                 return indent + "Math.trunc( "+scastExpr+" )";
             } else {
-                return indent + type + "(" + scastExpr + ")" + " //J2J: cast type//";
+                return indent + type + "(" + scastExpr + ")";
             }
         }
         
