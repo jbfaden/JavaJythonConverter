@@ -536,11 +536,15 @@ public class ConvertJavaToJavascript {
     }
 
     private String utilQualifyClassName( ClassOrInterfaceType clas ) {
-        if ( getCurrentScope().containsKey(clas.getName())) {
-            return ((ClassOrInterfaceType)getCurrentScope().get("this")).getName() +"." + clas.getName();
-        } else {
-            return null;
-        }
+        return clas.getName(); 
+//        if ( clas.getName().startsWith("SubsecFieldHandler") ) {
+//            System.err.println("here stop 540");
+//        }
+//        if ( getCurrentScope().containsKey(clas.getName())) {
+//            return ((ClassOrInterfaceType)getCurrentScope().get("this")).getName() +"." + clas.getName();
+//        } else {
+//            return null;
+//        }
     }
     
     /**
@@ -1518,6 +1522,9 @@ public class ConvertJavaToJavascript {
             throw new IllegalArgumentException("expected quotes on string constant");
         }
         String unquote= s.substring(1,s.length()-1);
+        while ( unquote.contains("\\\\") ) { // unquote.replaceAll is difficult to do!
+            unquote= unquote.replace("\\\\","\\");
+        }
         return "/"+unquote+"/g";
     }
     
