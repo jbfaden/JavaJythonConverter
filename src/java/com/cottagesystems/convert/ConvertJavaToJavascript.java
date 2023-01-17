@@ -278,11 +278,6 @@ public class ConvertJavaToJavascript {
         }
         String simpleName= n.getClass().getSimpleName();
 
-        //if ( n.getBeginLine()>260 && simpleName.equals("FieldAccessExpr") ) { 
-        //    if ( n.toString().contains("VersioningType") ) {
-        //        System.err.println("here is the thing you were looking for: "+ n); //switching to parsing end time
-        //    }
-        //}
         
         String result="<J2J243 "+simpleName+">";
 
@@ -1057,10 +1052,10 @@ public class ConvertJavaToJavascript {
             if ( i>0 ) b.append("\n");
             VariableDeclarator v= variableDeclarationExpr.getVars().get(i);
             String s= v.getId().getName();
-            if ( v.getInit()!=null && v.getInit().toString().startsWith("Logger.getLogger") ) {
+             if ( v.getInit()!=null && v.getInit().toString().startsWith("Logger.getLogger") ) {
                 //addLogger();
                 localVariablesStack.peek().put(s,ASTHelper.createReferenceType("Logger",0) );
-                return indent + "# J2J: "+variableDeclarationExpr.toString().trim();
+                return indent + "// J2J: "+variableDeclarationExpr.toString().trim();
             }
             if ( v.getInit()!=null 
                     && ( v.getInit() instanceof ArrayInitializerExpr ) 
@@ -1160,15 +1155,25 @@ public class ConvertJavaToJavascript {
     }
 
     private String doConvertNameExpr(String indent, NameExpr nameExpr) {
-        if ( getCurrentScope().containsKey(nameExpr.getName()) ) {
-            return nameExpr.getName();
-        } else if ( getCurrentScopeFields().containsKey(nameExpr.getName()) ) {
-            FieldDeclaration decl = getCurrentScopeFields().get(nameExpr.getName());
+        String name= nameExpr.getName();
+        if ( getCurrentScope().containsKey(name) ) {
+            if ( getCurrentScopeFields().containsKey(name) ) {
+                FieldDeclaration decl= getCurrentScopeFields().get(name); // The problem is Java will figure out the scope, JavaScript needs the class name
+                if ( ModifierSet.isStatic( decl.getModifiers() ) ) {
+                    return theClassName + "." +nameExpr.getName();
+                } else {
+                    return name;
+                }
+            } else {
+                return name;
+            }
+        } else if ( getCurrentScopeFields().containsKey(name) ) {
+            FieldDeclaration decl = getCurrentScopeFields().get(name);
             boolean isStatic= ModifierSet.isStatic(decl.getModifiers() );
             if ( isStatic ) {
-                return indent + theClassName + "." + nameExpr.getName(); //TODO: usually correct, nested classes.
+                return indent + theClassName + "." + name; //TODO: usually correct, nested classes.
             } else {
-                return indent + "this" + "." + nameExpr.getName(); //TODO: usually correct, nested classes.
+                return indent + "this" + "." + name; //TODO: usually correct, nested classes.
             }
             
         } else {
@@ -1623,6 +1628,9 @@ public class ConvertJavaToJavascript {
             clasType= clasType.substring(0,i);
         }
         
+        if ( clasType.equals("Logger") ) {
+            return indent + "// J2J (logger) "+methodCallExpr.toString();
+        }
         if ( clasType.equals("String") ) {
             if ( name.equals("length") ) {
                 return indent + doConvert( "",clas ) + ".length";
@@ -2056,7 +2064,7 @@ public class ConvertJavaToJavascript {
                     StringBuilder sb= new StringBuilder();
                     String body= doConvert( indent, objectCreationExpr.getAnonymousClassBody().get(0) );
                     sb.append(indent).append(objectCreationExpr.getType()).append("(").append(utilFormatExprList(objectCreationExpr.getArgs())).append(")"); 
-                    sb.append("*** # J2J: This is extended in an anonymous inner class ***");
+                    sb.append("*** // J2J: This is extended in an anonymous inner class ***");
                     return sb.toString();
                 } else {
                     if ( objectCreationExpr.getType().getName().equals("HashMap") ) { 
