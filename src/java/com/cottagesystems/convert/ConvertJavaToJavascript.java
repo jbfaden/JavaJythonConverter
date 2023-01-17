@@ -1786,6 +1786,10 @@ public class ConvertJavaToJavascript {
             if ( name.equals("parseDouble") ) {
                 return "parseFloat("+doConvert("",args.get(0))+")";
             }
+        } else if ( clasType.equals("Integer") ) {
+            if ( name.equals("parseInt") ) {
+                return "parseInt("+doConvert("",args.get(0))+")";
+            }
         }
 
         if ( clasType.equals("HashMap") || clasType.equals("Map") ) {
