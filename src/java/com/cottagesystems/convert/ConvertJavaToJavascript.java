@@ -1782,12 +1782,20 @@ public class ConvertJavaToJavascript {
                 String replac= utilUnquoteReplacement( doConvert("",args.get(1)) );
                 return indent + clas + ".replace("+search+", "+replac+")";
             }
+        } else if ( clasType.equals("Float") ) {
+            if ( name.equals("parseFloat") ) {
+                return "parseFloat("+doConvert("",args.get(0))+")";
+            }
         } else if ( clasType.equals("Double") ) {
             if ( name.equals("parseDouble") ) {
                 return "parseFloat("+doConvert("",args.get(0))+")";
             }
         } else if ( clasType.equals("Integer") ) {
             if ( name.equals("parseInt") ) {
+                return "parseInt("+doConvert("",args.get(0))+")";
+            }
+        } else if ( clasType.equals("Long") ) {
+            if ( name.equals("parseLong") ) {
                 return "parseInt("+doConvert("",args.get(0))+")";
             }
         }
