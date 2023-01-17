@@ -1354,9 +1354,25 @@ public class ConvertJavaToJavascript {
         return null;
     }
     
+    private boolean utilIsAsciiString( Expression e ) {
+        Type rightType = guessType(e);
+        if ( rightType.equals(STRING_TYPE) ) {
+            String s= e.toString();
+            boolean isAscii=true;
+            for ( int i=0; isAscii && i<s.length(); i++ ) {
+                char c= s.charAt(i);
+                if ( c!=9 && c<32 && c>127 ) {
+                    isAscii= false;
+                }
+            }
+            return isAscii;
+        } else {
+            return false;
+        }
+    }
 
     private String doConvertBinaryExpr(String indent, BinaryExpr b) {
-                String left= doConvert(indent,b.getLeft());
+        String left= doConvert(indent,b.getLeft());
         String right= doConvert(indent,b.getRight());
         Type leftType = guessType(b.getLeft());
         Type rightType = guessType(b.getRight());
@@ -1440,13 +1456,21 @@ public class ConvertJavaToJavascript {
                 if ( right.equals("null") || ASTHelper.INT_TYPE.equals(rightType) ) {
                     return left + " === " + right;
                 } else {
-                    return left + " == " + right;
+                    if ( utilIsAsciiString(b.getLeft()) && utilIsAsciiString(b.getRight()) ) {
+                        return left + " === " + right;
+                    } else {
+                        return left + " == " + right;
+                    }
                 }
             case notEquals:
                 if ( right.equals("null") || ASTHelper.INT_TYPE.equals(rightType) ) {
                     return left + " !== " + right;
                 } else {
-                    return left + " != " + right;
+                    if ( utilIsAsciiString(b.getLeft()) && utilIsAsciiString(b.getRight()) ) {
+                        return left + " != " + right;
+                    } else {
+                        return left + " !== " + right;
+                    }
                 }
             case remainder:
                 return left + " % " + right;
