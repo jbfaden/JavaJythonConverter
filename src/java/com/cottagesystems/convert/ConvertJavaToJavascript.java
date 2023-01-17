@@ -534,18 +534,6 @@ public class ConvertJavaToJavascript {
         
         System.err.println( c.doConvert(text) );
     }
-
-    private String utilQualifyClassName( ClassOrInterfaceType clas ) {
-        return clas.getName(); 
-//        if ( clas.getName().startsWith("SubsecFieldHandler") ) {
-//            System.err.println("here stop 540");
-//        }
-//        if ( getCurrentScope().containsKey(clas.getName())) {
-//            return ((ClassOrInterfaceType)getCurrentScope().get("this")).getName() +"." + clas.getName();
-//        } else {
-//            return null;
-//        }
-    }
     
     /**
      * wrap the methods in a dummy class to see if it compiles.  There's a goofy
@@ -2053,7 +2041,7 @@ public class ConvertJavaToJavascript {
                 return indent + doConvert("",objectCreationExpr.getArgs().get(0));
             }
         } else {
-            String qualifiedName= utilQualifyClassName(objectCreationExpr.getType());
+            String qualifiedName= null; // TODO: leftover from Python converter
             if ( qualifiedName!=null ) {
                 return indent + "new " + qualifiedName + "("+ utilFormatExprList(objectCreationExpr.getArgs())+ ")";
             } else {
