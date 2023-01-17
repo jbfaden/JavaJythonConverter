@@ -96,7 +96,7 @@ import java.util.stream.Collectors;
  */
 public class ConvertJavaToPython {
 
-    public static final String VERSION = "20230105a";
+    public static final String VERSION = "20230117a";
     
     public ConvertJavaToPython() {
         this.stack = new Stack<>();
