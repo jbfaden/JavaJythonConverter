@@ -293,8 +293,6 @@ public class ConvertJavaToJavascript {
 //            System.err.println("here");
 //        }
         switch ( simpleName ) {
-            case "foo":
-                result= "foo";
             case "CompilationUnit":
                 result= doConvertCompilationUnit(indent,(CompilationUnit)n);
                 break;
@@ -1162,8 +1160,17 @@ public class ConvertJavaToJavascript {
     }
 
     private String doConvertNameExpr(String indent, NameExpr nameExpr) {
-        if ( getCurrentScopeFields().containsKey(nameExpr.getName()) ) {
-            return indent + theClassName + "." + nameExpr.getName(); //TODO: usually correct, nested classes.
+        if ( getCurrentScope().containsKey(nameExpr.getName()) ) {
+            return nameExpr.getName();
+        } else if ( getCurrentScopeFields().containsKey(nameExpr.getName()) ) {
+            FieldDeclaration decl = getCurrentScopeFields().get(nameExpr.getName());
+            boolean isStatic= ModifierSet.isStatic(decl.getModifiers() );
+            if ( isStatic ) {
+                return indent + theClassName + "." + nameExpr.getName(); //TODO: usually correct, nested classes.
+            } else {
+                return indent + "this" + "." + nameExpr.getName(); //TODO: usually correct, nested classes.
+            }
+            
         } else {
             return indent + nameExpr.getName();
         }
