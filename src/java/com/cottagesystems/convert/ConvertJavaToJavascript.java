@@ -1155,14 +1155,17 @@ public class ConvertJavaToJavascript {
     }
 
     private String doConvertNameExpr(String indent, NameExpr nameExpr) {
+        nameExpr.getBeginLine();
         String name= nameExpr.getName();
         if ( getCurrentScope().containsKey(name) ) {
-            if ( getCurrentScopeFields().containsKey(name) ) {
+            if ( localVariablesStack.peek().containsKey(name) ) {
+                return name;
+            } else if ( getCurrentScopeFields().containsKey(name) ) {
                 FieldDeclaration decl= getCurrentScopeFields().get(name); // The problem is Java will figure out the scope, JavaScript needs the class name
                 if ( ModifierSet.isStatic( decl.getModifiers() ) ) {
                     return theClassName + "." +nameExpr.getName();
                 } else {
-                    return name;
+                    return "this." + name;
                 }
             } else {
                 return name;
