@@ -693,6 +693,7 @@ public class ConvertJavaToJavascript {
     
     // Constants
     private static final ReferenceType STRING_TYPE = ASTHelper.createReferenceType( "String", 0 );
+    private static final ClassOrInterfaceType STRING_TYPE2 = new ClassOrInterfaceType("String");
     
     private static final AnnotationExpr DEPRECATED = new MarkerAnnotationExpr( new NameExpr("Deprecated") );
     
@@ -1239,7 +1240,6 @@ public class ConvertJavaToJavascript {
      * @return 
      */
     private Type guessType( Expression clas ) {
-        ReferenceType STRING = ASTHelper.createReferenceType("String", 0);
         if ( clas instanceof NameExpr ) {
             String clasName= ((NameExpr)clas).getName();
             if ( Character.isUpperCase(clasName.charAt(0)) ) { // Yup, we're assuming that upper case refers to a class
@@ -1273,9 +1273,9 @@ public class ConvertJavaToJavascript {
                 return ASTHelper.BOOLEAN_TYPE;
             }
             if ( be.getOperator()==BinaryExpr.Operator.plus ) { // we automatically convert ints to strings.
-                if ( ( leftType!=null && leftType.equals(STRING) ) ||
-                        ( rightType!=null && rightType.equals(STRING) ) ) {
-                    return STRING;
+                if ( ( leftType!=null && leftType.equals(STRING_TYPE) ) ||
+                        ( rightType!=null && rightType.equals(STRING_TYPE) ) ) {
+                    return STRING_TYPE;
                 }
             }
             
@@ -1316,11 +1316,15 @@ public class ConvertJavaToJavascript {
                 if (  scopeType.toString().equals("Pattern") ) {
                     if ( mce.getName().equals("matcher") ) {
                         return ASTHelper.createReferenceType("Matcher", 0);
+                    } else if ( mce.getName().equals("quote" ) ) {
+                        return STRING_TYPE;
+                    } else if ( mce.getName().equals("split") ) {
+                        return ASTHelper.createReferenceType("String", 1);
                     }
                 } else if ( scopeType.toString().equals("StringBuilder") ) {
                     switch ( mce.getName() ) {
                         case "toString":
-                            return ASTHelper.createReferenceType("String", 0);
+                            return STRING_TYPE;
                     }
                 } else if ( scopeType.toString().equals("String") ) {
                     switch ( mce.getName() ) {
@@ -1333,7 +1337,7 @@ public class ConvertJavaToJavascript {
                         case "replaceFirst":
                         case "toLowerCase": 
                         case "toUpperCase": 
-                            return scopeType;
+                            return STRING_TYPE;
                         case "length": 
                             return ASTHelper.INT_TYPE;
                         case "charAt":
@@ -1515,10 +1519,11 @@ public class ConvertJavaToJavascript {
      * @return doConvert(e) or "str(" + doConvert(e) + ")"
      */
     private String utilAssertStr( Expression e ) {
-        if ( STRING_TYPE.equals(guessType(e)) ) {
+        Type t = guessType(e);
+        if ( STRING_TYPE.equals(t) || STRING_TYPE2.equals(t) ) {
             return doConvert( "", e );
         } else {
-            return "str("+doConvert("",e)+")";
+            return "String("+doConvert("",e)+")";
         }
         
     }
