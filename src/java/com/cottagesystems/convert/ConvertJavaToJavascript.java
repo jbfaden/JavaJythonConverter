@@ -2339,7 +2339,7 @@ public class ConvertJavaToJavascript {
                     return indent + "Math.trunc( "+scastExpr+" )";
                 }
             } else if ( argType.equals( ASTHelper.INT_TYPE ) ) {
-                if ( type.equals("char") ) {
+                if ( type.equals("chr") ) {
                     return indent + "String.fromCharCode( "+scastExpr+" )";
                 }
             }
