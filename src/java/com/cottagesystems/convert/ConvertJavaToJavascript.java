@@ -2006,6 +2006,20 @@ public class ConvertJavaToJavascript {
                         return sb.toString();
                     }
                 } else if ( e1 instanceof NameExpr && getCurrentScopeFields().containsKey(((NameExpr)e1).getName()) ) {
+                    FieldDeclaration fd= getCurrentScopeFields().get(((NameExpr)e1).getName());
+                    if ( fd.getType().equals(ASTHelper.INT_TYPE) && ModifierSet.isStatic( fd.getModifiers() ) ) {
+                        int len= Integer.parseInt( fd.getVariables().get(0).getInit().toString() );
+                        if ( len<15 ) {
+                            StringBuilder sb= new StringBuilder(indent);
+                            sb.append("[0");
+                            for ( int i=1; i<len; i++ ) {
+                                sb.append(",0");
+                            }
+                            sb.append("]");
+                            return sb.toString();
+                        }
+                    }
+                        
                     return indent + "[]";
                 }
             }  
@@ -2369,7 +2383,7 @@ public class ConvertJavaToJavascript {
         sb.append( doConvert( "", foreachStmt.getIterable() ) );
         sb.append(".forEach( function ( ").append(vv).append(" ) {\n ");
         sb.append(  doConvert( indent + s4, foreachStmt.getBody() ) );
-        sb.append( indent ).append("} )");
+        sb.append( indent ).append("}, this )");
         return sb.toString();
     }
 
