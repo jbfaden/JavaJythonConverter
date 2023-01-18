@@ -1360,7 +1360,7 @@ public class ConvertJavaToJavascript {
     
     private boolean utilIsAsciiString( Expression e ) {
         Type rightType = guessType(e);
-        if ( rightType.equals(STRING_TYPE) ) {
+        if ( STRING_TYPE.equals(rightType) ) {
             String s= e.toString();
             boolean isAscii=true;
             for ( int i=0; isAscii && i<s.length(); i++ ) {
@@ -2337,6 +2337,10 @@ public class ConvertJavaToJavascript {
             if ( argType.equals( ASTHelper.DOUBLE_TYPE ) ) {
                 if ( type.equals("int") || type.equals("long") ) {
                     return indent + "Math.trunc( "+scastExpr+" )";
+                }
+            } else if ( argType.equals( ASTHelper.INT_TYPE ) ) {
+                if ( type.equals("char") ) {
+                    return indent + "String.fromCharCode( "+scastExpr+" )";
                 }
             }
             return indent + scastExpr;
