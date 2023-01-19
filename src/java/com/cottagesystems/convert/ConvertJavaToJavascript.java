@@ -1672,6 +1672,8 @@ public class ConvertJavaToJavascript {
                 return indent + aaa + "===" + bbb;
             } else if ( name.equals("contains") ) {
                 return indent +  doConvert( "",clas ) + ".indexOf(" + doConvert("",args.get(0))+")!==-1";
+            } else if ( name.equals("valueOf") ) {
+                return indent +  "new String("+doConvert( "",args.get(0))+")";
             }
         }
         if ( clasType.equals("Character") ) {
