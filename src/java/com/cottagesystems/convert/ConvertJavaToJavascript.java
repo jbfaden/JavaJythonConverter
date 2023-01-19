@@ -455,9 +455,9 @@ public class ConvertJavaToJavascript {
                 result= indent + "*** "+simpleName + "*** " + n.toString() + "*** end "+simpleName + "****";
                 break;
         }
-        if ( result.startsWith("<J2J") ) {
-            System.err.println("Here stop");
-        }
+        //if ( result.contains("join") ) {
+        //    System.err.println("Here stop");
+        //}
         return result;
     }
     
@@ -1716,6 +1716,21 @@ public class ConvertJavaToJavascript {
                     }
                     return "('['+"+js + "+']')";
                 }
+                case "equals": {
+                    additionalImports.put( "function arrayequals( a, b ) { // private\n" +
+                        "    if ( a.length!==b.length ) {\n" +
+                        "        return false;\n" +
+                        "    } else {\n" +
+                        "        for (var i = 0; i<a.length; i++ ) {\n" +
+                        "            if ( a[i]!==b[i] ) {\n" +
+                        "                return false;\n" +
+                        "            }\n" +
+                        "        }\n" +
+                        "        return true;\n" +
+                        "    }\n" +
+                        "}\n", true );
+                    return indent + String.format( "arrayequals( %s, %s )", args.get(0), args.get(1) );
+                }
                 case "asList": 
                     // since in Python we are treating lists and arrays as the same thing, do nothing.
                     return doConvert("",args.get(0));
@@ -1727,16 +1742,16 @@ public class ConvertJavaToJavascript {
                     return indent + "Date.now()";
                 case "arraycopy":
                     additionalImports.put( "function arraycopy( srcPts, srcOff, dstPts, dstOff, size) {  // private\n" +
-"    if (srcPts !== dstPts || dstOff >= srcOff + size) {\n" +
-"        while (--size >= 0)\n" +
-"            dstPts[dstOff++] = srcPts[srcOff++];\n" +
-"    }\n" +
-"    else {\n" +
-"        var tmp = srcPts.slice(srcOff, srcOff + size);\n" +
-"        for (var i = 0; i < size; i++)\n" +
-"            dstPts[dstOff++] = tmp[i];\n" +
-"    } \n" +
-"}", true );
+                        "    if (srcPts !== dstPts || dstOff >= srcOff + size) {\n" +
+                        "        while (--size >= 0)\n" +
+                        "            dstPts[dstOff++] = srcPts[srcOff++];\n" +
+                        "    }\n" +
+                        "    else {\n" +
+                        "        var tmp = srcPts.slice(srcOff, srcOff + size);\n" +
+                        "        for (var i = 0; i < size; i++)\n" +
+                        "            dstPts[dstOff++] = tmp[i];\n" +
+                        "    } \n" +
+                        "}\n", true );
                     String a1= doConvert("",args.get(0));
                     String a2= doConvert("",args.get(1));
                     String a3= doConvert("",args.get(2));
@@ -1789,7 +1804,7 @@ public class ConvertJavaToJavascript {
                     return "sprintf("+doConvert("",args.get(0))+","+utilFormatExprList( args.subList(1,args.size()) ) + ")"; 
                 }
             } else if ( name.equals("join") ) {
-                return doConvert("",args.get(1)) + ".join(" + doConvert("",args.get(0)) + ")";
+                return doConvert("",args.get(0)) + ".join(" + doConvert("",args.get(1)) + ")";
             } else if ( name.equals("split") ) {
                 return doConvert("",clas ) + ".split(" + utilUnquoteReplacement( doConvert("",args.get(0)) ) + ")";
             } else if ( name.equals("replaceAll") ) {
@@ -2117,7 +2132,7 @@ public class ConvertJavaToJavascript {
                                 Type t= guessType(e);
                                 if ( t instanceof ReferenceType 
                                         && t.equals(ASTHelper.createReferenceType(ASTHelper.CHAR_TYPE,1) ) ) {
-                                    return indent + "''.join( "+ doConvert("",e) +")";
+                                    return indent + doConvert("",e) + ".join( \"\" )";
                                 } else if ( t.equals(ASTHelper.createReferenceType("StringBuilder",0) ) ) {
                                     return  doConvert("",e); // these are just strings.
                                 }
