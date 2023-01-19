@@ -56,8 +56,8 @@ public class ConvertJavaToJavascriptServlet extends HttpServlet {
         
         String code= request.getParameter("code");
         String mode;
-        mode= request.getParameter("mode");
-        //mode= "edit";
+        //mode= request.getParameter("mode");
+        mode= "edit";
         
         if ( !"edit".equals(mode) ) {
             mode="view";
