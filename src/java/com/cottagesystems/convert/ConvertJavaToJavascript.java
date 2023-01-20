@@ -2072,9 +2072,14 @@ public class ConvertJavaToJavascript {
                             + "{\n" + doConvert(indent+s4,ifStmt.getElseStmt() ) + indent + "}\n";
                     
                 }
+            } else if ( ifStmt.getElseStmt() instanceof BlockStmt || ifStmt.getElseStmt() instanceof IfStmt ) {
+                return indent + "if (" + doConvert("",ifStmt.getCondition()) +
+                            ") {\n" + doConvert(indent+s4,ifStmt.getThenStmt() ) + indent + "\n" + indent + "} else "
+                            + "{\n" + doConvert(indent+s4,ifStmt.getElseStmt() ) + indent + "}\n";
             } else {
                 return indent + "if (" + doConvert("",ifStmt.getCondition()) +
-                    ") " + doConvert("",ifStmt.getThenStmt() ) + "";
+                    ") " + doConvert("",ifStmt.getThenStmt() ) + "" + 
+                    " else " + doConvert("",ifStmt.getElseStmt() );
             }
         } else {
             if ( ifStmt.getThenStmt() instanceof BlockStmt ) {
@@ -2082,7 +2087,7 @@ public class ConvertJavaToJavascript {
                     ") {\n" + doConvert(indent+s4,ifStmt.getThenStmt() ) + indent + "}\n";
             } else {
                 return indent + "if (" + doConvert("",ifStmt.getCondition()) +
-                    ") " + doConvert("",ifStmt.getThenStmt() ) + "";
+                    ") " + doConvert("",ifStmt.getThenStmt() ) + "\n";
             }
         }
     }
