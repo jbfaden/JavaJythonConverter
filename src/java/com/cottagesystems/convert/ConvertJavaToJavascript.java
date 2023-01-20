@@ -1940,7 +1940,7 @@ public class ConvertJavaToJavascript {
                 }
             } else if ( clasName.equals("System.err") ) {
                 if (name.equals("println") || name.equals("print") ) {
-                    return indent + "console.error(" + utilFormatExprList(args)+")";
+                    return indent + "console.info(" + utilFormatExprList(args)+")";  // console.error is more like a log level.
                 }
             }
             if ( onlyStatic && clasName.equals(theClassName) )  {
