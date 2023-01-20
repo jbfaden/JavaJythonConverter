@@ -1506,7 +1506,15 @@ public class ConvertJavaToJavascript {
                 return indent + "-" + n;
             }
             case not: {
-                return indent + "!" + n;
+                if ( unaryExpr.getExpr() instanceof MethodCallExpr && ((MethodCallExpr)unaryExpr.getExpr()).getName().equals("equals") ) {
+                    if ( n.split("==").length==2 ) {
+                        return indent + n.replaceAll("==","!="); // I will regret this some day.
+                    } else {
+                        return indent + "!(" + n + ")";
+                    }
+                } else {
+                    return indent + "!(" + n + ")";
+                }
             } 
             default:
                 throw new IllegalArgumentException("not supported: "+unaryExpr);
