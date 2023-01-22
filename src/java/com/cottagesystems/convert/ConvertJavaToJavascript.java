@@ -1438,7 +1438,7 @@ public class ConvertJavaToJavascript {
                 return left + " - " + right;
             case divide:
                 if ( isIntegerType( leftType ) && isIntegerType( rightType ) ) {
-                    return "Math.floor(" +left + " / " + right + ")";
+                    return "Math.trunc(" +left + " / " + right + ")";
                 } else {
                     return left + " / " + right;
                 }
