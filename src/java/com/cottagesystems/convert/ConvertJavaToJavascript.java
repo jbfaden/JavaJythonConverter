@@ -1739,7 +1739,7 @@ public class ConvertJavaToJavascript {
                         "        return true;\n" +
                         "    }\n" +
                         "}\n", true );
-                    return indent + String.format( "arrayequals( %s, %s )", args.get(0), args.get(1) );
+                    return indent + String.format( "arrayequals( %s, %s )", doConvert("",args.get(0)), doConvert("",args.get(1)) );
                 }
                 case "asList": 
                     // since in Python we are treating lists and arrays as the same thing, do nothing.
