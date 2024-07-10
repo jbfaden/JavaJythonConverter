@@ -11,7 +11,11 @@ public class MathExprDemo {
         System.out.println(3*4);
         System.out.println(3-4);
         System.out.println(3/4);
+        System.out.println(-3/4);
         System.out.println(3*4+2);
         System.out.println(Math.pow(3,4));
+        System.out.println(Math.atan2(3,4));
+        System.out.println(Math.max(3,4));
+        System.out.println(Math.min(3,4));
     }
 }
