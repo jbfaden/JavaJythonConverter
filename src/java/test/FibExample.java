@@ -15,7 +15,7 @@ public class FibExample {
     char c= 'a';
     System.out.println( c + " the char"); 
 
-    for (int i = 1; i >= n; --i) {
+    for (int i = 1; i < n; i++) {
       System.out.println(firstTerm + ", ");
 
       // compute the next term
