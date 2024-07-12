@@ -933,26 +933,26 @@ public class ConvertJavaToIDL {
         if ( clasType.equals("ArrayList") || clasType.equals("List") ) {
             switch (name) {
                 case "size":
-                    return indent + "len(" + doConvert("",clas) + ")";
+                    return indent + "n_elements(" + doConvert("",clas) + ")";
                 case "add":
                     if ( args.size()==2 ) {
-                        return indent + doConvert("",clas) + ".insert("+doConvert("",args.get(0))+","+doConvert("",args.get(1))+")";
+                        return indent + doConvert("",clas) + ".Add, "+doConvert("",args.get(0))+","+doConvert("",args.get(1));
                     } else {
-                        return indent + doConvert("",clas) + ".append("+doConvert("",args.get(0))+")";
+                        return indent + doConvert("",clas) + ".Add, "+doConvert("",args.get(0))+"";
                     }
                 case "remove":
                     if ( guessType(args.get(0)).equals(ASTHelper.INT_TYPE) ) {
                         String item = doConvert("",clas) + "["+doConvert("",args.get(0))+"]";
-                        return indent + doConvert("",clas) + ".remove(" + item + ")";
+                        return indent + doConvert("",clas) + ".Remove," + item;
                     } else {
-                        return indent + doConvert("",clas) + ".remove(" + doConvert("",args.get(0)) + ")";
+                        return indent + doConvert("",clas) + ".Remove," + doConvert("",args.get(0));
                     }
                 case "get":
                     return indent + doConvert("",clas) + "["+doConvert("",args.get(0))+"]";
                 case "contains":
-                    return indent + "(" + doConvert("",args.get(0)) + ".index("+ doConvert("",args.get(0))+") > -1)";
+                    return indent + "(" + doConvert("",clas) + ".Where("+ doConvert("",args.get(0))+") ne !NULL )";
                 case "indexOf":
-                    return indent + doConvert("",clas) + ".index(" + doConvert("",args.get(0)) + ")";
+                    return indent + doConvert("",clas) + ".Where(" + doConvert("",args.get(0)) + ",COUNT=1)";
                 case "toArray":
                     return indent + doConvert("",clas); // It's already an array (a list really).
                 default:
@@ -1872,7 +1872,7 @@ public class ConvertJavaToIDL {
                     case "EMPTY_SET":
                         return indent + "{}"; // Jython 2.2 does not have sets.
                     case "EMPTY_LIST":
-                        return indent + "[]";
+                        return indent + "list()";
                     default:
                         break;
                 }
@@ -2388,7 +2388,7 @@ public class ConvertJavaToIDL {
                     if ( objectCreationExpr.getType().getName().equals("HashMap") ) { 
                         return indent + "{}";
                     } else if ( objectCreationExpr.getType().getName().equals("ArrayList") ) { 
-                        return indent + "[]";
+                        return indent + "list()";
                     } else if ( objectCreationExpr.getType().getName().equals("HashSet") ) {
                         return indent + "{}"; // to support Jython 2.2, use dictionary for now
                     } else {
@@ -2765,7 +2765,7 @@ public class ConvertJavaToIDL {
             }
         } else {
             scope = ""; // local variable //TODO: review this
-        }
+        }        
         return indent + scope + (scope.length()==0 ? "" : ".") + javaNameToPythonName(s);
 
     }
