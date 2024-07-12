@@ -1157,19 +1157,18 @@ public class ConvertJavaToIDL {
         if ( name.equals("println") && clas instanceof FieldAccessExpr &&
                 ((FieldAccessExpr)clas).getField().equals("err") ) {
             StringBuilder sb= new StringBuilder();
-            additionalImports.put("import sys\n",Boolean.TRUE);
             if (  methodCallExpr.getArgs().get(0) instanceof StringLiteralExpr ) {
                 String s= doConvert( "", methodCallExpr.getArgs().get(0) );
                 String sWithNewLine= s.substring(0,s.length()-1) + "\\n'";
-                sb.append(indent).append( "sys.stderr.write(" ).append(sWithNewLine).append(")");
+                sb.append(indent).append( "printf, -2, " ).append(sWithNewLine).append("");
             } else {
                 String strss;
                 if ( !isStringType( guessType(methodCallExpr.getArgs().get(0)) ) ) {
-                    strss= "str( "+ doConvert( "", methodCallExpr.getArgs().get(0) ) + ")";
+                    strss= "strtrim( "+ doConvert( "", methodCallExpr.getArgs().get(0) ) + ",2)";
                 } else {
                     strss= doConvert( "", methodCallExpr.getArgs().get(0) );
                 }
-                sb.append(indent).append( "sys.stderr.write(" ).append( strss ).append( "+'\\n')" );
+                sb.append(indent).append( "printf, -2, " ).append( strss );
             }
             return sb.toString();
         } else if ( name.equals("println") && clas instanceof FieldAccessExpr &&
@@ -1184,21 +1183,19 @@ public class ConvertJavaToIDL {
             return sb.toString();
         } else if ( name.equals("print") && clas instanceof FieldAccessExpr &&
                 ((FieldAccessExpr)clas).getField().equals("err") ) {
-            additionalImports.put("import sys\n",Boolean.TRUE);
             StringBuilder sb= new StringBuilder();
             String s= doConvert( "", methodCallExpr.getArgs().get(0) );
-            sb.append(indent).append( "sys.stderr.write(" ).append(s).append(")");
+            sb.append(indent).append( "printf, -2, " ).append(s);
             return sb.toString();
         } else if ( name.equals("print") && clas instanceof FieldAccessExpr &&
                 ((FieldAccessExpr)clas).getField().equals("out") ) {
             StringBuilder sb= new StringBuilder();
 
-            additionalImports.put("import sys\n",Boolean.TRUE);
             if (  methodCallExpr.getArgs().get(0) instanceof StringLiteralExpr ) {
                 String s= doConvert( "", methodCallExpr.getArgs().get(0) );
-                sb.append(indent).append( "sys.stdout.write(" ).append( s ).append( ")" );
+                sb.append(indent).append( "printf, -1, " ).append( s );
             } else {
-                sb.append(indent).append( "sys.stdout.write(" ).append( doConvert( "", methodCallExpr.getArgs().get(0) ) ).append( ")" );
+                sb.append(indent).append( "printf, -1, " ).append( doConvert( "", methodCallExpr.getArgs().get(0) ) );
             }    
             return sb.toString();
         } else if ( name.equals("length") && args==null ) {
@@ -1217,24 +1214,23 @@ public class ConvertJavaToIDL {
                     target, targetIndexs, source, sourceIndexs ); 
             return indent + j;
         } else if ( name.equals("exit") && clasType.equals("System") ) {
-            additionalImports.put( "import sys\n", Boolean.TRUE );
-            return indent + "sys.exit("+ doConvert("",methodCallExpr.getArgs().get(0)) + ")";
+            return indent + "exit, status="+ doConvert("",methodCallExpr.getArgs().get(0));
 
         } else {
             if ( clasType.equals("System") && name.equals("currentTimeMillis") ) {
-                additionalImports.put("from java.lang import System\n",Boolean.FALSE);
+                return indent + "( systime(1) * 1000 )";
             } else if ( clasType.equals("Double") ) {
-                additionalImports.put("from java.lang import Double\n",Boolean.FALSE);
+                //additionalImports.put("from java.lang import Double\n",Boolean.FALSE);
             } else if ( clasType.equals("Integer") ) {
-                additionalImports.put("from java.lang import Integer\n",Boolean.FALSE);
+                //additionalImports.put("from java.lang import Integer\n",Boolean.FALSE);
             } else if ( clasType.equals("Short") ) {
-                additionalImports.put("from java.lang import Short\n",Boolean.FALSE);
+                //additionalImports.put("from java.lang import Short\n",Boolean.FALSE);
             } else if ( clasType.equals("Character") ) {
-                additionalImports.put("from java.lang import Character\n",Boolean.FALSE);
+                //additionalImports.put("from java.lang import Character\n",Boolean.FALSE);
             } else if ( clasType.equals("Byte") ) {
-                additionalImports.put("from java.lang import Byte\n",Boolean.FALSE);
+                //additionalImports.put("from java.lang import Byte\n",Boolean.FALSE);
             } else if ( clasType.equals("IllegalArgumentException") ) {
-                additionalImports.put("from java.lang import IllegalArgumentException\n",Boolean.FALSE);
+                //additionalImports.put("from java.lang import IllegalArgumentException\n",Boolean.FALSE);
             }
             
             if ( javaImports.keySet().contains(clasType) ) {
@@ -1344,7 +1340,7 @@ public class ConvertJavaToIDL {
                 result= indent + "None";
                 break;
             case "BooleanLiteralExpr":
-                result= indent + ( ((BooleanLiteralExpr)n).getValue() ? "True" : "False" );
+                result= indent + ( ((BooleanLiteralExpr)n).getValue() ? "1" : "0" );
                 break;
             case "LongLiteralExpr":
                 result= indent + ((LongLiteralExpr)n).getValue().replace("L",""); // all ints are longs.
@@ -1624,6 +1620,7 @@ public class ConvertJavaToIDL {
         if ( ifStmt.getThenStmt() instanceof BlockStmt ) {
             b.append(" then begin\n");
             b.append( doConvert(indent,ifStmt.getThenStmt() ) );
+            b.append( indent ) .append( "endif ");
         } else {
             b.append(" then ");
             b.append( doConvert("",ifStmt.getThenStmt() ) ).append("\n");
@@ -1634,13 +1631,13 @@ public class ConvertJavaToIDL {
             } else {
                 b.append(indent).append("else");
                 if ( ifStmt.getElseStmt() instanceof BlockStmt ) {
-                    b.append( " begin\n");
+                    b.append(" begin\n");
                     b.append( doConvert(indent,ifStmt.getElseStmt()) );
-                    b.append( "endif\n" );
+                    b.append(indent).append( "endelse\n" );
                 } else {
                     b.append(" begin ");
                     b.append( doConvert("",ifStmt.getElseStmt() ) ).append("\n");
-                    b.append(" endif\n ");
+                    b.append(" endelse\n ");
                 }
             }
         }
@@ -1811,7 +1808,7 @@ public class ConvertJavaToIDL {
         if ( returnStmt.getExpr()==null ) {
             return indent + "return";
         } else {
-            return indent + "return " + doConvert("", returnStmt.getExpr());
+            return indent + "return, " + doConvert("", returnStmt.getExpr());
         }
     }
 
@@ -2119,9 +2116,9 @@ public class ConvertJavaToIDL {
         }
 
         if ( methodDeclaration.getType() instanceof japa.parser.ast.type.VoidType ) {
-            sb.append( indent ).append( "pro " ).append( pythonName ) .append(", ");
+            sb.append( indent ).append( "pro " ).append( pythonName );
         } else {
-            sb.append( indent ).append( "function " ).append( pythonName ) .append(", ");
+            sb.append( indent ).append( "function " ).append( pythonName );
         }
         
         boolean comma; 
@@ -2131,7 +2128,7 @@ public class ConvertJavaToIDL {
             //sb.append("self");
             //comma= true;
         } else {
-            comma = false;
+            comma = true;
         }
 
         pushScopeStack(false);
