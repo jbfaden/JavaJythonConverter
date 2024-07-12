@@ -1830,11 +1830,10 @@ public class ConvertJavaToIDL {
             } else {
                 item= "None";
             }
-            if ( arrayCreationExpr.getDimensions().get(0) instanceof BinaryExpr ) {
-                return "["+item+"] * (" + doConvert( "", arrayCreationExpr.getDimensions().get(0) ) + ")"; //TODO: might not be necessary
-            } else {
-                return "["+item+"] * " + doConvert( "", arrayCreationExpr.getDimensions().get(0) ) + ""; //TODO: might not be necessary
+            if ( arrayCreationExpr.getDimensions().size()>1 ) {
+                throw new IllegalStateException("unable to handle multi-dimensional arrays");
             }
+            return "replicate("+item+ ","+doConvert( "", arrayCreationExpr.getDimensions().get(0) ) + ")" ;
             
         }
     }
@@ -1859,7 +1858,7 @@ public class ConvertJavaToIDL {
                 t= getCurrentScope().get(inContext);
             }
             if ( t!=null && t instanceof ReferenceType && ((ReferenceType)t).getArrayCount()>0 ) { 
-                return indent + "len("+ s + ")";
+                return indent + "n_elements("+ s + ")";
             }
         }
         if ( onlyStatic && s.equals(classNameStack.peek()) ) {
