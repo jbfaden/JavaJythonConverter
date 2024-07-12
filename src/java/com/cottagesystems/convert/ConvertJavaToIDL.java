@@ -847,7 +847,7 @@ public class ConvertJavaToIDL {
                 String n= doConvert("",clas);
                 String i0= doConvert("",args.get(0));
                 String ins= doConvert("",args.get(1));
-                return indent + n + " = ''.join( ( " + n + "[0:"+ i0 + "], "+ins+", " + n + "["+i0+":] ) ) # J2J expr -> assignment"; // expr becomes assignment, this will cause problems
+                return indent + n + " = ''.join( ( " + n + "[0:"+ i0 + "], "+ins+", " + n + "["+i0+":] ) ) ; J2J expr -> assignment"; // expr becomes assignment, this will cause problems
             }
         }
         if ( clasType.equals("Collections") ) {
@@ -869,26 +869,26 @@ public class ConvertJavaToIDL {
             switch (name) {
                 case "pow":
                     if ( args.get(1) instanceof IntegerLiteralExpr ) {
-                        return doConvert(indent,args.get(0)) + "**"+ doConvert(indent,args.get(1));
+                        return doConvert(indent,args.get(0)) + "^"+ doConvert(indent,args.get(1));
                     } else {
-                        return doConvert(indent,args.get(0)) + "**("+ doConvert(indent,args.get(1))+")";
+                        return doConvert(indent,args.get(0)) + "^("+ doConvert(indent,args.get(1))+")";
                     }
                 case "max":
-                    return name + "(" + doConvert(indent,args.get(0)) + ","+ doConvert(indent,args.get(1))+")";
+                    return "(" + doConvert(indent,args.get(0)) + ">"+ doConvert(indent,args.get(1))+")";
                 case "min":
-                    return name + "(" + doConvert(indent,args.get(0)) + ","+ doConvert(indent,args.get(1))+")";
+                    return "(" + doConvert(indent,args.get(0)) + "<"+ doConvert(indent,args.get(1))+")";
                 case "floorDiv":
-                    return doConvert(indent,args.get(0)) + "//" + doConvert(indent,args.get(1));
+                    return doConvert(indent,args.get(0)) + "/" + doConvert(indent,args.get(1));
                 case "floorMod":
                     String x= doConvert(indent,args.get(0));
                     String y= doConvert(indent,args.get(1));
-                    return "(" + x + " - " + y + " * ( "+x+"//"+y + ") )";
+                    return "(" + x + " - " + y + " * ( "+x+"/"+y + ") )";
                 case "floor":
                 case "ceil":
-                    additionalImports.put("import math\n", true);
-                    return "math." + name + "(" + doConvert(indent,args.get(0)) + ")";
                 case "round":
                     return name + "(" + doConvert(indent,args.get(0)) + ")";
+                case "atan2":
+                    return "atan" + "(" + doConvert(indent,args.get(0)) + ","+doConvert(indent,args.get(1)) + ")";
                 default:
                     break;
             }
@@ -965,7 +965,7 @@ public class ConvertJavaToIDL {
         }
         
         if ( clasType.equals("Logger") ) {
-            return indent + "# J2J (logger) "+methodCallExpr.toString();
+            return indent + "; J2J (logger) "+methodCallExpr.toString();
         }
         if ( clasType.equals("String") ) {
             switch (name) {
@@ -1142,7 +1142,7 @@ public class ConvertJavaToIDL {
                 if ( clas instanceof MethodCallExpr ) {
                     return doConvert("",clas).replaceAll("match", "search") + "!=None";
                 } else {
-                    return doConvert("",clas) + "!=None  #j2j: USE search not match above";
+                    return doConvert("",clas) + "!=None  ;J2J: USE search not match above";
                 }
             }
         }
@@ -1526,7 +1526,7 @@ public class ConvertJavaToIDL {
             }
             String[] thelines= aline.split("\\n");
             for ( String l : thelines ) { // comment before line
-                if ( !l.trim().startsWith("#") ) lines++;
+                if ( !l.trim().startsWith(";") ) lines++;
             }
         }
         if ( lines==0 ) {
@@ -1555,7 +1555,7 @@ public class ConvertJavaToIDL {
             if ( v.getInit()!=null && v.getInit().toString().startsWith("Logger.getLogger") ) {
                 //addLogger();
                 localVariablesStack.peek().put(s,ASTHelper.createReferenceType("Logger",0) );
-                return indent + "# J2J: "+variableDeclarationExpr.toString().trim();
+                return indent + ";J2J: "+variableDeclarationExpr.toString().trim();
             }
             if ( camelToSnake ) {
                 String news= camelToSnakeAndRegister(s);
@@ -1587,7 +1587,7 @@ public class ConvertJavaToIDL {
                 } else {
                     if ( v.getInit() instanceof ObjectCreationExpr && ((ObjectCreationExpr)v.getInit()).getAnonymousClassBody()!=null ) {
                         for ( BodyDeclaration bd: ((ObjectCreationExpr)v.getInit()).getAnonymousClassBody() ) {
-                            b.append(doConvert( indent+"# J2J:", bd ) );
+                            b.append(doConvert( indent+";J2J:", bd ) );
                         }
                     }
                     b.append( indent ).append(s).append(" = ").append(doConvert("",v.getInit()) );
@@ -1621,7 +1621,7 @@ public class ConvertJavaToIDL {
         //}
         if ( ifStmt.getCondition() instanceof MethodCallExpr && 
                 ((MethodCallExpr)ifStmt.getCondition()).getName().equals("isLoggable") ) {
-            return indent + "# J2J: if "+ifStmt.getCondition() + " ... removed";
+            return indent + ";J2J: if "+ifStmt.getCondition() + " ... removed";
         }
         b.append(indent).append("if ");
         b.append( doConvert("", ifStmt.getCondition() ) );
@@ -1721,7 +1721,7 @@ public class ConvertJavaToIDL {
                     b.append(indent).append( doConvert( "", e ) ).append( "\n" );
                 });
             }
-            b.append( indent ).append("while ").append(doConvert( "", forStmt.getCompare() )).append(" do begin  # J2J for loop\n");        
+            b.append( indent ).append("while ").append(doConvert( "", forStmt.getCompare() )).append(" do begin  ; J2J for loop\n");        
             usedWhile=true;
         }
         if ( forStmt.getBody() instanceof ExpressionStmt ) {
@@ -1893,22 +1893,22 @@ public class ConvertJavaToIDL {
     private String doConvertUnaryExpr(String indent, UnaryExpr unaryExpr) {
          switch (unaryExpr.getOperator()) {
             case preIncrement: {
-                additionalClasses.put("# J2J: increment used at line "+unaryExpr.getBeginLine()+", which needs human study.\n",true );
+                additionalClasses.put(";J2J: increment used at line "+unaryExpr.getBeginLine()+", which needs human study.\n",true );
                 String n= doConvert("",unaryExpr.getExpr());
                 return indent + n + " = " + n + " + 1";
             }
             case preDecrement: {
-                additionalClasses.put("# J2J: decrement used at line "+unaryExpr.getBeginLine()+", which needs human study.\n",true );
+                additionalClasses.put(";J2J: decrement used at line "+unaryExpr.getBeginLine()+", which needs human study.\n",true );
                 String n= doConvert("",unaryExpr.getExpr());
                 return indent + n + " = " + n + " - 1";
             }
             case posIncrement: {
-                additionalClasses.put("# J2J: increment used at line "+unaryExpr.getBeginLine()+", which needs human study.\n",true );
+                additionalClasses.put(";J2J: increment used at line "+unaryExpr.getBeginLine()+", which needs human study.\n",true );
                 String n= doConvert("",unaryExpr.getExpr());
                 return indent + n + " = " + n + " + 1";
             }
             case posDecrement: {
-                additionalClasses.put("# J2J: decrement used at line "+unaryExpr.getBeginLine()+", which needs human study.\n",true );
+                additionalClasses.put(";J2J: decrement used at line "+unaryExpr.getBeginLine()+", which needs human study.\n",true );
                 String n= doConvert("",unaryExpr.getExpr());
                 return indent + n + " = " + n + " - 1";
             }
@@ -2121,12 +2121,19 @@ public class ConvertJavaToIDL {
         } else {
             pythonName= methodName;
         }
-        sb.append( indent ).append( "def " ).append( pythonName ) .append("(");
+
+        if ( methodDeclaration.getType() instanceof japa.parser.ast.type.VoidType ) {
+            sb.append( indent ).append( "pro " ).append( pythonName ) .append(", ");
+        } else {
+            sb.append( indent ).append( "function " ).append( pythonName ) .append(", ");
+        }
+        
         boolean comma; 
         
         if ( !isStatic ) {
-            sb.append("self");
-            comma= true;
+            throw new IllegalArgumentException("only static functions are supported");
+            //sb.append("self");
+            //comma= true;
         } else {
             comma = false;
         }
@@ -2151,7 +2158,7 @@ public class ConvertJavaToIDL {
                 localVariablesStack.peek().put( name, p.getType() );
             }
         }
-        sb.append( "):\n" );
+        sb.append( "\n" );
         
         if ( methodDeclaration.getBody()!=null ) {
             sb.append( doConvert( indent, methodDeclaration.getBody() ) );  
@@ -2164,6 +2171,7 @@ public class ConvertJavaToIDL {
             sb.append(indent).append(pythonName).append(" = staticmethod(").append(pythonName).append(")");
             sb.append(indent).append("\n");
         }
+        sb.append("end");
         return sb.toString();
     }
     
@@ -2295,7 +2303,7 @@ public class ConvertJavaToIDL {
                     ( statements.get(statements.size()-1) instanceof ThrowStmt ) ) ) {
                 sb.append(indent).append(s4).append("### Switch Fall Through Not Implemented ###\n");
                 for ( Statement s: statements ) {
-                    sb.append("#").append(doConvert(s4+indent, s )).append("\n");
+                    sb.append(";").append(doConvert(s4+indent, s )).append("\n");
                 }
             } else {
                 if ( statements.get(statements.size()-1) instanceof BreakStmt ) {
@@ -2331,7 +2339,7 @@ public class ConvertJavaToIDL {
             if ( i>-1 && s.substring(0,i).trim().length()==0 ) {
                 s= s.substring(i+1);
             }
-            b.append(indent).append("#").append(s).append("\n");
+            b.append(indent).append(";").append(s).append("\n");
         }
         return b.toString();
     }
@@ -2379,7 +2387,7 @@ public class ConvertJavaToIDL {
                     StringBuilder sb= new StringBuilder();
                     String body= doConvert( indent, objectCreationExpr.getAnonymousClassBody().get(0) );
                     sb.append(indent).append(objectCreationExpr.getType()).append("(").append(utilFormatExprList(objectCreationExpr.getArgs())).append(")"); 
-                    sb.append("*** # J2J: This is extended in an anonymous inner class ***");
+                    sb.append("*** ; J2J: This is extended in an anonymous inner class ***");
                     return sb.toString();
                 } else {
                     if ( objectCreationExpr.getType().getName().equals("HashMap") ) { 
@@ -2498,7 +2506,7 @@ public class ConvertJavaToIDL {
 
     public static void main(String[] args ) throws ParseException, FileNotFoundException, IOException {
         ConvertJavaToIDL c= new ConvertJavaToIDL();
-        c.setOnlyStatic(false);
+        c.setOnlyStatic(true);
         c.setUnittest(false);
 //        System.err.println("----");
 //        System.err.println(c.doConvert("{ int x= Math.pow(3,5); }"));
