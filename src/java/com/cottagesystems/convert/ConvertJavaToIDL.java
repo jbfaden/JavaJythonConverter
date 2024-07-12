@@ -547,8 +547,10 @@ public class ConvertJavaToIDL {
                         return doConvert("",mce.getScope()) + " lt " + doConvert("",mce.getArgs().get(0));
                     case lessEquals:
                         return doConvert("",mce.getScope()) + " le " + doConvert("",mce.getArgs().get(0));
-                    case equals:                    
+                    case equals:
                         return doConvert("",mce.getScope()) + " eq " + doConvert("",mce.getArgs().get(0));
+                    case notEquals:
+                        return doConvert("",mce.getScope()) + " ne " + doConvert("",mce.getArgs().get(0));
                     default:
                         break;
                 }
@@ -942,17 +944,18 @@ public class ConvertJavaToIDL {
                     }
                 case "remove":
                     if ( guessType(args.get(0)).equals(ASTHelper.INT_TYPE) ) {
-                        String item = doConvert("",clas) + "["+doConvert("",args.get(0))+"]";
-                        return indent + doConvert("",clas) + ".Remove," + item;
-                    } else {
                         return indent + doConvert("",clas) + ".Remove," + doConvert("",args.get(0));
+                    } else {
+                        additionalClasses.put("function indexOf, l, e\n  r= l.Where(e,count=c)\n  if c eq 0 then return, -1 else return, r[0]\n",true);
+                        return indent + doConvert("",clas) + ".Remove, indexOf(" + doConvert("",clas)+","+ doConvert("",args.get(0)) + ")";
                     }
                 case "get":
                     return indent + doConvert("",clas) + "["+doConvert("",args.get(0))+"]";
                 case "contains":
                     return indent + "(" + doConvert("",clas) + ".Where("+ doConvert("",args.get(0))+") ne !NULL )";
                 case "indexOf":
-                    return indent + doConvert("",clas) + ".Where(" + doConvert("",args.get(0)) + ",COUNT=1)";
+                    additionalClasses.put("function indexOf, l, e\n  r= l.Where(e,count=c)\n  if c eq 0 then return, -1 else return, r[0]\n",true);
+                    return indent + "indexOf(" + doConvert("",clas) + "," + doConvert("",args.get(0)) + ")";
                 case "toArray":
                     return indent + doConvert("",clas); // It's already an array (a list really).
                 default:

@@ -14,6 +14,7 @@ public class ArrayListDemo {
         list.add("apple");
         list.add("bear");
         list.add("catcher");
+        if (list.contains("k") ) System.err.println("it contains");
         System.out.println("list size "+list.size() );
         System.out.println("list index "+list.indexOf("catcher"));
         list.remove("apple");
