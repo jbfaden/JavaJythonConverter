@@ -1142,7 +1142,11 @@ public class ConvertJavaToIDL {
                 }
             }
         }
-
+        if ( clasType.equals("Thread") 
+                && name.equals("sleep") ) {
+            return indent + "wait, "+ "(" + doConvert("",args.get(0) ) + "/1000.)";
+        }
+        
         if ( unittest && clas==null ) {
             if ( name.equals("assertEquals") || name.equals("assertArrayEquals") ) {
                 StringBuilder sb= new StringBuilder();
@@ -1159,8 +1163,7 @@ public class ConvertJavaToIDL {
             StringBuilder sb= new StringBuilder();
             if (  methodCallExpr.getArgs().get(0) instanceof StringLiteralExpr ) {
                 String s= doConvert( "", methodCallExpr.getArgs().get(0) );
-                String sWithNewLine= s.substring(0,s.length()-1) + "\\n'";
-                sb.append(indent).append( "printf, -2, " ).append(sWithNewLine).append("");
+                sb.append(indent).append( "printf, -2, " ).append(s).append("");
             } else {
                 String strss;
                 if ( !isStringType( guessType(methodCallExpr.getArgs().get(0)) ) ) {
@@ -1218,7 +1221,7 @@ public class ConvertJavaToIDL {
 
         } else {
             if ( clasType.equals("System") && name.equals("currentTimeMillis") ) {
-                return indent + "( systime(1) * 1000 )";
+                return indent + "( systime(1)*1000. )";
             } else if ( clasType.equals("Double") ) {
                 //additionalImports.put("from java.lang import Double\n",Boolean.FALSE);
             } else if ( clasType.equals("Integer") ) {
