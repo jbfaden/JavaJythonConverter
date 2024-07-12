@@ -589,11 +589,7 @@ public class ConvertJavaToIDL {
             case minus:
                 return left + " - " + right;
             case divide:
-                if ( isIntegerType( leftType ) && isIntegerType( rightType ) ) {
-                    return left + " // " + right;
-                } else {
                     return left + " / " + right;
-                }
             case times:
                 return left + " * " + right;
             case greater:
