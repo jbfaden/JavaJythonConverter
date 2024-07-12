@@ -984,37 +984,40 @@ public class ConvertJavaToIDL {
                         break;
                     }
                 case "substring":
-                    if ( args.size()==2 ) {
-                        return doConvert(indent,clas)+"["+ doConvert("",args.get(0)) + ":"+ doConvert("",args.get(1)) +"]";
-                    } else {
-                        return doConvert(indent,clas)+"["+ doConvert("",args.get(0)) +":]";
+                    if ( args.size()==1 ) {
+                        return "strmid("+doConvert(indent,clas)+","+ doConvert("",args.get(0))+")";
+                    } else if ( args.size()==2 ) {
+                        return "strmid("+doConvert(indent,clas)+","+ doConvert("",args.get(0)) +","+ doConvert("",args.get(1));
                     }
+                case "length":
+                    return "strlen("+doConvert(indent,clas)+")";
                 case "indexOf":
                     if ( args.size()==1 ) {
-                        return doConvert(indent,clas)+".find("+ doConvert("",args.get(0)) + ")";
+                        return "strpos(" + doConvert(indent,clas)+","+ doConvert("",args.get(0)) + ")";
                     } else {
-                        return doConvert(indent,clas)+".find("+ doConvert("",args.get(0)) + "," + doConvert("",args.get(1))+")";
+                        return "strpos(" + doConvert(indent,clas)+","+ doConvert("",args.get(0)) + "," + doConvert("",args.get(1))+")";
                     }
                 case "lastIndexOf":
                     if ( args.size()==1 ) {
-                        return doConvert(indent,clas)+".rfind("+ doConvert("",args.get(0)) + ")";
+                        return "strpos(" + doConvert(indent,clas)+","+ doConvert("",args.get(0)) + ",/REVERSE_SEARCH)";
                     } else {
-                        return doConvert(indent,clas)+".rfind("+ doConvert("",args.get(0)) + ",0," + doConvert("",args.get(1))+")";
+                        return "strpos(" + doConvert(indent,clas)+","+ doConvert("",args.get(0)) + "," + doConvert("",args.get(1))+",/REVERSE_SEARCH)";
                     }                    
                 case "contains":
-                    return doConvert(indent,args.get(0)) + " in " + doConvert(indent,clas);
+                    return "(strpos("+ doConvert(indent,clas)+","+ doConvert("",args.get(0)) + ") ne -1)";
                 case "toUpperCase":
                     return "strupcase( "+doConvert(indent,clas) + ")";
                 case "toLowerCase":
                     return "strlowcase( "+doConvert(indent,clas) + " )";
                 case "charAt":
-                    return indent + doConvert(indent,clas)+".charAt("+ doConvert("",args.get(0)) +")";
+                    return "strmid("+doConvert(indent,clas)+","+ doConvert("",args.get(0)) +",1)";
                 case "startsWith":
-                    return doConvert(indent,clas)+".startswith("+ utilFormatExprList(args) +")";
+                    return "("+doConvert(indent,clas)+")"+".startswith("+ utilFormatExprList(args) +")";
                 case "endsWith":
                     return doConvert(indent,clas)+".endswith("+ utilFormatExprList(args) +")";
                 case "equalsIgnoreCase":
-                    return doConvert(indent,clas)+".lower() eq "+ utilFormatExprList(args) +".lower()";
+                    return "strcmp(" + doConvert(indent,clas)+","+ utilFormatExprList(args) +",/FOLD_CASE)";
+                    
                 case "trim":
                     return doConvert(indent,clas)+".strip()";
                 case "replace":
@@ -1022,10 +1025,9 @@ public class ConvertJavaToIDL {
                     String replac = doConvert("",args.get(1));
                     return doConvert(indent,clas)+".replace("+search+", "+replac+")";
                 case "replaceAll":
-                    additionalImports.put("import re\n",Boolean.TRUE);
                     search= doConvert("",args.get(0));
                     replac= utilUnquoteReplacement( doConvert("",args.get(1)) );
-                    return indent + "re.sub("+search+", "+replac+", "+doConvert("",clas)+")";
+                    return indent + "StrJoin( StrSplit( "+ doConvert(indent,clas) + "," + search + ",/extract ), "+replac + ")";
                 case "replaceFirst":
                     search= doConvert("",args.get(0));
                     replac= utilUnquoteReplacement( doConvert("",args.get(1)) );
@@ -1205,7 +1207,7 @@ public class ConvertJavaToIDL {
             }    
             return sb.toString();
         } else if ( name.equals("length") && args==null ) {
-            return indent + "len("+ doConvert("",clas)+")";
+            return indent + "length("+ doConvert("",clas)+")";
         } else if ( name.equals("equals") && args.size()==1 ) {
             return indent + doConvert(indent,clas)+"=="+ utilFormatExprList(args);
         } else if ( name.equals("arraycopy") && clasType.equals("System") ) {
