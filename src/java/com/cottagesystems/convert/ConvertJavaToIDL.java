@@ -1561,12 +1561,7 @@ public class ConvertJavaToIDL {
                 String news= camelToSnakeAndRegister(s);
                 s= news;
             }
-            if ( s.equals("len") ) {
-                String news= "lenJ2J";
-                nameMapForward.put( s, news );
-                nameMapReverse.put( news, s );
-                s= news;
-            }
+            // TODO: we should guard against the many reserved words in IDL, like switch
             if ( v.getInit()!=null 
                     && ( v.getInit() instanceof ArrayInitializerExpr ) 
                     && ( variableDeclarationExpr.getType() instanceof PrimitiveType ) ) {
@@ -2253,75 +2248,31 @@ public class ConvertJavaToIDL {
 
     
     private String doConvertSwitchStmt(String indent, SwitchStmt switchStmt) {
-        String selector= doConvert( "",switchStmt.getSelector() );
-        StringBuilder sb= new StringBuilder();
-        boolean iff= true;
-        int nses= switchStmt.getEntries().size();
-        List<Expression> labels= new ArrayList<>();
-        for ( int ises = 0; ises<nses; ises++ ) {
-            SwitchEntryStmt ses = switchStmt.getEntries().get(ises);
-            List<Statement> statements= ses.getStmts();
-            if ( statements==null ) {
-                // fall-through not supported
-                //sb.append("# fall through not supported, need or in if test\n");
-                labels.add(ses.getLabel());
-                continue;
-            }
-            
-            if ( iff ) {
-                StringBuilder cb= new StringBuilder();
-                for ( Expression l : labels ) {
-                    cb.append(selector).append("==").append(doConvert("",l)).append(" or ");
-                }
-                cb.append(selector).append("==").append(ses.getLabel());
-                sb.append(indent).append("if ").append(cb.toString()).append(":\n");
-                iff=false;
+         StringBuilder b= new StringBuilder();
+        b.append( indent ).append( "switch " );
+        b.append( doConvert("",switchStmt.getSelector()) ).append(" of\n");
+        String nextIndent= indent + s4;
+        String nextNextIndent = nextIndent + s4;
+        for ( SwitchEntryStmt ses: switchStmt.getEntries() ) {
+            Expression label= ses.getLabel();
+            String slabel;
+            if ( label==null ) {
+                b.append( nextIndent ).append( "else:\n");
             } else {
-                StringBuilder cb= new StringBuilder();
-                for ( Expression l : labels ) {
-                    cb.append(selector).append("==").append(doConvert("",l)).append(" or ");
-                }
-                if ( ses.getLabel()!=null ) {
-                    cb.append(selector).append("==").append(ses.getLabel());
-                    sb.append(indent).append("elif ").append(cb.toString()).append(":\n");
-                } else {
-                    if ( labels.size()>0 ) {
-                        sb.append(indent).append("elif ").append(cb.substring(0,cb.length()-4)).append(":\n");
-                    } else {
-                        sb.append(indent).append("else:\n");
-                    }
-                }   
+                slabel= doConvert("",ses.getLabel());
+                b.append( nextIndent ).append( "").append( slabel ).append(": begin\n");
             }
             
-            labels.clear();
-            
-            if ( ses.getLabel()==null && ises!=(nses-1) ) {
-                throw new IllegalArgumentException("default must be last of switch statement");
-            }
-            if ( ses.getLabel()!=null && !( ( statements.get(statements.size()-1) instanceof BreakStmt ) ||
-                    ( statements.get(statements.size()-1) instanceof ReturnStmt ) ||
-                    ( statements.get(statements.size()-1) instanceof ThrowStmt ) ) ) {
-                sb.append(indent).append(s4).append("### Switch Fall Through Not Implemented ###\n");
-                for ( Statement s: statements ) {
-                    sb.append(";").append(doConvert(s4+indent, s )).append("\n");
+            if ( ses.getStmts()!=null ) {
+                for ( Statement s : ses.getStmts() ) {
+                    b.append( doConvert( nextNextIndent,s) );
+                    b.append( "\n" );
                 }
-            } else {
-                if ( statements.get(statements.size()-1) instanceof BreakStmt ) {
-                    if ( statements.size()==1 ) {
-                        sb.append(indent).append(s4).append("pass\n");
-                    }
-                    for ( Statement s: statements.subList(0,statements.size()-1) ) {
-                        sb.append(doConvert(indent + s4, s )).append("\n");
-                    }
-                } else {
-                    for ( Statement s: statements ) {
-                        sb.append(doConvert(indent+s4, s )).append("\n");
-                    }
-                }
-
             }
+            b.append( nextIndent ).append("end\n");
         }
-        return sb.toString();
+        b.append( indent ).append("end\n");
+        return b.toString();
     }
 
     private static String utilRewriteComments(String indent, Comment comments) {
