@@ -1003,7 +1003,11 @@ public class ConvertJavaToPython {
                         StringBuilder sb= new StringBuilder();
                         sb.append(indent).append( doConvert("",args.get(0)) ).append(" % ");
                         if ( args.size()==2 ) {
-                            sb.append( doConvert( "", args.get(1) ) );
+                            if ( args.get(1) instanceof BinaryExpr ) {
+                                sb.append("(").append(doConvert( "", args.get(1) )).append(")");
+                            } else {
+                                sb.append( doConvert( "", args.get(1) ) );
+                            }
                         } else {
                             sb.append("(");
                             sb.append( utilFormatExprList( args.subList(1, args.size() ) ) );
