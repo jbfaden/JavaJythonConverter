@@ -876,7 +876,7 @@ public class ConvertJavaToPython {
                 String n= doConvert("",clas);
                 String i0= doConvert("",args.get(0));
                 String ins= doConvert("",args.get(1));
-                return indent + n + " = ''.join( ( " + n + "[0:"+ i0 + "], "+ins+", " + n + "["+i0+":] ) ) # J2J expr -> assignment"; // expr becomes assignment, this will cause problems
+                return indent + n + " = ''.join( ( " + n + "[0:"+ i0 + "], "+ins+", " + n + "["+i0+":] ) )  # J2J expr -> assignment"; // expr becomes assignment, this will cause problems
             }
         }
         if ( clasType.equals("Collections") ) {
@@ -1048,7 +1048,7 @@ public class ConvertJavaToPython {
                 case "endsWith":
                     return doConvert(indent,clas)+".endswith("+ utilFormatExprList(args) +")";
                 case "equalsIgnoreCase":
-                    return doConvert(indent,clas)+".lower()=="+ utilFormatExprList(args) +".lower()";
+                    return doConvert(indent,clas)+".lower() == "+ utilFormatExprList(args) +".lower()";
                 case "trim":
                     return doConvert(indent,clas)+".strip()";
                 case "replace":
@@ -1127,7 +1127,7 @@ public class ConvertJavaToPython {
                     Type t2= guessType(args.get(1));
                     if ( t1!=null && t1.equals(ASTHelper.createReferenceType(ASTHelper.INT_TYPE,1)) 
                             && t2!=null && t2.equals(ASTHelper.createReferenceType(ASTHelper.INT_TYPE,1)) ) {
-                        sb.append(indent).append(doConvert("",args.get(0))).append("==");
+                        sb.append(indent).append(doConvert("",args.get(0))).append(" == ");
                         sb.append(doConvert("",args.get(1)));
                         return sb.toString();        
                     }
@@ -1185,7 +1185,7 @@ public class ConvertJavaToPython {
         }
         if ( clasType.equals("Matcher") ) {
             if ( name.equals("matches") ) {
-                return doConvert("",clas) + "!=None";
+                return doConvert("",clas) + " != None";
             } else if ( name.equals("find") ) {
                 if ( clas instanceof MethodCallExpr ) {
                     return doConvert("",clas).replaceAll("match", "search") + "!=None";
@@ -1267,7 +1267,7 @@ public class ConvertJavaToPython {
         } else if ( name.equals("length") && args==null ) {
             return indent + "len("+ doConvert("",clas)+")";
         } else if ( name.equals("equals") && args.size()==1 ) {
-            return indent + doConvert(indent,clas)+"=="+ utilFormatExprList(args);
+            return indent + doConvert(indent,clas)+" == "+ utilFormatExprList(args);
         } else if ( name.equals("arraycopy") && clasType.equals("System") ) {
             String target = doConvert( "", methodCallExpr.getArgs().get(2) );
             String source = doConvert( "", methodCallExpr.getArgs().get(0) );
@@ -1699,8 +1699,8 @@ public class ConvertJavaToPython {
             b.append(":\n");
             b.append( doConvert(indent,ifStmt.getThenStmt() ) );
         } else {
-            b.append(": ");
-            b.append( doConvert("",ifStmt.getThenStmt() ) ).append("\n");
+            b.append(":\n");
+            b.append( doConvert(indent+s4,ifStmt.getThenStmt() ) ).append("\n");
         }
         if ( ifStmt.getElseStmt()!=null ) {
             if ( ifStmt.getElseStmt() instanceof IfStmt ) {
@@ -2013,7 +2013,7 @@ public class ConvertJavaToPython {
                 sb.append("\n");
                 Node m1= methods.get(i);
                 if ( ss[i].length()>0 ) {
-                    sb.append(indent).append("#J2J: ").append(ss[i]).append("\n");
+                    sb.append(indent).append("# J2J: ").append(ss[i]).append("\n");
                 }
                 sb.append( doConvert(indent,m1) ).append("\n");
             };
@@ -2333,18 +2333,18 @@ public class ConvertJavaToPython {
             if ( iff ) {
                 StringBuilder cb= new StringBuilder();
                 for ( Expression l : labels ) {
-                    cb.append(selector).append("==").append(doConvert("",l)).append(" or ");
+                    cb.append(selector).append(" == ").append(doConvert("",l)).append(" or ");
                 }
-                cb.append(selector).append("==").append(ses.getLabel());
+                cb.append(selector).append(" == ").append(ses.getLabel());
                 sb.append(indent).append("if ").append(cb.toString()).append(":\n");
                 iff=false;
             } else {
                 StringBuilder cb= new StringBuilder();
                 for ( Expression l : labels ) {
-                    cb.append(selector).append("==").append(doConvert("",l)).append(" or ");
+                    cb.append(selector).append(" == ").append(doConvert("",l)).append(" or ");
                 }
                 if ( ses.getLabel()!=null ) {
-                    cb.append(selector).append("==").append(ses.getLabel());
+                    cb.append(selector).append(" == ").append(ses.getLabel());
                     sb.append(indent).append("elif ").append(cb.toString()).append(":\n");
                 } else {
                     if ( labels.size()>0 ) {
