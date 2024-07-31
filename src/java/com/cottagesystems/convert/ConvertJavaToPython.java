@@ -433,11 +433,11 @@ public class ConvertJavaToPython {
                     if ( hasMain ) {
                         if ( isOnlyStatic() ) {
                             sb.append( "if __name__ == '__main__':\n" );
-                            sb.append( "    main([])\n");                            
+                            sb.append( "    main([])\n\n");                            
                         } else {
                             //TODO: not sure about this.
                             sb.append( "if __name__ == '__main__':\n" );
-                            sb.append( "    " ).append( javaNameToPythonName(theClassName) ).append(".main([])\n");
+                            sb.append( "    " ).append( javaNameToPythonName(theClassName) ).append(".main([])\n\n");
                         }
                     }
                 }
@@ -1877,7 +1877,6 @@ public class ConvertJavaToPython {
     private String doConvertArrayCreationExpr(String indent, ArrayCreationExpr arrayCreationExpr) {
         if ( arrayCreationExpr.getInitializer()!=null ) {
             ArrayInitializerExpr ap= arrayCreationExpr.getInitializer();
-            StringBuilder sb= new StringBuilder();
             return "[" + utilFormatExprList( ap.getValues() ) + "]";
         } else {
             String item;
@@ -2003,9 +2002,17 @@ public class ConvertJavaToPython {
         getCurrentScope().put( "this", new ClassOrInterfaceType(name) );
         
         if ( onlyStatic ) {
-            classOrInterfaceDeclaration.getChildrenNodes().forEach((n) -> {
-                sb.append("\n").append( doConvert(indent,n) ).append("\n");
-            });
+            List<Node> methods= classOrInterfaceDeclaration.getChildrenNodes();
+            //TODO: can we detect that two methods can be folded together?
+            String[] ss= overloadedMethodCheck(methods);
+            for ( int i=0; i<methods.size(); i++ ) {
+                sb.append("\n");
+                Node m1= methods.get(i);
+                if ( ss[i].length()>0 ) {
+                    sb.append(indent).append("#J2J: ").append(ss[i]).append("\n");
+                }
+                sb.append( doConvert(indent,m1) ).append("\n");
+            };
         } else {
             
             if ( unittest && pythonTarget==PythonTarget.jython_2_2 ) {
@@ -2916,6 +2923,74 @@ public class ConvertJavaToPython {
             return rightType;
         }
         return null;
+    }
+
+    /**
+     * look through the methods to see if one two are overloaded methods which could
+     * be folded into one python method using default keywords.
+     * @param methods
+     * @return 
+     */
+    private String[] overloadedMethodCheck(List<Node> methods) {
+        String[] result= new String[methods.size()];
+        for ( int i=0; i<methods.size(); i++ ) {
+            result[i]="";
+            Node n1= methods.get(i);
+            if ( !( n1 instanceof MethodDeclaration ) ) {
+                result[i]= "not method";
+            } else {
+                MethodDeclaration m1= (MethodDeclaration)n1;
+                for ( int j=0; j<methods.size(); j++ ) {
+                    if ( i==j ) continue;
+                    Node n2= methods.get(j);
+                    if ( n2 instanceof MethodDeclaration ) {
+                        MethodDeclaration m2= (MethodDeclaration)n2;
+                        if ( m2.getName().equals(m1.getName()) ) {
+                            if ( m2.getParameters().size()==m1.getParameters().size()+1 ) {
+                                boolean okay=true;
+                                for ( int k=0; k<m1.getParameters().size(); k++ ) {
+                                    Parameter parm1= m1.getParameters().get(k);
+                                    Parameter parm2= m2.getParameters().get(k);
+                                    
+                                    if ( parm1.getId().getName().equals( parm2.getId().getName())  &&
+                                        parm1.getType().equals(parm2.getType() ) ) {
+                                        
+                                    } else {
+                                        okay=false;
+                                    }
+                                }
+                                Parameter extraParameter= m2.getParameters().get(m2.getParameters().size()-1);
+                                // is there one call to the other method which adds an argument?
+                                if ( m1.getBody().getStmts().size()==1 ) { 
+                                    Statement s= m1.getBody().getStmts().get(0);
+                                    if ( s instanceof ExpressionStmt ) {
+                                        ExpressionStmt es1= (ExpressionStmt)s;
+                                        Expression e= es1.getExpression();
+                                        if ( e instanceof MethodCallExpr ) {
+                                            MethodCallExpr mce= (MethodCallExpr)e;
+                                            if ( mce.getName().equals(m2.getName()) ) {
+                                                List<Node> arguments= es1.getExpression().getChildrenNodes();
+                                                if ( arguments.size()==m2.getParameters().size() ) {
+                                                    Node n= arguments.get(arguments.size()-1);
+                                                    String name= extraParameter.getId().getName();
+                                                    result[i]= "can be combined with " + name + "="+ n;
+                                                }
+                                            }
+                                        }
+                                        
+                                    }
+                                    System.err.println("single statement");
+                                }
+                                if ( !okay ) {
+                                    result[i]="";
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return result;
     }
     
 }
