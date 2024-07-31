@@ -2937,7 +2937,7 @@ public class ConvertJavaToPython {
             result[i]="";
             Node n1= methods.get(i);
             if ( !( n1 instanceof MethodDeclaration ) ) {
-                result[i]= "not method";
+                // nothing to be done
             } else {
                 MethodDeclaration m1= (MethodDeclaration)n1;
                 for ( int j=0; j<methods.size(); j++ ) {
@@ -2979,7 +2979,6 @@ public class ConvertJavaToPython {
                                         }
                                         
                                     }
-                                    System.err.println("single statement");
                                 }
                                 if ( !okay ) {
                                     result[i]="";
