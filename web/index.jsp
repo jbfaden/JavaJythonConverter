@@ -24,7 +24,8 @@
         and using a jar file from Maven Central.</p>
         
         <a href='ConvertJavaToPythonServlet'>Convert Java to Python</a><br>
-        <a href='ConvertJavaToJavascriptServlet'>Convert Java to Javascript</a>
+        <a href='ConvertJavaToJavascriptServlet'>Convert Java to Javascript</a><br>
+        <a href='ConvertJavaToIDLServlet'>Convert Java to IDL (not done!)</a>
         <p>There are other codes which do the same thing, but not on-line, which
             are useful references, and should be considered as well:<ul>
             <li><a href="https://github.com/natural/java2python">https://github.com/natural/java2python</a> which is implemented in Python
