@@ -431,7 +431,14 @@ public class ConvertJavaToPython {
                             "    unittest.main()\n" );
                 } else {
                     if ( hasMain ) {
-                        sb.append( javaNameToPythonName(theClassName) ).append(".main([])\n");
+                        if ( isOnlyStatic() ) {
+                            sb.append( "if __name__ == '__main__':\n" );
+                            sb.append( "    main([])\n");                            
+                        } else {
+                            //TODO: not sure about this.
+                            sb.append( "if __name__ == '__main__':\n" );
+                            sb.append( "    " ).append( javaNameToPythonName(theClassName) ).append(".main([])\n");
+                        }
                     }
                 }
                 
@@ -881,7 +888,7 @@ public class ConvertJavaToPython {
                 case "emptyList":
                     return indent + "[]";
                 case "singletonList":
-                    return indent + "[ "+doConvert("",args.get(0)) + " ]";
+                    return indent + "["+doConvert("",args.get(0)) + "]";
                 default:
                     break;
             }
@@ -1147,6 +1154,12 @@ public class ConvertJavaToPython {
                     return "float("+doConvert( "", args.get(0))+")";
             }
         }
+        if ( clasType.equals("Float") ) {
+            switch ( name ) {
+                case "parseFloat":
+                    return "float("+doConvert( "", args.get(0))+")";
+            }
+        }       
         if ( clasType.equals("Integer") ) {
             switch ( name ) {
                 case "parseInt":
@@ -1865,7 +1878,7 @@ public class ConvertJavaToPython {
         if ( arrayCreationExpr.getInitializer()!=null ) {
             ArrayInitializerExpr ap= arrayCreationExpr.getInitializer();
             StringBuilder sb= new StringBuilder();
-            return "[ " + utilFormatExprList( ap.getValues() ) + " ]";
+            return "[" + utilFormatExprList( ap.getValues() ) + "]";
         } else {
             String item;
             if ( arrayCreationExpr.getType().equals( ASTHelper.BYTE_TYPE ) ||
@@ -1991,7 +2004,7 @@ public class ConvertJavaToPython {
         
         if ( onlyStatic ) {
             classOrInterfaceDeclaration.getChildrenNodes().forEach((n) -> {
-                sb.append( doConvert(indent,n) ).append("\n");
+                sb.append("\n").append( doConvert(indent,n) ).append("\n");
             });
         } else {
             
