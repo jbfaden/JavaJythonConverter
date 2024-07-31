@@ -2552,7 +2552,7 @@ public class ConvertJavaToPython {
         for ( CatchClause cc: tryStmt.getCatchs() ) {
             String id= doConvert( "",cc.getExcept().getId() );
             if ( pythonTarget==PythonTarget.python_3_6 ) {
-                sb.append(indent).append("except Exception as ").append( id ).append(": # J2J: exceptions\n");
+                sb.append(indent).append("except Exception as ").append( id ).append(":  # J2J: exceptions\n");
             } else {
                 sb.append(indent).append("except ").append(doConvert( "",cc.getExcept() )).append( ", ").append(id).append(":\n");
             }
