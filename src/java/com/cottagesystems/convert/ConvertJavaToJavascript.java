@@ -2080,10 +2080,17 @@ public class ConvertJavaToJavascript {
                             + "{\n" + doConvert(indent+s4,ifStmt.getElseStmt() ) + indent + "}\n";
                             
                 } else {
-                    return indent + "if (" + doConvert("",ifStmt.getCondition()) +
+                    if ( ifStmt.getElseStmt() instanceof IfStmt ) {
+                        String elseStuff= doConvert(indent,ifStmt.getElseStmt() ); // this will start with indent, but we remove it
+                        elseStuff= elseStuff.substring(indent.length());
+                        return indent + "if (" + doConvert("",ifStmt.getCondition()) +
+                            ") {\n" + doConvert(indent+s4,ifStmt.getThenStmt() ) + indent + "} else "
+                            + elseStuff + indent + "\n";                        
+                    } else {
+                        return indent + "if (" + doConvert("",ifStmt.getCondition()) +
                             ") {\n" + doConvert(indent+s4,ifStmt.getThenStmt() ) + indent + "} else "
                             + "{\n" + doConvert(indent+s4,ifStmt.getElseStmt() ) + indent + "}\n";
-                    
+                    }
                 }
             } else if ( ifStmt.getElseStmt() instanceof BlockStmt || ifStmt.getElseStmt() instanceof IfStmt ) {
                 return indent + "if (" + doConvert("",ifStmt.getCondition()) +
