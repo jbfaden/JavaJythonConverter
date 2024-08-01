@@ -1457,7 +1457,9 @@ public class ConvertJavaToJavascript {
             case or:
                 return left + " || " + right;
             case equals:
-                if ( right.equals("null") || ASTHelper.INT_TYPE.equals(rightType) ) {
+                if ( right.equals("null") ) {
+                    return left + " === undefined || " + left + " === " + right;
+                } else if ( ASTHelper.INT_TYPE.equals(rightType) ) {
                     return left + " === " + right;
                 } else {
                     if ( utilIsAsciiString(b.getLeft()) && utilIsAsciiString(b.getRight()) ) {
@@ -1467,7 +1469,9 @@ public class ConvertJavaToJavascript {
                     }
                 }
             case notEquals:
-                if ( right.equals("null") || ASTHelper.INT_TYPE.equals(rightType) ) {
+                if ( right.equals("null") ) {
+                    return left + " !== undefined && " + left + " !== " + right;
+                } else if ( ASTHelper.INT_TYPE.equals(rightType) ) {
                     return left + " !== " + right;
                 } else {
                     if ( utilIsAsciiString(b.getLeft()) && utilIsAsciiString(b.getRight()) ) {
@@ -2009,7 +2013,10 @@ public class ConvertJavaToJavascript {
                 Expression e1= arrayCreationExpr.getDimensions().get(0);
                 if ( e1 instanceof IntegerLiteralExpr ) {
                     int len= Integer.parseInt(((IntegerLiteralExpr)e1).getValue());
-                    if ( len<15 ) { // TimeUtil.java has 14-element arrays for storing time.
+                    // aa= Array.apply(null, Array(50)).map(function (x, i) { return 0; });
+                    if ( len>7 ) {
+                        return "Array.apply(null, Array("+len + ")).map(function (x, i) { return 0; })";
+                    } else {
                         StringBuilder sb= new StringBuilder(indent);
                         sb.append("[0");
                         for ( int i=1; i<len; i++ ) {
@@ -2022,7 +2029,9 @@ public class ConvertJavaToJavascript {
                     FieldDeclaration fd= getCurrentScopeFields().get(((NameExpr)e1).getName());
                     if ( fd.getType().equals(ASTHelper.INT_TYPE) && ModifierSet.isStatic( fd.getModifiers() ) ) {
                         int len= Integer.parseInt( fd.getVariables().get(0).getInit().toString() );
-                        if ( len<15 ) {
+                        if ( len>7 ) {
+                            return "Array.apply(null, Array("+len + ")).map(function (x, i) { return 0; })";
+                        } else {
                             StringBuilder sb= new StringBuilder(indent);
                             sb.append("[0");
                             for ( int i=1; i<len; i++ ) {
@@ -2034,6 +2043,10 @@ public class ConvertJavaToJavascript {
                     }
                         
                     return indent + "[]";
+                } else if ( e1 instanceof NameExpr ) {
+                    return "Array.apply(null, Array("+((NameExpr) e1).getName() + ")).map(function (x, i) { return 0; })";
+                } else if ( e1 instanceof FieldAccessExpr ) {
+                    return "Array.apply(null, Array("+doConvert("",e1) + ")).map(function (x, i) { return 0; })";                    
                 }
             }  
         }
