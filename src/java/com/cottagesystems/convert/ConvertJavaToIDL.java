@@ -2412,7 +2412,8 @@ public class ConvertJavaToIDL {
                 if ( isIntegerType(guessType(castExpr.getExpr())) ) {
                     type = "chr";
                 } else {
-                    type = "str";
+                    //type = "str";
+                    return "str(byte("+doConvert("", castExpr.getExpr() ) + "))";
                 }   
                 break;
             case "int":
