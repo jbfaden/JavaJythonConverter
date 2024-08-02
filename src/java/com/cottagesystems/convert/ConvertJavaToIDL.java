@@ -1834,6 +1834,8 @@ public class ConvertJavaToIDL {
                     arrayCreationExpr.getType().equals( ASTHelper.INT_TYPE ) ||
                     arrayCreationExpr.getType().equals( ASTHelper.LONG_TYPE ) ) {
                 item="0";
+            } else if ( arrayCreationExpr.getType().equals( ASTHelper.CHAR_TYPE )) {
+                item= "''";
             } else {
                 item= "None";
             }
