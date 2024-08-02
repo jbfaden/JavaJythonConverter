@@ -905,9 +905,9 @@ public class ConvertJavaToIDL {
                     //return indent + "(" + map + "["+key+"] if "+key +" in "+ map + " else None)";
                     return indent + doConvert("",clas) + "["+doConvert("",args.get(0))+"]";
                 case "containsKey": // Note that unlike Java, getting a key which doesn't exist is a runtime error.
-                    return indent + doConvert("",args.get(0)) + " in "+ doConvert("",clas);
+                    return indent + doConvert("",clas) + ".HasKey(" + doConvert("",args.get(0)) + ")" ;
                 case "remove":
-                    return indent + doConvert("",clas) + ".pop(" + doConvert("",args.get(0)) + ")";
+                    return indent + doConvert("",clas) + ".Remove(" + doConvert("",args.get(0)) + ")";
                 case "addAll":
                     return indent + doConvert("",clas) + ".update(" + doConvert("",args.get(0)) + ")";
                 case "size":
@@ -921,11 +921,11 @@ public class ConvertJavaToIDL {
         if ( clasType.equals("HashSet") || clasType.equals("Set") ) {
             switch (name) {
                 case "contains":
-                    return indent + doConvert("",args.get(0)) + " in " + doConvert("",clas);
+                    return indent + doConvert("",clas) + ".HasKey(" + doConvert("",args.get(0)) + ")" ;
                 case "add":
-                    return indent + doConvert("",clas) + "["+doConvert("",args.get(0))+"] = "+doConvert("",args.get(0)); // Jython 2.2 no sets
+                    return indent + doConvert("",clas) + "["+doConvert("",args.get(0))+"] = "+doConvert("",args.get(0)); 
                 case "remove":
-                    return indent + doConvert("",clas) + ".pop(" + doConvert("",args.get(0)) + ")";  
+                    return indent + doConvert("",clas) + ".Remove(" + doConvert("",args.get(0)) + ")";
                 case "addAll":
                     String a= doConvert("",args.get(0));
                     String d= "dict( zip( " + a + ","+ a +") )";
@@ -1877,11 +1877,11 @@ public class ConvertJavaToIDL {
                 String f= fieldAccessExpr.getField();
                 switch (f) {
                     case "EMPTY_MAP":
-                        return indent + "{}";
+                        return indent + "DICTIONARY()";
                     case "EMPTY_SET":
-                        return indent + "{}"; // Jython 2.2 does not have sets.
+                        return indent + "HASH()"; // Jython 2.2 does not have sets.
                     case "EMPTY_LIST":
-                        return indent + "list()";
+                        return indent + "LIST()";
                     default:
                         break;
                 }
@@ -2351,11 +2351,11 @@ public class ConvertJavaToIDL {
                     return sb.toString();
                 } else {
                     if ( objectCreationExpr.getType().getName().equals("HashMap") ) { 
-                        return indent + "{}";
+                        return indent + "DICTIONARY()";
                     } else if ( objectCreationExpr.getType().getName().equals("ArrayList") ) { 
-                        return indent + "list()";
+                        return indent + "LIST()";
                     } else if ( objectCreationExpr.getType().getName().equals("HashSet") ) {
-                        return indent + "{}"; // to support Jython 2.2, use dictionary for now
+                        return indent + "HASH()"; 
                     } else {
                         if ( javaImports.keySet().contains( objectCreationExpr.getType().getName() ) ) {
                             javaImports.put( objectCreationExpr.getType().getName(), true );
