@@ -500,7 +500,10 @@ public class ConvertJavaToIDL {
             ByteArrayInputStream ins= new ByteArrayInputStream( ssrc.getBytes(Charset.forName("UTF-8")) );
             CompilationUnit unit= japa.parser.JavaParser.parse(ins,"UTF-8");
             String src= doConvert( "", unit );
-            src= utilUnMakeClass(src);
+            
+            if ( !src.startsWith("function ") && !src.startsWith("pro ") ) {
+                src= utilUnMakeClass(src);
+            }
             
             if ( additionalImports!=null ) {
                 StringBuilder sb= new StringBuilder();
