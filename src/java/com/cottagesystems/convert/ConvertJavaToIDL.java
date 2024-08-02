@@ -2612,7 +2612,7 @@ public class ConvertJavaToIDL {
     }
     
     /**
-     * take index and length and return "2:5" type notation.
+     * take index and length and return "2:5" type notation, (where in IDL the second number is inclusive)!
      * @param targetIdx
      * @param targetLen
      * @return 
@@ -2621,13 +2621,13 @@ public class ConvertJavaToIDL {
         String targetIndex = doConvert("",targetIdx);
         String targetLength = doConvert("",targetLen);
         if ( targetIndex.equals("0") ) {
-            return targetIndex + ":"+targetLength; // it's only one character, so don't bother removing the 0 in 0:
+            return targetIndex + ":("+targetLength+"-1)"; // it's only one character, so don't bother removing the 0 in 0:
         } else {
             if ( targetIndex.equals(targetLength) && 
                     ( targetIdx instanceof FieldAccessExpr || targetIdx instanceof NameExpr ) ) {
-                return targetIndex + ":2*"+targetLength;
+                return targetIndex + ":2*"+targetLength+"-1"; // HUH?
             } else {
-                return targetIndex + ":" + targetIndex + "+" + targetLength;
+                return targetIndex + ":" + targetIndex + "+" + targetLength+"-1";
             }
         }
     }
