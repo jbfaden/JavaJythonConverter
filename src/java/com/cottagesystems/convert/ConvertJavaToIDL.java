@@ -841,7 +841,7 @@ public class ConvertJavaToIDL {
         
         if ( clasType.equals("StringBuilder") ) {
             if ( name.equals("append") ) {
-                return indent + doConvert("",clas) + "+= " + utilAssertStr(args.get(0)) ;
+                return indent + doConvert("",clas) + " = " + doConvert("",clas) + " + " + utilAssertStr(args.get(0)) ;
             } else if ( name.equals("toString") ) {
                 return indent + doConvert("",clas);
             } else if ( name.equals("insert") ) {
@@ -2366,7 +2366,7 @@ public class ConvertJavaToIDL {
                                 Type t= guessType(e);
                                 if ( t instanceof ReferenceType 
                                         && t.equals(ASTHelper.createReferenceType(ASTHelper.CHAR_TYPE,1) ) ) {
-                                    return indent + "''.join( "+ doConvert("",e) +")";
+                                    return indent + "strjoin( "+ doConvert("",e) +")";
                                 } else if ( t.equals(ASTHelper.createReferenceType("StringBuilder",0) ) ) {
                                     return  doConvert("",e); // these are just strings.
                                 }
@@ -2397,9 +2397,9 @@ public class ConvertJavaToIDL {
     }
 
     private String doConvertConditionalExpr(String indent, ConditionalExpr conditionalExpr) {
-        return indent + doConvert("",conditionalExpr.getThenExpr())
-                    + " if " + doConvert("",conditionalExpr.getCondition())
-                    + " else " +  doConvert("",conditionalExpr.getElseExpr());
+        return indent + "(" + doConvert("",conditionalExpr.getCondition()) + ") ? " + 
+                doConvert("",conditionalExpr.getThenExpr()) + " : " 
+                    + doConvert("",conditionalExpr.getElseExpr());
     }
 
     private String doConvertCastExpr(String indent, CastExpr castExpr) {
@@ -2412,8 +2412,7 @@ public class ConvertJavaToIDL {
                 if ( isIntegerType(guessType(castExpr.getExpr())) ) {
                     type = "chr";
                 } else {
-                    //type = "str";
-                    return "str(byte("+doConvert("", castExpr.getExpr() ) + "))";
+                    return "string(byte("+doConvert("", castExpr.getExpr() ) + "))";
                 }   
                 break;
             case "int":
