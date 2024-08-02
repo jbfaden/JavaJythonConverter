@@ -618,7 +618,7 @@ public class ConvertJavaToIDL {
             case notEquals:
                 return left + " ne " + right;
             case remainder:
-                return left + " % " + right;
+                return left + " mod " + right;
             default:
                 throw new IllegalArgumentException("not supported: "+op);
         }
@@ -1960,14 +1960,14 @@ public class ConvertJavaToIDL {
             if ( unittest ) {
                 sb.append( "\n# cheesy unittest temporary\n");
                 sb.append( "def assertEquals(a,b):\n"
-                        + "    if ( not a==b ): raise Exception('a!=b')\n");
+                        + "    if ( not a==b ): stop, 'a!=b'\n");
                 sb.append( "def assertArrayEquals(a,b):\n");
                 sb.append( "    if ( len(a)==len(b) ): \n");
                 sb.append( "        for i in xrange(len(a)): \n");
-                sb.append( "            if ( a[i]!=b[i] ): raise Exception('a[%d]!=b[%d]'%(i,i))\n" );
+                sb.append( "            if ( a[i]!=b[i] ): stop, 'a[%d]!=b[%d]'%(i,i))\n" );
                 sb.append( "def fail(msg):\n"
                         + "    print(msg)\n"
-                        + "    raise Exception('fail: '+msg)\n");
+                        + "    stop, 'fail: '+msg\n");
                 sb.append( "\n" );
             }
             String comments= utilRewriteComments(indent, classOrInterfaceDeclaration.getComment() );
@@ -2235,7 +2235,14 @@ public class ConvertJavaToIDL {
     }
 
     private String doConvertThrowStmt(String indent, ThrowStmt throwStmt) {
-        return indent + "raise "+ doConvert("",throwStmt.getExpr());
+        Expression msg= throwStmt.getExpr();
+        if ( throwStmt.getExpr() instanceof ObjectCreationExpr ) {
+            List<Expression> args= ((ObjectCreationExpr)throwStmt.getExpr()).getArgs();
+            if ( args.size()==1 ) {
+                msg= args.get(0);
+            }
+        }
+        return indent + "stop, "+ doConvert("",msg);
     }
 
     private String doConvertWhileStmt(String indent, WhileStmt whileStmt) {
