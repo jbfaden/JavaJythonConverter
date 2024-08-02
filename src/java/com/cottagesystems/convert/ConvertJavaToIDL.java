@@ -1041,6 +1041,10 @@ public class ConvertJavaToIDL {
                 case "split":
                     String arg= utilUnquoteReplacement( doConvert("",args.get(0)) );
                     return indent + "strsplit(" + doConvert(indent,clas) + "," +arg+",/extract)";
+                case "join":
+                    String arg1= utilUnquoteReplacement( doConvert("",args.get(0)) );
+                    String arg2= utilUnquoteReplacement( doConvert("",args.get(1)) );
+                    return indent + "strjoin(" + arg2 + "," +arg1+")";
                 default:
                     break;
             }
