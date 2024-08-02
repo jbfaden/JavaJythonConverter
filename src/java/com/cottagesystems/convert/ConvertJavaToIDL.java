@@ -1091,7 +1091,7 @@ public class ConvertJavaToIDL {
                 case "copyOfRange": {
                     StringBuilder sb= new StringBuilder();
                     sb.append(indent).append(args.get(0)).append("[");
-                    sb.append(doConvert("",args.get(1))).append(":").append(doConvert("",args.get(2)));
+                    sb.append(doConvert("",args.get(1))).append(":").append(doConvert("",args.get(2))).append("-1");
                     sb.append("]");
                     return sb.toString();
                 }
