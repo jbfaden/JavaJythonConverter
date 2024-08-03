@@ -2731,7 +2731,7 @@ public class ConvertJavaToIDL {
             FieldDeclaration ss= getCurrentScopeFields().get(s);
             boolean isStatic= ModifierSet.isStatic( ss.getModifiers() );
             if ( isStatic ) {
-                scope = javaNameToPythonName( theClassName );
+                scope = ""; // javaNameToPythonName( theClassName ); // Hmm what to do in IDL...
             } else {
                 scope = "self";
             }
