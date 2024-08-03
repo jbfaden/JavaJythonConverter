@@ -990,7 +990,7 @@ public class ConvertJavaToIDL {
                     if ( args.size()==1 ) {
                         return "strmid("+doConvert(indent,clas)+","+ doConvert("",args.get(0))+")";
                     } else if ( args.size()==2 ) {
-                        return "strmid("+doConvert(indent,clas)+","+ doConvert("",args.get(0)) +","+ doConvert("",args.get(1));
+                        return "strmid("+doConvert(indent,clas)+","+ doConvert("",args.get(0)) +","+ doConvert("",args.get(1))+"-1)";
                     }
                 case "length":
                     return "strlen("+doConvert(indent,clas)+")";
