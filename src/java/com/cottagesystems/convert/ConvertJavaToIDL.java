@@ -1965,6 +1965,7 @@ public class ConvertJavaToIDL {
         if ( onlyStatic ) {
             classOrInterfaceDeclaration.getChildrenNodes().forEach((n) -> {
                 sb.append( doConvert(indent,n) ).append("\n");
+                sb.append( "\n" );
             });
         } else {
             
