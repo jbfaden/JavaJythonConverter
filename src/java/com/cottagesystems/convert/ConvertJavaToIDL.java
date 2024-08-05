@@ -1183,7 +1183,7 @@ public class ConvertJavaToIDL {
             } else {
                 String strss;
                 if ( !isStringType( guessType(methodCallExpr.getArgs().get(0)) ) ) {
-                    strss= "strtrim( "+ doConvert( "", methodCallExpr.getArgs().get(0) ) + ",2)";
+                    strss= "strtrim("+ doConvert( "", methodCallExpr.getArgs().get(0) ) + ",2)";
                 } else {
                     strss= doConvert( "", methodCallExpr.getArgs().get(0) );
                 }
@@ -1645,7 +1645,7 @@ public class ConvertJavaToIDL {
                 String ssss= specialConvertElifStmt( indent, (IfStmt)ifStmt.getElseStmt() ) ;
                 b.append( ssss.substring(indent.length()) );
             } else {
-                b.append(indent).append("else");
+                b.append("else");
                 if ( ifStmt.getElseStmt() instanceof BlockStmt ) {
                     b.append(" begin\n");
                     b.append( doConvert(indent,ifStmt.getElseStmt()) );
