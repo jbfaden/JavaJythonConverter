@@ -2,9 +2,12 @@
 package com.cottagesystems.convert;
 
 import japa.parser.ParseException;
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.lang.management.ManagementFactory;
 import javax.servlet.ServletException;
@@ -12,6 +15,7 @@ import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import test.FibExample;
 
 /**
  *
@@ -54,7 +58,14 @@ public class ConvertJavaToIDLServlet extends HttpServlet {
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         
+        //String sample= request.getParameter("examples");
+        
         String code= request.getParameter("code");
+        
+        //if ( sample!=null && sample.endsWith(".java" ) ) {
+        //    code= loadExample(sample);
+        //}
+        
         String mode;
         //mode= request.getParameter("mode");
         mode= "edit";
@@ -159,8 +170,8 @@ public class ConvertJavaToIDLServlet extends HttpServlet {
                         convert.isOnlyStatic() ? "checked" : "" ) );
                 out.println( String.format( "<input type=\"checkbox\" id=\"unittest\" name=\"unittest\" value=\"true\" %s>Unit Test</input>",
                         convert.isUnittest() ? "checked" : "" ) );
-                //out.println( String.format( "<input type=\"checkbox\" id=\"camelToSnake\" name=\"camelToSnake\" value=\"true\" %s>Camel to Snake</input>",
-                //        convert.isCamelToSnake() ? "checked" : "" ) );
+                out.println( String.format( "<input type=\"checkbox\" id=\"camelToSnake\" name=\"camelToSnake\" value=\"true\" %s>Camel to Snake</input>",
+                        convert.isCamelToSnake() ? "checked" : "" ) );
                 //out.println("<select name=\"pythonTarget\" id=\"pythonTarget\">");
                 //out.println(String.format( "    <option value=\"jython_2_2\" %s>Jython 2.2</option>", 
                 //    ( convert.getPythonTarget()==PythonTarget.jython_2_2 ? "selected=1" : ""  ) ) );
@@ -168,7 +179,8 @@ public class ConvertJavaToIDLServlet extends HttpServlet {
                 //    ( convert.getPythonTarget()==PythonTarget.python_3_6 ? "selected=1" : ""  ) ) );
                 out.println("</select>");
                 out.println("<button id=\"clear\" value=\"clear\" onclick=\"javascript:document.getElementById('code').value=''\">Clear</button>");
-                out.println("<input type=\"submit\" value=\"submit\"></input>");
+                out.println("<input type=\"submit\" value=\"submit\"></input>\n");
+                //addExamples(out);
             } else {
                 out.println( convert.isOnlyStatic() ? "Only Static Parts" : "Not Only Static Parts" );
                 out.println( "," );
@@ -236,5 +248,33 @@ public class ConvertJavaToIDLServlet extends HttpServlet {
     public String getServletInfo() {
         return "Short description";
     }// </editor-fold>
+
+    /**
+     * this doesn't work...  TODO: make work
+     * @param s
+     * @return
+     * @throws IOException 
+     */
+    private String loadExample(String s) throws IOException {
+        StringBuilder b= new StringBuilder();
+        InputStream ibs= FibExample.class.getResourceAsStream("https://raw.githubusercontent.com/jbfaden/JavaJythonConverter/main/src/java/test/"+s);
+        BufferedReader read = new BufferedReader( new InputStreamReader( ibs ) );
+        String line;
+        while ( ( line= read.readLine() )!=null ) {
+            b.append(line);
+        }
+        String prog= b.toString();
+        return prog;
+    }
+    
+    private void addExamples(PrintWriter out) {
+        String[] exs= {"SwitchStatement.java"};
+        out.println("<select name=\"examples\" id=\"examples\">\n");
+        out.println("   <option value=\"\">Select example...</option>\n");
+        for ( String s: exs ) {
+            out.println("   <option value=\""+s+"\">"+s+"</option>\n");
+        }
+        out.println("</select>\n");
+    }
 
 }
