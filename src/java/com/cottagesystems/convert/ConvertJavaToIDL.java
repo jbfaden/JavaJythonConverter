@@ -1832,7 +1832,7 @@ public class ConvertJavaToIDL {
         if ( arrayCreationExpr.getInitializer()!=null ) {
             ArrayInitializerExpr ap= arrayCreationExpr.getInitializer();
             StringBuilder sb= new StringBuilder();
-            return "[ " + utilFormatExprList( ap.getValues() ) + " ]";
+            return "[" + utilFormatExprList( ap.getValues() ) + "]";
         } else {
             String item;
             if ( arrayCreationExpr.getType().equals( ASTHelper.BYTE_TYPE ) ||
@@ -2064,6 +2064,8 @@ public class ConvertJavaToIDL {
                 }
             }
             
+            ConstructorDeclaration constructor= null;
+            
             for ( Node n : classOrInterfaceDeclaration.getChildrenNodes() ) {
                 sb.append("\n");
                 if ( n instanceof ClassOrInterfaceType ) {
@@ -2071,11 +2073,10 @@ public class ConvertJavaToIDL {
                 } else if ( n instanceof EmptyMemberDeclaration ) {
                     // skip this strange node
                 } else if ( n instanceof ConstructorDeclaration ) {
-                    if ( unittest ) {
-                        // skip
-                    } else {
-                        sb.append( doConvert( indent, n ) ).append("\n");
+                    if ( constructor!=null ) {
+                        sb.append("; J2J: multiple constructors cannot be converted\n");
                     }
+                    constructor= (ConstructorDeclaration)n;
                 } else if ( n instanceof MethodDeclaration ) {
                     MethodDeclaration md=  (MethodDeclaration)n;
                     if ( md.getAnnotations()!=null ) {
@@ -2105,6 +2106,10 @@ public class ConvertJavaToIDL {
                 sb.append( indent ).append("pro ").append(the_class_name ). append("__define\n") ;
                 if ( structureDefinition.length()>0 ) {
                     sb.append( indent ).append( s4 ).append( "void={").append(the_class_name).append(",").append(structureDefinition.substring(1)).append("}\n");
+                }
+                if ( constructor!=null ) {
+                    String ss= doConvert( indent, constructor.getBlock() );
+                    sb.append(ss);
                 }
                 sb.append( indent ).append( s4 ).append( "return\n" );
                 sb.append( indent ).append( "end\n" );
