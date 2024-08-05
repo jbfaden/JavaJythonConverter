@@ -68,7 +68,7 @@ public class ConvertJavaToIDLServlet extends HttpServlet {
         }
         
         String sonlyStatic= request.getParameter("onlyStatic");
-        boolean onlyStatic = ( sonlyStatic==null ) ? true : ( "true".equals( sonlyStatic ) );
+        boolean onlyStatic = ( sonlyStatic==null ) ? false : ( "true".equals( sonlyStatic ) );
         request.getParameterMap();
         //String pythonTarget = request.getParameter("pythonTarget");
         //if ( pythonTarget==null ) pythonTarget= PythonTarget.jython_2_2.toString();

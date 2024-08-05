@@ -410,7 +410,7 @@ public class ConvertJavaToIDL {
                 sb.append(src);
                 
                 if ( hasMain ) {
-                    sb.append( javaNameToPythonName(theClassName) ).append(".main([])\n");
+                    sb.append( javaNameToIdlName(theClassName) ).append(".main([])\n");
                 }
                 
                 src= sb.toString();
@@ -1261,13 +1261,13 @@ public class ConvertJavaToIDL {
                     } else {
                         boolean isStatic= ModifierSet.isStatic(mm.getModifiers() );
                         if ( isStatic ) {
-                            return indent + javaNameToPythonName( m.getName() ) + "." + javaNameToPythonName( name ) + "("+ utilFormatExprList(args) +")";
+                            return indent + javaNameToIdlName( m.getName() ) + "." + javaNameToIdlName( name ) + "("+ utilFormatExprList(args) +")";
                         } else {
-                            return indent + "self." + javaNameToPythonName( name ) + "("+ utilFormatExprList(args) +")";
+                            return indent + "self." + javaNameToIdlName( name ) + "("+ utilFormatExprList(args) +")";
                         }
                     }
                 } else {
-                    return indent + javaNameToPythonName( name ) + "("+ utilFormatExprList(args) +")";
+                    return indent + javaNameToIdlName( name ) + "("+ utilFormatExprList(args) +")";
                 }                
             } else {
                 String clasName = doConvert("",clas);
@@ -1276,9 +1276,9 @@ public class ConvertJavaToIDL {
                     
                 } else {
                     if ( onlyStatic && clasName.equals(theClassName) )  {
-                        return indent            + javaNameToPythonName( name ) + "("+ utilFormatExprList(args) +")";
+                        return indent            + javaNameToIdlName( name ) + "("+ utilFormatExprList(args) +")";
                     } else {
-                        return indent + clasName +"."+javaNameToPythonName( name )+ "("+ utilFormatExprList(args) +")";
+                        return indent + clasName +"."+javaNameToIdlName( name )+ "("+ utilFormatExprList(args) +")";
                     }
                 }
             }
@@ -1852,7 +1852,7 @@ public class ConvertJavaToIDL {
         
         if ( this.getCurrentScopeClasses().containsKey(s) ) {
             if ( !this.theClassName.equals(s) ) {
-                s= javaNameToPythonName( this.theClassName ) + "." + s; 
+                s= javaNameToIdlName( this.theClassName ) + "." + s; 
             }
         }
         
@@ -2512,7 +2512,7 @@ public class ConvertJavaToIDL {
      * @param str
      * @return 
      */
-    private String javaNameToPythonName( String str ) {
+    private String javaNameToIdlName( String str ) {
         String cov= this.nameMapForward.get(str);
         if ( cov==null ) {
             return str;
@@ -2731,14 +2731,14 @@ public class ConvertJavaToIDL {
             FieldDeclaration ss= getCurrentScopeFields().get(s);
             boolean isStatic= ModifierSet.isStatic( ss.getModifiers() );
             if ( isStatic ) {
-                scope = ""; // javaNameToPythonName( theClassName ); // Hmm what to do in IDL...
+                scope = javaNameToIdlName( theClassName ); // Hmm what to do in IDL...
             } else {
                 scope = "self";
             }
         } else {
             scope = ""; // local variable //TODO: review this
         }        
-        return indent + scope + (scope.length()==0 ? "" : ".") + javaNameToPythonName(s);
+        return indent + scope + (scope.length()==0 ? "" : ".") + javaNameToIdlName(s);
 
     }
 
