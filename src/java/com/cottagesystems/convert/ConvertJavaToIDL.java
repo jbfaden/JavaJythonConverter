@@ -1607,14 +1607,15 @@ public class ConvertJavaToIDL {
         StringBuilder b= new StringBuilder();
         b.append(indent).append("else if ");
         b.append( doConvert("", ifStmt.getCondition() ) );
-        b.append(":\n");
+        b.append(" then begin\n");
         b.append( doConvert(indent,ifStmt.getThenStmt() ) );
         if ( ifStmt.getElseStmt()!=null ) {
             if ( ifStmt.getElseStmt() instanceof IfStmt ) {
                 b.append( specialConvertElifStmt( indent, (IfStmt)ifStmt.getElseStmt() ) );
             } else {
-                b.append(indent).append("else:\n");
+                b.append(indent).append("endif else begin\n");
                 b.append( doConvert(indent,ifStmt.getElseStmt()) );
+                b.append(indent).append("endelse\n");
             }
         }
         return b.toString();        
