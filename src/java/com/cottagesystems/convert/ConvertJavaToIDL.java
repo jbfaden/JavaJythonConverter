@@ -2033,7 +2033,6 @@ public class ConvertJavaToIDL {
                 } else if ( n instanceof FieldDeclaration ) {
                     
                     for ( VariableDeclarator vd : ((FieldDeclaration)n).getVariables() ) {
-                        nn.put( vd.getId().getName(), vd );                            
                         String name1= vd.getId().getName();
                         if ( nn.containsKey(name1) ) {
                             sb.append(indent).append("; J2J: Name is used twice in class: ")
@@ -2257,7 +2256,9 @@ public class ConvertJavaToIDL {
                     sb.append( indent ).append(s4).append(pythonName).append(" = ").append( doConvert( "",ce.getElseExpr() ) ).append("\n");
                     
                 } else {
-                    sb.append( indent ).append(the_class_name).append("__").append(pythonName).append(" = ").append( doConvert( "",v.getInit() ) ).append("\n");
+                    sb.append(indent).append("pro ").append(the_class_name).append("::GetProperty, ").append(pythonName).append("=").append(pythonName).append("\n");
+                    sb.append(indent).append("    ").append(pythonName).append("=").append(doConvert( "",v.getInit() )).append("\n");
+                    sb.append(indent).append("end\n");
                     
                 }
             }
@@ -2765,7 +2766,7 @@ public class ConvertJavaToIDL {
             boolean isStatic= ModifierSet.isStatic( ss.getModifiers() );
             if ( isStatic ) {
                 scope = javaNameToIdlName( theClassName ); 
-                return indent + scope + (scope.length()==0 ? "" : "__") + javaNameToIdlName(s);
+                return indent + scope + (scope.length()==0 ? "" : ".") + javaNameToIdlName(s);
             } else {
                 scope = "self";
                 return indent + scope + (scope.length()==0 ? "" : ".") + javaNameToIdlName(s);
