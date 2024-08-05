@@ -51,9 +51,7 @@ import japa.parser.ast.expr.MarkerAnnotationExpr;
 import japa.parser.ast.expr.NullLiteralExpr;
 import japa.parser.ast.expr.ObjectCreationExpr;
 import japa.parser.ast.expr.QualifiedNameExpr;
-import japa.parser.ast.expr.SuperExpr;
 import japa.parser.ast.expr.UnaryExpr;
-import japa.parser.ast.stmt.BreakStmt;
 import japa.parser.ast.stmt.CatchClause;
 import japa.parser.ast.stmt.EmptyStmt;
 import japa.parser.ast.stmt.ForStmt;
@@ -70,7 +68,6 @@ import japa.parser.ast.type.PrimitiveType;
 import japa.parser.ast.type.ReferenceType;
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
@@ -78,7 +75,6 @@ import java.io.InputStreamReader;
 import java.net.URL;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -90,7 +86,9 @@ import java.util.Stack;
 import java.util.stream.Collectors;
 
 /**
- * Class for converting Java to IDL using an AST.  
+ * Class for converting Java to IDL using an AST.  The web page
+ * https://hesperia.gsfc.nasa.gov/rhessidatacenter/complementary_data/objects/objects.html
+ * has been useful to remind me how objects in IDL work.
  * 
  * @author jbf
  */
@@ -250,6 +248,11 @@ public class ConvertJavaToIDL {
      * record the name of the class (e.g. TimeUtil) so that internal references can be corrected.
      */
     private String theClassName;
+    
+    /**
+     * the name in snake case, if we are using this mode
+     */
+    private String the_class_name;
     
     private final Stack<String> classNameStack= new Stack<>();
     
@@ -1150,7 +1153,7 @@ public class ConvertJavaToIDL {
                 if ( clas instanceof MethodCallExpr ) {
                     return doConvert("",clas).replaceAll("match", "search") + "!=None";
                 } else {
-                    return doConvert("",clas) + "!=None  ;J2J: USE search not match above";
+                    return doConvert("",clas) + "!=None  ; J2J: USE search not match above";
                 }
             }
         }
@@ -1562,7 +1565,7 @@ public class ConvertJavaToIDL {
             if ( v.getInit()!=null && v.getInit().toString().startsWith("Logger.getLogger") ) {
                 //addLogger();
                 localVariablesStack.peek().put(s,ASTHelper.createReferenceType("Logger",0) );
-                return indent + ";J2J: "+variableDeclarationExpr.toString().trim();
+                return indent + "; J2J: "+variableDeclarationExpr.toString().trim();
             }
             if ( camelToSnake ) {
                 String news= camelToSnakeAndRegister(s);
@@ -1589,7 +1592,7 @@ public class ConvertJavaToIDL {
                 } else {
                     if ( v.getInit() instanceof ObjectCreationExpr && ((ObjectCreationExpr)v.getInit()).getAnonymousClassBody()!=null ) {
                         for ( BodyDeclaration bd: ((ObjectCreationExpr)v.getInit()).getAnonymousClassBody() ) {
-                            b.append(doConvert( indent+";J2J:", bd ) );
+                            b.append(doConvert( indent+"; J2J:", bd ) );
                         }
                     }
                     b.append( indent ).append(s).append(" = ").append(doConvert("",v.getInit()) );
@@ -1623,7 +1626,7 @@ public class ConvertJavaToIDL {
         //}
         if ( ifStmt.getCondition() instanceof MethodCallExpr && 
                 ((MethodCallExpr)ifStmt.getCondition()).getName().equals("isLoggable") ) {
-            return indent + ";J2J: if "+ifStmt.getCondition() + " ... removed";
+            return indent + "; J2J: if "+ifStmt.getCondition() + " ... removed";
         }
         b.append(indent).append("if ");
         b.append( doConvert("", ifStmt.getCondition() ) );
@@ -1852,7 +1855,7 @@ public class ConvertJavaToIDL {
         
         if ( this.getCurrentScopeClasses().containsKey(s) ) {
             if ( !this.theClassName.equals(s) ) {
-                s= javaNameToIdlName( this.theClassName ) + "." + s; 
+                s= the_class_name + "." + s; 
             }
         }
         
@@ -1897,22 +1900,22 @@ public class ConvertJavaToIDL {
     private String doConvertUnaryExpr(String indent, UnaryExpr unaryExpr) {
          switch (unaryExpr.getOperator()) {
             case preIncrement: {
-                additionalClasses.put(";J2J: increment used at line "+unaryExpr.getBeginLine()+", which needs human study.\n",true );
+                additionalClasses.put("; J2J: increment used at line "+unaryExpr.getBeginLine()+", which needs human study.\n",true );
                 String n= doConvert("",unaryExpr.getExpr());
                 return indent + n + " = " + n + " + 1";
             }
             case preDecrement: {
-                additionalClasses.put(";J2J: decrement used at line "+unaryExpr.getBeginLine()+", which needs human study.\n",true );
+                additionalClasses.put("; J2J: decrement used at line "+unaryExpr.getBeginLine()+", which needs human study.\n",true );
                 String n= doConvert("",unaryExpr.getExpr());
                 return indent + n + " = " + n + " - 1";
             }
             case posIncrement: {
-                additionalClasses.put(";J2J: increment used at line "+unaryExpr.getBeginLine()+", which needs human study.\n",true );
+                additionalClasses.put("; J2J: increment used at line "+unaryExpr.getBeginLine()+", which needs human study.\n",true );
                 String n= doConvert("",unaryExpr.getExpr());
                 return indent + n + " = " + n + " + 1";
             }
             case posDecrement: {
-                additionalClasses.put(";J2J: decrement used at line "+unaryExpr.getBeginLine()+", which needs human study.\n",true );
+                additionalClasses.put("; J2J: decrement used at line "+unaryExpr.getBeginLine()+", which needs human study.\n",true );
                 String n= doConvert("",unaryExpr.getExpr());
                 return indent + n + " = " + n + " - 1";
             }
@@ -1943,6 +1946,9 @@ public class ConvertJavaToIDL {
         String name = classOrInterfaceDeclaration.getName();
         if ( classNameStack.isEmpty() ) {
             theClassName= name;
+            if ( camelToSnake ) {
+                the_class_name= camelToSnake(name);
+            }
         }
         classNameStack.push(name);
         
@@ -1992,10 +1998,10 @@ public class ConvertJavaToIDL {
                 sb.append( indent ).append("class " ).append( pythonName ).append("(" ).append(implementsName).append(")").append(":\n");
             } else {
                 if ( unittest ) {
-                    String extendName= "unittest.TestCase";
-                    sb.append( indent ).append("class " ).append( pythonName ).append("(" ).append(extendName).append(")").append(":\n");
+                    //String extendName= "unittest.TestCase";
+                    //sb.append( indent ).append("class " ).append( pythonName ).append("(" ).append(extendName).append(")").append(":\n");
                 } else {
-                    sb.append( indent ).append("class " ).append( pythonName ).append(":\n");
+                    //sb.append( indent ).append("class " ).append( pythonName ).append(":\n");
                 }
             }
 
@@ -2011,21 +2017,26 @@ public class ConvertJavaToIDL {
                 }
             });
             
+            // object data goes into structure with the same name
+            StringBuilder structureDefinition= new StringBuilder();
+            
             // check for unique names
             Map<String,Node> nn= new HashMap<>();
             for ( Node n: classOrInterfaceDeclaration.getChildrenNodes() ) {
                 if ( n instanceof ClassOrInterfaceType ) {
                     String name1= ((ClassOrInterfaceType)n).getName();
                     if ( nn.containsKey(name1) ) {
-                        sb.append(indent).append(s4).append("# J2J: Name is used twice in class: ")
+                        sb.append(indent).append("; J2J: Name is used twice in class: ")
                                 .append(pythonName).append(" ").append(name1).append("\n");
                     }
                     nn.put( name1, n );
                 } else if ( n instanceof FieldDeclaration ) {
+                    
                     for ( VariableDeclarator vd : ((FieldDeclaration)n).getVariables() ) {
+                        nn.put( vd.getId().getName(), vd );                            
                         String name1= vd.getId().getName();
                         if ( nn.containsKey(name1) ) {
-                            sb.append(indent).append(s4).append("# J2J: Name is used twice in class: ")
+                            sb.append(indent).append("; J2J: Name is used twice in class: ")
                                 .append(pythonName).append(" ").append(name1).append("\n");
                         }
                         nn.put( name1, vd );
@@ -2039,7 +2050,7 @@ public class ConvertJavaToIDL {
                     }
                     String name1= md.getName();
                     if ( nn.containsKey(name1) ) {
-                            sb.append(indent).append(s4).append("# J2J: Name is used twice in class: ")
+                            sb.append(indent).append("; J2J: Name is used twice in class: ")
                                 .append(pythonName).append(" ").append(name1).append("\n");
                     }
                     nn.put( name1, n );
@@ -2049,6 +2060,7 @@ public class ConvertJavaToIDL {
             }
             
             for ( Node n : classOrInterfaceDeclaration.getChildrenNodes() ) {
+                sb.append("\n");
                 if ( n instanceof ClassOrInterfaceType ) {
                     // skip this strange node
                 } else if ( n instanceof EmptyMemberDeclaration ) {
@@ -2057,7 +2069,7 @@ public class ConvertJavaToIDL {
                     if ( unittest ) {
                         // skip
                     } else {
-                        sb.append( doConvert( indent+s4, n ) ).append("\n");
+                        sb.append( doConvert( indent, n ) ).append("\n");
                     }
                 } else if ( n instanceof MethodDeclaration ) {
                     MethodDeclaration md=  (MethodDeclaration)n;
@@ -2066,11 +2078,32 @@ public class ConvertJavaToIDL {
                             continue;
                         }
                     }                    
-                    sb.append( doConvert( indent+s4, n ) ).append("\n");
+                    sb.append( doConvert( indent, n ) ).append("\n");
                 } else {
-                    sb.append( doConvert( indent+s4, n ) ).append("\n");
+                    boolean isStatic= ModifierSet.isStatic(((FieldDeclaration)n).getModifiers() );
+                    if ( isStatic ) {
+                        sb.append( doConvert( indent, n ) ).append("\n");
+                    } else {
+                        for ( VariableDeclarator vd : ((FieldDeclaration)n).getVariables() ) {
+                            if ( vd.getInit()!=null ) {
+                                structureDefinition.append(",").append(vd.getId().getName()).append(":").append(doConvert("",vd.getInit()));
+                            } else {
+                                structureDefinition.append(",").append(vd.getId().getName()).append(":ptr_new()");
+                            }
+                        }
+                    }
                 }
-            };
+            }
+            
+            if ( !onlyStatic ) {
+                sb.append("\n");
+                sb.append( indent ).append("pro ").append(the_class_name ). append("__define\n") ;
+                if ( structureDefinition.length()>0 ) {
+                    sb.append( indent ).append( s4 ).append( "void={").append(the_class_name).append(",").append(structureDefinition.substring(1)).append("}\n");
+                }
+                sb.append( indent ).append( s4 ).append( "return\n" );
+                sb.append( indent ).append( "end\n" );
+            }
             
             if ( unittest ) {
                 sb.append("test = ").append(classOrInterfaceDeclaration.getName()).append("()\n");
@@ -2114,22 +2147,21 @@ public class ConvertJavaToIDL {
         StringBuilder sb= new StringBuilder();
         String comments= utilRewriteComments( indent, methodDeclaration.getComment() );
         sb.append( comments );
-        if ( isStatic  && !onlyStatic ) {
-            sb.append( indent ).append( "@staticmethod\n" );
-        }
         
         String methodName= methodDeclaration.getName();
-        String pythonName;
+        String idlName;
         if ( camelToSnake ) {
-            pythonName= camelToSnakeAndRegister(methodName);
+            idlName= camelToSnakeAndRegister(methodName);
         } else {
-            pythonName= methodName;
+            idlName= methodName;
         }
 
+        String classNameQualifier= onlyStatic ? "" : the_class_name + "::";
+        
         if ( methodDeclaration.getType() instanceof japa.parser.ast.type.VoidType ) {
-            sb.append( indent ).append( "pro " ).append( pythonName );
+            sb.append( indent ).append( "pro " ).append(classNameQualifier).append( idlName );
         } else {
-            sb.append( indent ).append( "function " ).append( pythonName );
+            sb.append( indent ).append( "function " ).append(classNameQualifier).append( idlName );
         }
         
         boolean comma; 
@@ -2165,16 +2197,15 @@ public class ConvertJavaToIDL {
         sb.append( "\n" );
         
         if ( methodDeclaration.getBody()!=null ) {
+            if ( isStatic ) {
+                sb.append(indent).append(s4).append("compile_opt idl2, static\n");
+            }
             sb.append( doConvert( indent, methodDeclaration.getBody() ) );  
         } else {
             sb.append(indent).append(s4).append("pass");  
         }
         popScopeStack();
         
-        if ( isStatic && !onlyStatic ) {
-            sb.append(indent).append(pythonName).append(" = staticmethod(").append(pythonName).append(")");
-            sb.append(indent).append("\n");
-        }
         sb.append("end");
         return sb.toString();
     }
@@ -2204,7 +2235,7 @@ public class ConvertJavaToIDL {
                 if ( v.getInit()!=null && v.getInit().toString().startsWith("Logger.getLogger") ) {
                     getCurrentScope().put( name, ASTHelper.createReferenceType("Logger", 0) );
                     //addLogger();
-                    sb.append( indent ).append("# J2J: ").append(fieldDeclaration.toString());
+                    sb.append( indent ).append("; J2J: ").append(fieldDeclaration.toString());
                     continue;
                 }
                 
@@ -2216,7 +2247,7 @@ public class ConvertJavaToIDL {
                     if ( implicitDeclaration!=null ) {
                         sb.append( indent ).append( pythonName ).append(" = ").append( implicitDeclaration ).append("\n");
                     } else {
-                        sb.append( indent ).append( pythonName ).append(" = ").append( "None  # J2J added" ).append("\n");
+                        sb.append( indent ).append( pythonName ).append(" = ").append( "None  ; J2J added" ).append("\n");
                     }
                 } else if ( v.getInit() instanceof ConditionalExpr ) {
                     ConditionalExpr ce= (ConditionalExpr)v.getInit();
@@ -2226,7 +2257,7 @@ public class ConvertJavaToIDL {
                     sb.append( indent ).append(s4).append(pythonName).append(" = ").append( doConvert( "",ce.getElseExpr() ) ).append("\n");
                     
                 } else {
-                    sb.append( indent ).append(pythonName).append(" = ").append( doConvert( "",v.getInit() ) ).append("\n");
+                    sb.append( indent ).append(the_class_name).append("__").append(pythonName).append(" = ").append( doConvert( "",v.getInit() ) ).append("\n");
                     
                 }
             }
@@ -2563,11 +2594,13 @@ public class ConvertJavaToIDL {
                     inUpperCaseWord=true;
                 }
                 c = Character.toLowerCase(c);
+                lastLower= false;
             } else if ( Character.isLowerCase(c) ) {
                 if ( inUpperCaseWord ) { // "URITemplate" -> uri_template
                     result.insert( i-1, '_' );
                 }
                 inUpperCaseWord= false;
+                lastLower= true;
             }
             result.append(c);
         }
@@ -2726,19 +2759,20 @@ public class ConvertJavaToIDL {
         String s= nameExpr.getName();
         String scope;
         if ( localVariablesStack.peek().containsKey(s) ) {
-            scope = ""; // local variable
+            return indent + javaNameToIdlName(s);
         } else if ( getCurrentScopeFields().containsKey(s) ) {
             FieldDeclaration ss= getCurrentScopeFields().get(s);
             boolean isStatic= ModifierSet.isStatic( ss.getModifiers() );
             if ( isStatic ) {
-                scope = javaNameToIdlName( theClassName ); // Hmm what to do in IDL...
+                scope = javaNameToIdlName( theClassName ); 
+                return indent + scope + (scope.length()==0 ? "" : "__") + javaNameToIdlName(s);
             } else {
                 scope = "self";
+                return indent + scope + (scope.length()==0 ? "" : ".") + javaNameToIdlName(s);
             }
         } else {
-            scope = ""; // local variable //TODO: review this
+            return indent + javaNameToIdlName(s);
         }        
-        return indent + scope + (scope.length()==0 ? "" : ".") + javaNameToIdlName(s);
 
     }
 
