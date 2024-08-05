@@ -2044,6 +2044,7 @@ public class ConvertJavaToIDL {
                             sb.append(indent).append("; J2J: Name is used twice in class: ")
                                 .append(pythonName).append(" ").append(name1).append("\n");
                         }
+                        getCurrentScope().put( name1, ((FieldDeclaration)n).getType() ); //TODO: Does Python and JavaScript have this?
                         nn.put( name1, vd );
                     }
                 } else if ( n instanceof MethodDeclaration ) {
