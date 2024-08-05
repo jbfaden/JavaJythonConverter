@@ -1605,7 +1605,7 @@ public class ConvertJavaToIDL {
 
     private String specialConvertElifStmt( String indent, IfStmt ifStmt ) {
         StringBuilder b= new StringBuilder();
-        b.append(indent).append("elif ");
+        b.append(indent).append("else if ");
         b.append( doConvert("", ifStmt.getCondition() ) );
         b.append(":\n");
         b.append( doConvert(indent,ifStmt.getThenStmt() ) );
@@ -1641,7 +1641,8 @@ public class ConvertJavaToIDL {
         }
         if ( ifStmt.getElseStmt()!=null ) {
             if ( ifStmt.getElseStmt() instanceof IfStmt ) {
-                b.append( specialConvertElifStmt( indent, (IfStmt)ifStmt.getElseStmt() ) );
+                String ssss= specialConvertElifStmt( indent, (IfStmt)ifStmt.getElseStmt() ) ;
+                b.append( ssss.substring(indent.length()) );
             } else {
                 b.append(indent).append("else");
                 if ( ifStmt.getElseStmt() instanceof BlockStmt ) {
