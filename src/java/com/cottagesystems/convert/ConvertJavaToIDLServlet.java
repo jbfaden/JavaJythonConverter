@@ -90,7 +90,7 @@ public class ConvertJavaToIDLServlet extends HttpServlet {
         convert.setOnlyStatic(onlyStatic);
         //convert.setPythonTarget(PythonTarget.valueOf(pythonTarget));
         convert.setUnittest( "true".equals( request.getParameter("unittest") ) );
-        convert.setCamelToSnake( true ); // "true".equals( request.getParameter("camelToSnake") ));
+        convert.setCamelToSnake( "true".equals( request.getParameter("camelToSnake") ));
         
         String idlCode;
         

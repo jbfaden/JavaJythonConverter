@@ -1949,6 +1949,8 @@ public class ConvertJavaToIDL {
             theClassName= name;
             if ( camelToSnake ) {
                 the_class_name= camelToSnake(name);
+            } else {
+                the_class_name= name;
             }
         }
         classNameStack.push(name);
