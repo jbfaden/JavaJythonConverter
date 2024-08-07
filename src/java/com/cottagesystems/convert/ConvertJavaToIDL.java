@@ -1607,7 +1607,7 @@ public class ConvertJavaToIDL {
         if ( ifStmt.getElseStmt()!=null ) {
             if ( ifStmt.getElseStmt() instanceof IfStmt ) {
                 b.append( specialConvertElifStmt( indent, (IfStmt)ifStmt.getElseStmt() ) );
-                b.append(indent).append("endelse");
+                b.append(indent).append("endif\n");
             } else {
                 b.append(indent).append("endif else begin\n");
                 b.append( doConvert(indent,ifStmt.getElseStmt()) );
