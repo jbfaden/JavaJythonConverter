@@ -1605,13 +1605,14 @@ public class ConvertJavaToIDL {
 
     private String specialConvertElifStmt( String indent, IfStmt ifStmt ) {
         StringBuilder b= new StringBuilder();
-        b.append(indent).append("else if ");
+        b.append(indent).append("endif else if ");
         b.append( doConvert("", ifStmt.getCondition() ) );
         b.append(" then begin\n");
         b.append( doConvert(indent,ifStmt.getThenStmt() ) );
         if ( ifStmt.getElseStmt()!=null ) {
             if ( ifStmt.getElseStmt() instanceof IfStmt ) {
                 b.append( specialConvertElifStmt( indent, (IfStmt)ifStmt.getElseStmt() ) );
+                b.append(indent).append("endelse");
             } else {
                 b.append(indent).append("endif else begin\n");
                 b.append( doConvert(indent,ifStmt.getElseStmt()) );
@@ -1643,7 +1644,8 @@ public class ConvertJavaToIDL {
         if ( ifStmt.getElseStmt()!=null ) {
             if ( ifStmt.getElseStmt() instanceof IfStmt ) {
                 String ssss= specialConvertElifStmt( indent, (IfStmt)ifStmt.getElseStmt() ) ;
-                b.append( ssss.substring(indent.length()) );
+                int i= ssss.indexOf("endif ");
+                b.append( ssss.substring(i+6) );
             } else {
                 b.append("else");
                 if ( ifStmt.getElseStmt() instanceof BlockStmt ) {
@@ -2293,12 +2295,13 @@ public class ConvertJavaToIDL {
         StringBuilder sb= new StringBuilder(indent);
         sb.append( "while ");
         sb.append( doConvert( "", whileStmt.getCondition() ) );
-        sb.append( "do begin\n" );
+        sb.append( " do begin\n" );
         if ( whileStmt.getBody() instanceof ExpressionStmt ) {
             sb.append( doConvert( indent+s4, whileStmt.getBody() ) );
         } else {
             sb.append( doConvert( indent, whileStmt.getBody() ) );
         }
+        sb.append(indent).append("endwhile\n");
         return sb.toString();
     }
 
