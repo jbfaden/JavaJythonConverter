@@ -978,11 +978,10 @@ public class ConvertJavaToIDL {
                 case "format":
                     if ( clas.toString().equals("String") ) {
                         StringBuilder sb= new StringBuilder();
-                        sb.append(indent).append( doConvert("",args.get(0)) ).append(" % ");
+                        sb.append(indent).append("string(format=").append(doConvert("",args.get(0))).append(",");
                         if ( args.size()==2 ) {
                             sb.append( doConvert( "", args.get(1) ) );
                         } else {
-                            sb.append("(");
                             sb.append( utilFormatExprList( args.subList(1, args.size() ) ) );
                             sb.append(")");
                         }
