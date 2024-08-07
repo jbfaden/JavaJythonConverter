@@ -1520,7 +1520,7 @@ public class ConvertJavaToIDL {
         List<Statement> statements= blockStmt.getStmts();
         if ( statements==null ) {
             popScopeStack();
-            return indent + "pass\n";
+            return "; pass\n";
         }
         int lines=0;
         for ( Statement s: statements ) {
