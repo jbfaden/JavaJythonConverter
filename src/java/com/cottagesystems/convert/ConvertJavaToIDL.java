@@ -979,12 +979,8 @@ public class ConvertJavaToIDL {
                     if ( clas.toString().equals("String") ) {
                         StringBuilder sb= new StringBuilder();
                         sb.append(indent).append("string(format=").append(doConvert("",args.get(0))).append(",");
-                        if ( args.size()==2 ) {
-                            sb.append( doConvert( "", args.get(1) ) );
-                        } else {
-                            sb.append( utilFormatExprList( args.subList(1, args.size() ) ) );
-                            sb.append(")");
-                        }
+                        sb.append( utilFormatExprList( args.subList(1, args.size() ) ) );
+                        sb.append(")");
                         return sb.toString();
                     } else {
                         break;
