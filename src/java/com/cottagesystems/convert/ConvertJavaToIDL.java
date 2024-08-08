@@ -1579,22 +1579,12 @@ public class ConvertJavaToIDL {
                 localVariablesStack.peek().put( s, variableDeclarationExpr.getType() );
             }
             if ( v.getInit()!=null ) {
-                if ( v.getInit() instanceof ConditionalExpr ) { // avoid conditional expression by rewriting
-                    ConditionalExpr cc  = (ConditionalExpr)v.getInit();
-                    b.append( indent ).append("if ").append(doConvert("",cc.getCondition())).append(":\n");
-                    b.append(indent).append(s4).append( s );
-                    b.append(" = ").append(doConvert("",cc.getThenExpr() )).append("\n");
-                    b.append( indent ).append("else:\n" );
-                    b.append(indent).append(s4).append( s );
-                    b.append(" = ").append(doConvert("",cc.getElseExpr() )).append("\n");
-                } else {
-                    if ( v.getInit() instanceof ObjectCreationExpr && ((ObjectCreationExpr)v.getInit()).getAnonymousClassBody()!=null ) {
-                        for ( BodyDeclaration bd: ((ObjectCreationExpr)v.getInit()).getAnonymousClassBody() ) {
-                            b.append(doConvert( indent+"; J2J:", bd ) );
-                        }
+                if ( v.getInit() instanceof ObjectCreationExpr && ((ObjectCreationExpr)v.getInit()).getAnonymousClassBody()!=null ) {
+                    for ( BodyDeclaration bd: ((ObjectCreationExpr)v.getInit()).getAnonymousClassBody() ) {
+                        b.append(doConvert( indent+"; J2J:", bd ) );
                     }
-                    b.append( indent ).append(s).append(" = ").append(doConvert("",v.getInit()) );
                 }
+                b.append( indent ).append(s).append(" = ").append(doConvert("",v.getInit()) );
             }
         }
         return b.toString();
@@ -2238,7 +2228,7 @@ public class ConvertJavaToIDL {
         sb.append( "\n" );
         
         if ( methodDeclaration.getBody()!=null ) {
-            if ( isStatic ) {
+            if ( isStatic && !onlyStatic ) {
                 sb.append(indent).append(s4).append("compile_opt idl2, static\n");
                 if ( this.commonForStaticVariables.length()>0 ) {
                     sb.append(indent).append(s4).append(this.commonForStaticVariables).append("\n");
@@ -2388,12 +2378,23 @@ public class ConvertJavaToIDL {
             if ( s.trim().startsWith("@param") ) {
                 s= s.trim().substring(7);
                 int j= s.indexOf(" ");
-                String paramName= s.substring(0,j).trim();
+                String paramName;
+                if ( j>-1 ) {
+                    paramName= s.substring(0,j).trim();
+                } else {
+                    paramName= s;
+                }
                 if ( paramName.charAt(paramName.length()-1)==',' ) {
                     paramName= paramName.substring(0,paramName.length()-1);
                 }
-                String paramDescription= s.substring(j).trim();
-                paramsBuilder.append(indent).append(";   ").append(paramName).append(" - ").append(paramDescription).append("\n");
+                String paramDescription;
+                if ( j>-1 ) {
+                    paramDescription= s.substring(j).trim();
+                    paramsBuilder.append(indent).append(";   ").append(paramName).append(" - ").append(paramDescription).append("\n");
+                } else {
+                    paramsBuilder.append(indent).append(";   ").append(paramName);
+                }
+                
             } else {
                 b.append(indent).append(";").append(s).append("\n");
             }
