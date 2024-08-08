@@ -2368,15 +2368,18 @@ public class ConvertJavaToIDL {
         }
         
         StringBuilder paramsBuilder= new StringBuilder();
-
+        String returns="";
+        StringBuilder seeBuilder= new StringBuilder();
+        
         b.append(indent).append(";+\n");
         for ( String s : ss ) {
             int i= s.indexOf("*");
             if ( i>-1 && s.substring(0,i).trim().length()==0 ) {
                 s= s.substring(i+1);
             }
-            if ( s.trim().startsWith("@param") ) {
-                s= s.trim().substring(7);
+            s= s.trim();
+            if ( s.startsWith("@param") ) {
+                s= s.substring(7);
                 int j= s.indexOf(" ");
                 String paramName;
                 if ( j>-1 ) {
@@ -2394,15 +2397,29 @@ public class ConvertJavaToIDL {
                 } else {
                     paramsBuilder.append(indent).append(";   ").append(paramName);
                 }
-                
+            } else if ( s.startsWith("@return") ) {
+                returns= s.substring(7);
+            } else if ( s.startsWith("@see") ) {
+                seeBuilder.append( indent ) .append( ";   ").append( s.substring(4) ); 
             } else {
                 b.append(indent).append(";").append(s).append("\n");
             }
         }
         if ( paramsBuilder.length()>0 ) {
             b.append(";\n; Parameters:\n");
+            b.append(paramsBuilder);
         }
-        b.append(paramsBuilder);
+        
+        if ( returns.length()>0 ) {
+            b.append(";\n; Returns:\n");
+            b.append(";  ").append(returns).append("\n");
+        }
+        
+        if ( seeBuilder.length()>0 ) {
+            b.append(";\n; See:\n");
+            b.append(seeBuilder).append("\n");
+        }
+        
         b.append(indent).append(";-\n");
         return b.toString();
     }
