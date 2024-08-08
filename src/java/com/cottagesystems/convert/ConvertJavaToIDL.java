@@ -191,6 +191,8 @@ public class ConvertJavaToIDL {
     Map<String,String> nameMapForward= new HashMap<>();
     Map<String,String> nameMapReverse= new HashMap<>();
     
+    private String commonForStaticVariables= "";
+    
     /**
      * return the current scope, which includes local variables.  Presently this just uses one scope,
      * but this should check for code blocks, etc.
@@ -2062,14 +2064,50 @@ public class ConvertJavaToIDL {
                 }
             }
             
+            StringBuilder commons= new StringBuilder();
+            StringBuilder commonsInit= new StringBuilder(); // the part which will go in the common block
+            
             ConstructorDeclaration constructor= null;
+            
+            for ( Node n : classOrInterfaceDeclaration.getChildrenNodes() ) {
+                if ( n instanceof FieldDeclaration ) {
+                    boolean isStatic= ModifierSet.isStatic(((FieldDeclaration)n).getModifiers() );
+                    if ( isStatic ) {
+                        for ( VariableDeclarator vd : ((FieldDeclaration)n).getVariables() ) {
+                            String vname= vd.getId().getName();
+                            sb.append( doConvert( indent, n ) ).append("\n");
+                            commons.append(", ").append(name).append("_").append(vname);
+                            commonForStaticVariables= "common "+the_class_name;
+                            if ( vd.getInit()!=null ) {
+                                String v= doConvert("",vd.getInit());
+                                commonsInit.append(indent).append(s4).append(the_class_name).append("_").append(vname).append("=").append(v).append("\n");
+                            }
+                        }
+                    } else {
+                        for ( VariableDeclarator vd : ((FieldDeclaration)n).getVariables() ) {
+                            if ( vd.getInit()!=null ) {
+                                structureDefinition.append(",").append(vd.getId().getName()).append(":").append(doConvert("",vd.getInit()));
+                            } else {
+                                structureDefinition.append(",").append(vd.getId().getName()).append(":ptr_new()");
+                            }
+                        }
+                    }
+                }                
+                
+            }
+            
+            if ( commonForStaticVariables.length()>0 ) {
+                commonForStaticVariables= commonForStaticVariables + commons;
+            }
             
             for ( Node n : classOrInterfaceDeclaration.getChildrenNodes() ) {
                 sb.append("\n");
                 if ( n instanceof ClassOrInterfaceType ) {
                     // skip this strange node
+                    sb.append("; J2J: inner class skipped: ").append(((ClassOrInterfaceType)n).getName()).append("\n");
                 } else if ( n instanceof EmptyMemberDeclaration ) {
                     // skip this strange node
+                    sb.append("; J2J: empty member skipped: ").append(((EmptyMemberDeclaration)n));
                 } else if ( n instanceof ConstructorDeclaration ) {
                     if ( constructor!=null ) {
                         sb.append("; J2J: multiple constructors cannot be converted\n");
@@ -2083,22 +2121,10 @@ public class ConvertJavaToIDL {
                         }
                     }                    
                     sb.append( doConvert( indent, n ) ).append("\n");
-                } else {
-                    boolean isStatic= ModifierSet.isStatic(((FieldDeclaration)n).getModifiers() );
-                    if ( isStatic ) {
-                        sb.append( doConvert( indent, n ) ).append("\n");
-                    } else {
-                        for ( VariableDeclarator vd : ((FieldDeclaration)n).getVariables() ) {
-                            if ( vd.getInit()!=null ) {
-                                structureDefinition.append(",").append(vd.getId().getName()).append(":").append(doConvert("",vd.getInit()));
-                            } else {
-                                structureDefinition.append(",").append(vd.getId().getName()).append(":ptr_new()");
-                            }
-                        }
-                    }
-                }
+                } 
             }
             
+            // write the define block which identifies common block with static variables.
             if ( !onlyStatic ) {
                 sb.append("\n");
                 sb.append( indent ).append("pro ").append(the_class_name ). append("__define\n") ;
@@ -2109,6 +2135,14 @@ public class ConvertJavaToIDL {
                     String ss= doConvert( indent, constructor.getBlock() );
                     sb.append(ss);
                 }
+                if ( commons.length()>0 ) {
+                    String c= commons.substring(1);
+                    sb.append( indent ).append( s4 ).append( "common " ).append(the_class_name ).append(",").append(c).append("\n");   
+                }
+                if ( commonsInit.length()>0 ) {
+                    sb.append( indent ).append( commonsInit ).append("\n");   
+                }
+                sb.append( indent ).append( s4 ).append("dummy={").append(the_class_name ).append(",dummy:0}\n");
                 sb.append( indent ).append( s4 ).append( "return\n" );
                 sb.append( indent ).append( "end\n" );
             }
@@ -2207,6 +2241,9 @@ public class ConvertJavaToIDL {
         if ( methodDeclaration.getBody()!=null ) {
             if ( isStatic ) {
                 sb.append(indent).append(s4).append("compile_opt idl2, static\n");
+                if ( this.commonForStaticVariables.length()>0 ) {
+                    sb.append(indent).append(s4).append(this.commonForStaticVariables).append("\n");
+                }
             }
             sb.append( doConvert( indent, methodDeclaration.getBody() ) );  
         } else {
@@ -2265,9 +2302,6 @@ public class ConvertJavaToIDL {
                     sb.append( indent ).append(s4).append(pythonName).append(" = ").append( doConvert( "",ce.getElseExpr() ) ).append("\n");
                     
                 } else {
-                    sb.append(indent).append("pro ").append(the_class_name).append("::GetProperty, ").append(pythonName).append("=").append(pythonName).append("\n");
-                    sb.append(indent).append("    ").append(pythonName).append("=").append(doConvert( "",v.getInit() )).append("\n");
-                    sb.append(indent).append("end\n");
                     
                 }
             }
@@ -2776,7 +2810,7 @@ public class ConvertJavaToIDL {
             boolean isStatic= ModifierSet.isStatic( ss.getModifiers() );
             if ( isStatic ) {
                 scope = javaNameToIdlName( theClassName ); 
-                return indent + scope + (scope.length()==0 ? "" : ".") + javaNameToIdlName(s);
+                return indent + scope + (scope.length()==0 ? "" : "_") + javaNameToIdlName(s);
             } else {
                 scope = "self";
                 return indent + scope + (scope.length()==0 ? "" : ".") + javaNameToIdlName(s);
