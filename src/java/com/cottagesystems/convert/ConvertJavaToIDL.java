@@ -2075,7 +2075,6 @@ public class ConvertJavaToIDL {
                     if ( isStatic ) {
                         for ( VariableDeclarator vd : ((FieldDeclaration)n).getVariables() ) {
                             String vname= vd.getId().getName();
-                            sb.append( doConvert( indent, n ) ).append("\n");
                             commons.append(", ").append(name).append("_").append(vname);
                             commonForStaticVariables= "common "+the_class_name;
                             if ( vd.getInit()!=null ) {
