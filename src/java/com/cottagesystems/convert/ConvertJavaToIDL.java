@@ -2377,13 +2377,33 @@ public class ConvertJavaToIDL {
         if ( ss[ss.length-1].trim().length()==0 ) {
             ss= Arrays.copyOfRange( ss, 0, ss.length-1 );
         }
+        
+        StringBuilder paramsBuilder= new StringBuilder();
+
+        b.append(indent).append(";+\n");
         for ( String s : ss ) {
             int i= s.indexOf("*");
             if ( i>-1 && s.substring(0,i).trim().length()==0 ) {
                 s= s.substring(i+1);
             }
-            b.append(indent).append(";").append(s).append("\n");
+            if ( s.trim().startsWith("@param") ) {
+                s= s.trim().substring(7);
+                int j= s.indexOf(" ");
+                String paramName= s.substring(0,j).trim();
+                if ( paramName.charAt(paramName.length()-1)==',' ) {
+                    paramName= paramName.substring(0,paramName.length()-1);
+                }
+                String paramDescription= s.substring(j).trim();
+                paramsBuilder.append(indent).append(";   ").append(paramName).append(" - ").append(paramDescription).append("\n");
+            } else {
+                b.append(indent).append(";").append(s).append("\n");
+            }
         }
+        if ( paramsBuilder.length()>0 ) {
+            b.append(";\n; Parameters:\n");
+        }
+        b.append(paramsBuilder);
+        b.append(indent).append(";-\n");
         return b.toString();
     }
 
