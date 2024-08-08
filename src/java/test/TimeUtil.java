@@ -11,6 +11,12 @@ public class TimeUtil {
     public static int MINUTE=1;
     public static int SECOND=2;
     
+    /**
+     * create a time array
+     * @param h the hours
+     * @param m the minutes
+     * @param s the seconds
+     */
     public static int[] create( int h, int m, int s ) {
         return new int[] { h, m, s };
     }
