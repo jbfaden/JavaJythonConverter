@@ -1052,6 +1052,7 @@ public class ConvertJavaToIDL {
         }
         if ( clasType.equals("Character") ) {
             String s;
+            
             switch ( name ) {
                 case "isDigit":
                     s= doConvert( "",args.get(0) );
@@ -1072,17 +1073,17 @@ public class ConvertJavaToIDL {
                     }
                     return s + ".isspace()"; 
                 case "isLetter":
-                    s= doConvert( "",args.get(0) );
-                    if ( s.startsWith("ord(") && s.endsWith(")") ) {
-                        s= s.substring(4,s.length()-1);
-                    }
-                    return s + ".isalpha()"; 
                 case "isAlphabetic":
                     s= doConvert( "",args.get(0) );
                     if ( s.startsWith("ord(") && s.endsWith(")") ) {
                         s= s.substring(4,s.length()-1);
                     }
-                    return s + ".isalpha()"; 
+                    this.additionalClasses.put("function isAlpha, char\n"+
+                            "  char_code = BYTE(char)\n" +
+                            "  return, (char_code GE 65 AND char_code LE 90) OR " +
+                            " (char_code GE 97 AND char_code LE 122)\n"+
+                            "end\n",Boolean.TRUE);
+                    return "isAlpha("+s + ")"; 
                 default: 
                     break;
             }
@@ -1569,6 +1570,18 @@ public class ConvertJavaToIDL {
                 String news= camelToSnakeAndRegister(s);
                 s= news;
             }
+            if ( s.equals("gt") ) {
+                String news= "gt_";
+                nameMapForward.put( s, news );
+                nameMapReverse.put( news, s );
+                s= news;
+            } else if ( s.equals("lt") ) {
+                String news= "lt_";
+                nameMapForward.put( s, news );
+                nameMapReverse.put( news, s );
+                s= news;
+            }
+            
             // TODO: we should guard against the many reserved words in IDL, like switch
             if ( v.getInit()!=null 
                     && ( v.getInit() instanceof ArrayInitializerExpr ) 
@@ -1881,7 +1894,13 @@ public class ConvertJavaToIDL {
                         break;
                 }
             }
-            return indent + s + "." + fieldAccessExpr.getField();
+            
+            FieldDeclaration field= stackFields.peek().get(fieldAccessExpr.getField());            
+            if ( field!=null && ModifierSet.isStatic(field.getModifiers()) ) {
+                return indent + s + "_" + fieldAccessExpr.getField();
+            } else {
+                return indent + s + "." + fieldAccessExpr.getField();
+            }
         }
     }
 
@@ -1952,6 +1971,12 @@ public class ConvertJavaToIDL {
             }
         }
         classNameStack.push(name);
+        
+        nameMapForward.put("gt","gt_");
+        nameMapForward.put("lt","lt_");
+        for ( Entry<String,String> e: nameMapForward.entrySet() ) {
+            nameMapReverse.put(e.getValue(),e.getKey());
+        }
         
         getCurrentScopeClasses().put( name, classOrInterfaceDeclaration );
         
@@ -2055,7 +2080,7 @@ public class ConvertJavaToIDL {
                             sb.append(indent).append("; J2J: Name is used twice in class: ")
                                 .append(pythonName).append(" ").append(name1).append("\n");
                     }
-                    nn.put( name1, n );
+                    nn.put( name + "_" + name1, n );
                 } else {
                     System.err.println("Not supported: "+n);
                 }
@@ -2193,7 +2218,7 @@ public class ConvertJavaToIDL {
         String comments= utilRewriteComments( indent, methodDeclaration.getComment() );
         sb.append( comments );
         
-        String methodName= methodDeclaration.getName();
+        String methodName= methodDeclaration.getName();        
         String idlName;
         if ( camelToSnake ) {
             idlName= camelToSnakeAndRegister(methodName);
@@ -2201,6 +2226,11 @@ public class ConvertJavaToIDL {
             idlName= methodName;
         }
 
+        // some are already registered, like "gt"
+        if ( nameMapForward.containsKey(methodName) ) {
+            idlName= nameMapForward.get(methodName);
+        }
+        
         String classNameQualifier= onlyStatic ? "" : the_class_name + "::";
         
         if ( methodDeclaration.getType() instanceof japa.parser.ast.type.VoidType ) {
@@ -2544,10 +2574,10 @@ public class ConvertJavaToIDL {
                 }   
                 break;
             case "int":
-                type= "int";
+                type= "long";
                 break;
             case "long":
-                type= "long";
+                type= "long64";
                 break;
             default:
                 type = ""; // (FieldHandler)fh
