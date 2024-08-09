@@ -262,7 +262,7 @@ public class ConvertJavaToIDL {
      * record the method names, since Python will need to refer to "self" to call methods but Java does not.
      */
     private final Map<String,ClassOrInterfaceDeclaration> classMethods = new HashMap<>();
-    
+
     /**
      * return imported class names.
      */
@@ -1263,9 +1263,17 @@ public class ConvertJavaToIDL {
                     } else {
                         boolean isStatic= ModifierSet.isStatic(mm.getModifiers() );
                         if ( isStatic ) {
-                            return indent + javaNameToIdlName( m.getName() ) + "." + javaNameToIdlName( name ) + "("+ utilFormatExprList(args) +")";
+                            if ( mm.getType() instanceof japa.parser.ast.type.VoidType ) {
+                                return indent + javaNameToIdlName( m.getName() ) + "." + javaNameToIdlName( name ) + "("+ utilFormatExprList(args) +")";
+                            } else {
+                                return indent + "_ = " + javaNameToIdlName( m.getName() ) + "." + javaNameToIdlName( name ) + "("+ utilFormatExprList(args) +")";
+                            }
                         } else {
-                            return indent + "self." + javaNameToIdlName( name ) + "("+ utilFormatExprList(args) +")";
+                            if ( mm.getType() instanceof japa.parser.ast.type.VoidType ) {
+                                return indent + "self." + javaNameToIdlName( name ) + "("+ utilFormatExprList(args) +")";
+                            } else {
+                                return indent + "_ = self." + javaNameToIdlName( name ) + "("+ utilFormatExprList(args) +")";
+                            }
                         }
                     }
                 } else {
@@ -1988,6 +1996,13 @@ public class ConvertJavaToIDL {
         pushScopeStack(false);
         getCurrentScope().put( "this", new ClassOrInterfaceType(name) );
         
+        classOrInterfaceDeclaration.getChildrenNodes().forEach((n) -> {
+            if ( n instanceof MethodDeclaration ) {
+                classMethods.put( ((MethodDeclaration) n).getName(), classOrInterfaceDeclaration );
+                getCurrentScopeMethods().put(((MethodDeclaration) n).getName(),(MethodDeclaration)n );
+            }
+        });
+            
         if ( onlyStatic ) {
             classOrInterfaceDeclaration.getChildrenNodes().forEach((n) -> {
                 sb.append( doConvert(indent,n) ).append("\n");
