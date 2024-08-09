@@ -1618,6 +1618,8 @@ public class ConvertJavaToIDL {
                 b.append( doConvert(indent,ifStmt.getElseStmt()) );
                 b.append(indent).append("endelse\n");
             }
+        } else {
+            b.append(indent).append("endif\n");
         }
         return b.toString();        
     }
@@ -1638,8 +1640,9 @@ public class ConvertJavaToIDL {
             b.append( doConvert(indent,ifStmt.getThenStmt() ) );
             b.append( indent ) .append( "endif ");
         } else {
-            b.append(" then ");
-            b.append( doConvert("",ifStmt.getThenStmt() ) ).append("\n");
+            b.append(" then begin\n");
+            b.append( doConvert(indent+s4,ifStmt.getThenStmt() ) ).append("\n");
+            b.append( indent ) .append( "endif ");
         }
         if ( ifStmt.getElseStmt()!=null ) {
             if ( ifStmt.getElseStmt() instanceof IfStmt ) {
@@ -1653,9 +1656,9 @@ public class ConvertJavaToIDL {
                     b.append( doConvert(indent,ifStmt.getElseStmt()) );
                     b.append(indent).append( "endelse\n" );
                 } else {
-                    b.append(" begin ");
-                    b.append( doConvert("",ifStmt.getElseStmt() ) ).append("\n");
-                    b.append(" endelse\n ");
+                    b.append(" begin\n");
+                    b.append( doConvert(indent+s4,ifStmt.getElseStmt() ) ).append("\n");
+                    b.append(indent).append("endelse\n ");
                 }
             }
         }
