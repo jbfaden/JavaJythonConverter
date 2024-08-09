@@ -70,7 +70,7 @@ public class ConvertJavaToPythonServlet extends HttpServlet {
         boolean onlyStatic = "true".equals( request.getParameter("onlyStatic") );
         request.getParameterMap();
         String pythonTarget = request.getParameter("pythonTarget");
-        if ( pythonTarget==null ) pythonTarget= PythonTarget.jython_2_2.toString();
+        if ( pythonTarget==null ) pythonTarget= PythonTarget.python_3_6.toString();
                 
         response.setContentType("text/html;charset=UTF-8");
 
