@@ -2319,15 +2319,15 @@ public class ConvertJavaToIDL {
 
     private String doConvertWhileStmt(String indent, WhileStmt whileStmt) {
         StringBuilder sb= new StringBuilder(indent);
-        sb.append( "while ");
+        sb.append( "WHILE ");
         sb.append( doConvert( "", whileStmt.getCondition() ) );
-        sb.append( " do begin\n" );
+        sb.append( " DO BEGIN\n" );
         if ( whileStmt.getBody() instanceof ExpressionStmt ) {
             sb.append( doConvert( indent+s4, whileStmt.getBody() ) );
         } else {
             sb.append( doConvert( indent, whileStmt.getBody() ) );
         }
-        sb.append(indent).append("endwhile\n");
+        sb.append(indent).append("ENDWHILE\n");
         return sb.toString();
     }
 
@@ -2338,18 +2338,18 @@ public class ConvertJavaToIDL {
     
     private String doConvertSwitchStmt(String indent, SwitchStmt switchStmt) {
          StringBuilder b= new StringBuilder();
-        b.append( indent ).append( "switch " );
-        b.append( doConvert("",switchStmt.getSelector()) ).append(" of\n");
+        b.append( indent ).append( "SWITCH " );
+        b.append( doConvert("",switchStmt.getSelector()) ).append(" OF\n");
         String nextIndent= indent + s4;
         String nextNextIndent = nextIndent + s4;
         for ( SwitchEntryStmt ses: switchStmt.getEntries() ) {
             Expression label= ses.getLabel();
             String slabel;
             if ( label==null ) {
-                b.append( nextIndent ).append( "else:\n");
+                b.append( nextIndent ).append( "ELSE: BEGIN\n");
             } else {
                 slabel= doConvert("",ses.getLabel());
-                b.append( nextIndent ).append( "").append( slabel ).append(": begin\n");
+                b.append( nextIndent ).append( "").append( slabel ).append(": BEGIN\n");
             }
             
             if ( ses.getStmts()!=null ) {
@@ -2358,9 +2358,9 @@ public class ConvertJavaToIDL {
                     b.append( "\n" );
                 }
             }
-            b.append( nextIndent ).append("end\n");
+            b.append( nextIndent ).append("END\n");
         }
-        b.append( indent ).append("end\n");
+        b.append( indent ).append("ENDSWITCH\n");
         return b.toString();
     }
 
@@ -2408,7 +2408,7 @@ public class ConvertJavaToIDL {
             } else if ( s.startsWith("@return") ) {
                 returns= s.substring(7);
             } else if ( s.startsWith("@see") ) {
-                seeBuilder.append( indent ) .append( ";   ").append( s.substring(4) ); 
+                seeBuilder.append( indent ) .append( ";   ").append( s.substring(4) ).append("\n"); 
             } else {
                 b.append(indent).append(";").append(s).append("\n");
             }
