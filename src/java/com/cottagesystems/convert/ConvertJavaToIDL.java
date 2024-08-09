@@ -1974,6 +1974,8 @@ public class ConvertJavaToIDL {
         
         nameMapForward.put("gt","gt_");
         nameMapForward.put("lt","lt_");
+        nameMapForward.put("eq","eq_");
+        
         for ( Entry<String,String> e: nameMapForward.entrySet() ) {
             nameMapReverse.put(e.getValue(),e.getKey());
         }
