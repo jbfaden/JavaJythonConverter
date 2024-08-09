@@ -2069,18 +2069,19 @@ public class ConvertJavaToIDL {
             for ( Node n : classOrInterfaceDeclaration.getChildrenNodes() ) {
                 if ( n instanceof FieldDeclaration ) {
                     boolean isStatic= ModifierSet.isStatic(((FieldDeclaration)n).getModifiers() );
-                    if ( isStatic ) {
-                        for ( VariableDeclarator vd : ((FieldDeclaration)n).getVariables() ) {
-                            String vname= vd.getId().getName();
+                    for ( VariableDeclarator vd : ((FieldDeclaration)n).getVariables() ) {
+                        String vname= vd.getId().getName();
+                        
+                        getCurrentScopeFields().put( vname,(FieldDeclaration)n);
+                        
+                        if ( isStatic ) {
                             commons.append(", ").append(name).append("_").append(vname);
                             commonForStaticVariables= "common "+the_class_name;
                             if ( vd.getInit()!=null ) {
                                 String v= doConvert("",vd.getInit());
                                 commonsInit.append(indent).append(s4).append(the_class_name).append("_").append(vname).append("=").append(v).append("\n");
                             }
-                        }
-                    } else {
-                        for ( VariableDeclarator vd : ((FieldDeclaration)n).getVariables() ) {
+                        } else {
                             if ( vd.getInit()!=null ) {
                                 structureDefinition.append(",").append(vd.getId().getName()).append(":").append(doConvert("",vd.getInit()));
                             } else {
