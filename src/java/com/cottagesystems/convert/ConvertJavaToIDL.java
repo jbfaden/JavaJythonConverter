@@ -617,7 +617,7 @@ public class ConvertJavaToIDL {
                 return left + " or " + right;
             case equals:
                 if ( b.getRight() instanceof NullLiteralExpr ) {
-                    return left + " is " + right;
+                    return "n_elements(" + left + ") eq 0";
                 } else {
                     return left + " eq " + right;
                 }
@@ -1766,11 +1766,11 @@ public class ConvertJavaToIDL {
         NameExpr n= d.getName();
         if ( n instanceof QualifiedNameExpr ) {
             QualifiedNameExpr qn= (QualifiedNameExpr)n;
-            sb.append( "from " ).append( qn.getQualifier() ).append( " import " ).append( n.getName() );
+//            sb.append( "; from " ).append( qn.getQualifier() ).append( " import " ).append( n.getName() );
         } else {
             String nn= n.getName();
             int i= nn.lastIndexOf(".");
-            sb.append( "from " ).append( nn.substring(0,i) ).append( " import " ).append( nn.substring(i));
+//            sb.append( "; from " ).append( nn.substring(0,i) ).append( " import " ).append( nn.substring(i));
         }
         return sb.toString();
     }
@@ -2556,19 +2556,27 @@ public class ConvertJavaToIDL {
         return type + "(" + doConvert("", castExpr.getExpr() ) + ")";
     }
 
+    /**
+     * TODO: verify this
+     * @param indent
+     * @param tryStmt
+     * @return 
+     */
     private String doConvertTryStmt(String indent, TryStmt tryStmt) {
         StringBuilder sb= new StringBuilder();
-        sb.append( indent ).append( "try:\n");
+        sb.append( indent ).append( "catch, err\n");
+        sb.append( indent ).append( "if err eq 0 then begin\n");
         sb.append( doConvert( indent, tryStmt.getTryBlock() ) );
+        sb.append( indent ).append( "endif else begin\n");
         for ( CatchClause cc: tryStmt.getCatchs() ) {
             String id= doConvert( "",cc.getExcept().getId() );
-            sb.append(indent).append("except ").append(doConvert( "",cc.getExcept() )).append( ", ").append(id).append(":\n");
             sb.append( doConvert( indent, cc.getCatchBlock() ) );
         }
         if ( tryStmt.getFinallyBlock()!=null ) {
             sb.append( indent ).append( "finally:\n");
             sb.append( doConvert( indent, tryStmt.getFinallyBlock() ) );
         }
+        sb.append( indent ).append( "endelse\n");
         return sb.toString();
     }
 
