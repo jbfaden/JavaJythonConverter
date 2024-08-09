@@ -1886,7 +1886,14 @@ public class ConvertJavaToIDL {
     }
 
     private String doConvertArrayAccessExpr(String indent, ArrayAccessExpr arrayAccessExpr) {
-        return doConvert( indent,arrayAccessExpr.getName()) + "["+doConvert("",arrayAccessExpr.getIndex())+"]";
+        if ( arrayAccessExpr.getName() instanceof ArrayAccessExpr ) { // double array indeces are backwards in IDL
+            String idx1= doConvert("",arrayAccessExpr.getIndex());
+            String idx2= doConvert("",((ArrayAccessExpr)arrayAccessExpr.getName()).getIndex());
+            String s= doConvert("",((ArrayAccessExpr)arrayAccessExpr.getName()).getName());
+            return indent + s + "[" + idx1 + "," + idx2 + "]";
+        } else {
+            return doConvert( indent,arrayAccessExpr.getName()) + "["+doConvert("",arrayAccessExpr.getIndex())+"]";
+        }
     }
 
     private String doConvertUnaryExpr(String indent, UnaryExpr unaryExpr) {
@@ -2115,10 +2122,16 @@ public class ConvertJavaToIDL {
             
             // write the define block which identifies common block with static variables.
             if ( !onlyStatic ) {
+                
+                //stackFields;
+                
                 sb.append("\n");
                 sb.append( indent ).append("pro ").append(the_class_name ). append("__define\n") ;
                 if ( structureDefinition.length()>0 ) {
-                    sb.append( indent ).append( s4 ).append( "void={").append(the_class_name).append(",").append(structureDefinition.substring(1)).append("}\n");
+                    sb.append( indent ).append( s4 ).append( "dummy={").append(the_class_name).append(",").append(structureDefinition.substring(1)).append("}\n");
+                } else {
+                    sb.append( indent ).append( s4 ).append("dummy={").append(the_class_name ).append(",dummy:0}\n");
+                   
                 }
                 if ( constructor!=null ) {
                     String ss= doConvert( indent, constructor.getBlock() );
@@ -2131,7 +2144,7 @@ public class ConvertJavaToIDL {
                 if ( commonsInit.length()>0 ) {
                     sb.append( indent ).append( commonsInit ).append("\n");   
                 }
-                sb.append( indent ).append( s4 ).append("dummy={").append(the_class_name ).append(",dummy:0}\n");
+                
                 sb.append( indent ).append( s4 ).append( "return\n" );
                 sb.append( indent ).append( "end\n" );
             }
@@ -2197,13 +2210,7 @@ public class ConvertJavaToIDL {
         
         boolean comma; 
         
-        if ( !isStatic ) {
-            throw new IllegalArgumentException("only static functions are supported");
-            //sb.append("self");
-            //comma= true;
-        } else {
-            comma = true;
-        }
+        comma = true;
 
         pushScopeStack(false);
 
@@ -2487,7 +2494,7 @@ public class ConvertJavaToIDL {
                                 if ( t instanceof ReferenceType 
                                         && t.equals(ASTHelper.createReferenceType(ASTHelper.CHAR_TYPE,1) ) ) {
                                     return indent + "strjoin( "+ doConvert("",e) +")";
-                                } else if ( t.equals(ASTHelper.createReferenceType("StringBuilder",0) ) ) {
+                                } else if ( t!=null && t.equals(ASTHelper.createReferenceType("StringBuilder",0) ) ) {
                                     return  doConvert("",e); // these are just strings.
                                 }
                                 System.err.println("here "+t);
