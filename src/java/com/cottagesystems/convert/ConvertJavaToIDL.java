@@ -1610,6 +1610,12 @@ public class ConvertJavaToIDL {
         return b.toString();
     }
 
+    /**
+     * returns the "endif else if" stuff without indenting
+     * @param indent
+     * @param ifStmt
+     * @return 
+     */
     private String specialConvertElifStmt( String indent, IfStmt ifStmt ) {
         StringBuilder b= new StringBuilder();
         b.append(indent).append("endif else if ");
@@ -1619,7 +1625,6 @@ public class ConvertJavaToIDL {
         if ( ifStmt.getElseStmt()!=null ) {
             if ( ifStmt.getElseStmt() instanceof IfStmt ) {
                 b.append( specialConvertElifStmt( indent, (IfStmt)ifStmt.getElseStmt() ) );
-                b.append(indent).append("endif\n");
             } else {
                 b.append(indent).append("endif else begin\n");
                 b.append( doConvert(indent,ifStmt.getElseStmt()) );
