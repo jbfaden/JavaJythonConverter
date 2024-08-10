@@ -1263,15 +1263,15 @@ public class ConvertJavaToIDL {
                         boolean isStatic= ModifierSet.isStatic(mm.getModifiers() );
                         if ( isStatic ) {
                             if ( mm.getType() instanceof japa.parser.ast.type.VoidType ) {
-                                return indent + javaNameToIdlName( m.getName() ) + "." + javaNameToIdlName( name ) + "("+ utilFormatExprList(args) +")";
+                                return indent + javaNameToIdlName( m.getName() ) + "." + javaNameToIdlName( name ) + ","+ utilFormatExprList(args);
                             } else {
-                                return indent + "_ = " + javaNameToIdlName( m.getName() ) + "." + javaNameToIdlName( name ) + "("+ utilFormatExprList(args) +")";
+                                return indent + javaNameToIdlName( m.getName() ) + "." + javaNameToIdlName( name ) + "("+ utilFormatExprList(args) +")";
                             }
                         } else {
                             if ( mm.getType() instanceof japa.parser.ast.type.VoidType ) {
-                                return indent + "self." + javaNameToIdlName( name ) + "("+ utilFormatExprList(args) +")";
+                                return indent + "self." + javaNameToIdlName( name ) + "."+ utilFormatExprList(args);
                             } else {
-                                return indent + "_ = self." + javaNameToIdlName( name ) + "("+ utilFormatExprList(args) +")";
+                                return indent + "self." + javaNameToIdlName( name ) + "("+ utilFormatExprList(args) +")";
                             }
                         }
                     }
