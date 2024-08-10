@@ -1059,7 +1059,12 @@ public class ConvertJavaToIDL {
                     if ( s.startsWith("ord(") && s.endsWith(")") ) {
                         s= s.substring(4,s.length()-1);
                     }
-                    return s + ".isdigit()"; 
+                    this.additionalClasses.put("function isDigit, char\n"+
+                            "  char_code = BYTE(char)\n" +
+                            "  return, (char_code GE 48 AND char_code LE 58)\n"+
+                            "end\n",Boolean.TRUE);
+                    return "isDigit(" + s + ")"; 
+                    
                 case "isSpace":
                     s= doConvert( "",args.get(0) );
                     if ( s.startsWith("ord(") && s.endsWith(")") ) {
@@ -1083,7 +1088,7 @@ public class ConvertJavaToIDL {
                             "  return, (char_code GE 65 AND char_code LE 90) OR " +
                             " (char_code GE 97 AND char_code LE 122)\n"+
                             "end\n",Boolean.TRUE);
-                    return "isAlpha("+s + ")"; 
+                    return "isAlpha(" + s + ")"; 
                 default: 
                     break;
             }
@@ -1104,7 +1109,7 @@ public class ConvertJavaToIDL {
                     Type t2= guessType(args.get(1));
                     if ( t1!=null && t1.equals(ASTHelper.createReferenceType(ASTHelper.INT_TYPE,1)) 
                             && t2!=null && t2.equals(ASTHelper.createReferenceType(ASTHelper.INT_TYPE,1)) ) {
-                        sb.append(indent).append(doConvert("",args.get(0))).append("==");
+                        sb.append(indent).append(doConvert("",args.get(0))).append(" eq ");
                         sb.append(doConvert("",args.get(1)));
                         return sb.toString();        
                     }
@@ -1217,7 +1222,7 @@ public class ConvertJavaToIDL {
         } else if ( name.equals("length") && args==null ) {
             return indent + "length("+ doConvert("",clas)+")";
         } else if ( name.equals("equals") && args.size()==1 ) {
-            return indent + doConvert(indent,clas)+"=="+ utilFormatExprList(args);
+            return indent + doConvert(indent,clas)+" eq "+ utilFormatExprList(args);
         } else if ( name.equals("arraycopy") && clasType.equals("System") ) {
             String target = doConvert( "", methodCallExpr.getArgs().get(2) );
             String source = doConvert( "", methodCallExpr.getArgs().get(0) );
