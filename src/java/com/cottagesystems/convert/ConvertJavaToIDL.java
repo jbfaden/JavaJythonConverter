@@ -1133,26 +1133,25 @@ public class ConvertJavaToIDL {
             }
         }
         if ( clasType.equals("Pattern") ) {
-            additionalImports.put("import re\n",Boolean.TRUE);
             switch ( name ) {
                 case "compile":
-                    return "re.compile("+doConvert("",args.get(0))+")";
+                    return "(obj_new('IDLJavaObject$Static$Pattern','java.util.regex.Pattern')).compile("+doConvert("",args.get(0))+")";
                 case "quote":
-                    return "re.escape("+doConvert("",args.get(0))+")";
+                    return "(obj_new('IDLJavaObject$Static$Pattern','java.util.regex.Pattern')).quote("+doConvert("",args.get(0))+")";
             }
         }
         if ( clasType.equals("Pattern") 
                 && name.equals("matcher") ) {
-            return doConvert("",clas) + ".match(" + doConvert("",args.get(0) ) + ")";
+            return doConvert("",clas) + ".matcher(" + doConvert("",args.get(0) ) + ")";
         }
         if ( clasType.equals("Matcher") ) {
             if ( name.equals("matches") ) {
-                return doConvert("",clas) + "!=None";
+                return doConvert("",clas) + ".matches()";
             } else if ( name.equals("find") ) {
                 if ( clas instanceof MethodCallExpr ) {
-                    return doConvert("",clas).replaceAll("match", "search") + "!=None";
+                    return doConvert("",clas)+ ".find()";
                 } else {
-                    return doConvert("",clas) + "!=None  ; J2J: USE search not match above";
+                    return doConvert("",clas) + ".find()";
                 }
             }
         }
