@@ -1289,10 +1289,27 @@ public class ConvertJavaToIDL {
                     return indent + clasName + " + " + utilAssertStr( args.get(0));
                     
                 } else {
-                    if ( onlyStatic && clasName.equals(theClassName) )  {
-                        return indent            + javaNameToIdlName( name ) + "("+ utilFormatExprList(args) +")";
+                    MethodDeclaration mm= this.getCurrentScopeMethods().get(name);
+                    if ( mm==null ) {
+                        if ( onlyStatic && clasName.equals(theClassName) )  {
+                            return indent            + javaNameToIdlName( name ) + "("+ utilFormatExprList(args) +")";
+                        } else {
+                            return indent + clasName +"."+javaNameToIdlName( name )+ "("+ utilFormatExprList(args) +")";
+                        }
                     } else {
-                        return indent + clasName +"."+javaNameToIdlName( name )+ "("+ utilFormatExprList(args) +")";
+                        if ( onlyStatic && clasName.equals(theClassName) )  {
+                            if ( mm.getType() instanceof japa.parser.ast.type.VoidType ) {
+                                return indent            + javaNameToIdlName( name ) + ","+ utilFormatExprList(args);
+                            } else {
+                                return indent            + javaNameToIdlName( name ) + "("+ utilFormatExprList(args) + ")";
+                            }
+                        } else {
+                            if ( mm.getType() instanceof japa.parser.ast.type.VoidType ) {
+                                return indent + clasName +"."+javaNameToIdlName( name )+ ","+ utilFormatExprList(args) ;
+                            } else {
+                                return indent + clasName +"."+javaNameToIdlName( name )+ "("+ utilFormatExprList(args) +")";
+                            }
+                        }                        
                     }
                 }
             }
@@ -2079,6 +2096,7 @@ public class ConvertJavaToIDL {
             // check for unique names
             Map<String,Node> nn= new HashMap<>();
             for ( Node n: classOrInterfaceDeclaration.getChildrenNodes() ) {
+
                 if ( n instanceof ClassOrInterfaceType ) {
                     String name1= ((ClassOrInterfaceType)n).getName();
                     if ( nn.containsKey(name1) ) {
@@ -2086,6 +2104,7 @@ public class ConvertJavaToIDL {
                                 .append(pythonName).append(" ").append(name1).append("\n");
                     }
                     nn.put( name1, n );
+                    
                 } else if ( n instanceof FieldDeclaration ) {
                     
                     for ( VariableDeclarator vd : ((FieldDeclaration)n).getVariables() ) {
@@ -2097,6 +2116,7 @@ public class ConvertJavaToIDL {
                         getCurrentScope().put( name1, ((FieldDeclaration)n).getType() ); //TODO: Does Python and JavaScript have this?
                         nn.put( name1, vd );
                     }
+                    
                 } else if ( n instanceof MethodDeclaration ) {
                     MethodDeclaration md= (MethodDeclaration)n;
                     if ( md.getAnnotations()!=null ) {
@@ -2170,7 +2190,7 @@ public class ConvertJavaToIDL {
                         if ( md.getAnnotations().contains( DEPRECATED ) ) {
                             continue;
                         }
-                    }                    
+                    }               
                     sb.append( doConvert( indent, n ) ).append("\n");
                 } 
             }
