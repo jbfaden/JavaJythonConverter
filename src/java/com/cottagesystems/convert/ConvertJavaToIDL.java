@@ -2038,15 +2038,24 @@ public class ConvertJavaToIDL {
             
             if ( unittest ) {
                 sb.append( "\n# cheesy unittest temporary\n");
-                sb.append( "def assertEquals(a,b):\n"
-                        + "    if ( not a==b ): stop, 'a!=b'\n");
-                sb.append( "def assertArrayEquals(a,b):\n");
-                sb.append( "    if ( len(a)==len(b) ): \n");
-                sb.append( "        for i in xrange(len(a)): \n");
-                sb.append( "            if ( a[i]!=b[i] ): stop, 'a[%d]!=b[%d]'%(i,i))\n" );
-                sb.append( "def fail(msg):\n"
-                        + "    print(msg)\n"
-                        + "    stop, 'fail: '+msg\n");
+                sb.append( "pro assertEquals, a, b \n" );
+                sb.append( "    if ( not a eq b ) then stop, 'a ne b'\n");
+                sb.append( "end\n" );        
+                sb.append( "\n" );
+                sb.append( "pro assertArrayEquals, a, b\n");
+                sb.append( "    if len(a) eq len(b) then begin\n");
+                sb.append( "        for i=0,n_elements(a)-1 do begin\n");
+                sb.append( "            if ( a[i] ne b[i] ) then stop, string(format='a[%d] ne [%d]',i,i)\n" );
+                sb.append( "        endfor\n" );
+                sb.append( "    endif else begin\n" );
+                sb.append( "        stop, 'arrays are different lengths'\n");
+                sb.append( "    endelse\n" );
+                sb.append( "end\n" );
+                sb.append( "\n" );
+                sb.append( "pro fail, msg\n" );
+                sb.append( "    print, msg\n" );
+                sb.append( "    stop, 'fail: '+msg\n" );
+                sb.append( "end\n" );
                 sb.append( "\n" );
             }
             String comments= utilRewriteComments(indent, classOrInterfaceDeclaration.getComment() );
@@ -2225,7 +2234,8 @@ public class ConvertJavaToIDL {
             }
             
             if ( unittest ) {
-                sb.append("test = ").append(classOrInterfaceDeclaration.getName()).append("()\n");
+                sb.append("; Run the following code on the command line:\n");
+                sb.append("Test = obj_new(\'").append(classOrInterfaceDeclaration.getName()).append("\')\n");
                 for ( Node n : classOrInterfaceDeclaration.getChildrenNodes() ) {
                     if ( n instanceof MethodDeclaration 
                             && ((MethodDeclaration)n).getName().startsWith("test") 
