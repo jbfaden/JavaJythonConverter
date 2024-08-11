@@ -566,16 +566,16 @@ public class ConvertJavaToIDL {
             }
         }
         BinaryExpr.Operator op= b.getOperator();
-        if (  rightType!=null && rightType.equals(ASTHelper.CHAR_TYPE) && left.startsWith("ord(") && left.endsWith(")") ) {
+        if (  rightType!=null && rightType.equals(ASTHelper.CHAR_TYPE) && left.startsWith("long(") && left.endsWith(")") ) {
             left= left.substring(4,left.length()-1);
         }
         
         if ( leftType!=null && rightType!=null ) {
             if ( leftType.equals(ASTHelper.CHAR_TYPE) && rightType.equals(ASTHelper.INT_TYPE) ) {
-                left= "ord("+left+")";
+                left= "long("+left+")";
             }
             if ( leftType.equals(ASTHelper.INT_TYPE) && rightType.equals(ASTHelper.CHAR_TYPE) ) {
-                left= "ord("+left+")";
+                left= "long("+left+")";
             }
             if ( rightType.equals(STRING_TYPE) 
                     && leftType instanceof PrimitiveType 
@@ -1060,7 +1060,7 @@ public class ConvertJavaToIDL {
             switch ( name ) {
                 case "isDigit":
                     s= doConvert( "",args.get(0) );
-                    if ( s.startsWith("ord(") && s.endsWith(")") ) {
+                    if ( s.startsWith("long(") && s.endsWith(")") ) {
                         s= s.substring(4,s.length()-1);
                     }
                     this.additionalClasses.put("function isDigit, char\n"+
@@ -1071,20 +1071,20 @@ public class ConvertJavaToIDL {
                     
                 case "isSpace":
                     s= doConvert( "",args.get(0) );
-                    if ( s.startsWith("ord(") && s.endsWith(")") ) {
+                    if ( s.startsWith("long(") && s.endsWith(")") ) {
                         s= s.substring(4,s.length()-1);
                     }
                     return s + ".isspace()"; 
                 case "isWhitespace":
                     s= doConvert( "",args.get(0) );
-                    if ( s.startsWith("ord(") && s.endsWith(")") ) {
+                    if ( s.startsWith("long(") && s.endsWith(")") ) {
                         s= s.substring(4,s.length()-1);
                     }
                     return s + ".isspace()"; 
                 case "isLetter":
                 case "isAlphabetic":
                     s= doConvert( "",args.get(0) );
-                    if ( s.startsWith("ord(") && s.endsWith(")") ) {
+                    if ( s.startsWith("long(") && s.endsWith(")") ) {
                         s= s.substring(4,s.length()-1);
                     }
                     this.additionalClasses.put("function isAlpha, char\n"+
