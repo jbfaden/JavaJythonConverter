@@ -782,7 +782,7 @@ public class ConvertJavaToIDL {
     }
     
     /**
-     * This is somewhat the "heart" of this converter, where Java library use is translated to Python use.
+     * This is somewhat the "heart" of this converter, where Java library use is translated to IDL use.
      * @param indent
      * @param methodCallExpr
      * @return 
@@ -800,6 +800,10 @@ public class ConvertJavaToIDL {
          * try to identify the class of the scope, which could be either a static or non-static method.
          */
         String clasType="";  
+        System.err.println( "doConvertMethodCallExpr "+clas+ " " +name);
+        if ( name.equals("assertEquals") ) {
+            System.err.println("here stop");
+        }
         if ( clas instanceof NameExpr ) {
             String contextName= ((NameExpr)clas).getName(); // sb in sb.append, or String in String.format.
             Type contextType= localVariablesStack.peek().get(contextName); // allow local variables to override class variables.
@@ -1166,18 +1170,11 @@ public class ConvertJavaToIDL {
         }
         
         if ( unittest && clas==null ) {
-            if ( name.equals("assertEquals") ) {
+            if ( name.equals("assertEquals") || name.equals("assertArrayEquals") || name.equals("fail") ) {
                 StringBuilder sb= new StringBuilder();
-                sb.append(indent).append( "self.assertEquals(" );
-                sb.append(doConvert("",args.get(0))).append(",").append(doConvert("",args.get(1)));
-                sb.append(")");
+                sb.append(indent).append("self.").append(name).append(", ");
+                sb.append(doConvert("",args.get(0))).append(", ").append(doConvert("",args.get(1)));
                 return sb.toString();
-            } else if ( name.equals("assertArrayEquals") ) {
-                StringBuilder sb= new StringBuilder();
-                sb.append(indent).append( "self.assertArrayEquals(" );
-                sb.append(doConvert("",args.get(0))).append(",").append(doConvert("",args.get(1)));
-                sb.append(")");
-                return sb.toString();                
             }
         }
         
@@ -2241,14 +2238,16 @@ public class ConvertJavaToIDL {
             
             if ( unittest ) {
                 sb.append("; Run the following code on the command line:\n");
-                sb.append("Test = obj_new(\'").append(classOrInterfaceDeclaration.getName()).append("\')\n");
+                sb.append("pro ").append(the_class_name).append("::RunTests\n");
+                sb.append("    Test = obj_new(\'").append(classOrInterfaceDeclaration.getName()).append("\')\n");
                 for ( Node n : classOrInterfaceDeclaration.getChildrenNodes() ) {
                     if ( n instanceof MethodDeclaration 
                             && ((MethodDeclaration)n).getName().startsWith("test") 
                             && ((MethodDeclaration)n).getParameters()==null ) {
-                        sb.append("test.").append(((MethodDeclaration) n).getName()).append("()\n");
+                        sb.append("    test.").append(((MethodDeclaration) n).getName()).append("\n");
                     }
                 }
+                sb.append("end\n");
             }
             
         
