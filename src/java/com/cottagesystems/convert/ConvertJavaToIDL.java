@@ -1166,12 +1166,18 @@ public class ConvertJavaToIDL {
         }
         
         if ( unittest && clas==null ) {
-            if ( name.equals("assertEquals") || name.equals("assertArrayEquals") ) {
+            if ( name.equals("assertEquals") ) {
                 StringBuilder sb= new StringBuilder();
-                sb.append(indent).append( "self.assertEqual(" );
+                sb.append(indent).append( "self.assertEquals(" );
                 sb.append(doConvert("",args.get(0))).append(",").append(doConvert("",args.get(1)));
                 sb.append(")");
                 return sb.toString();
+            } else if ( name.equals("assertArrayEquals") ) {
+                StringBuilder sb= new StringBuilder();
+                sb.append(indent).append( "self.assertArrayEquals(" );
+                sb.append(doConvert("",args.get(0))).append(",").append(doConvert("",args.get(1)));
+                sb.append(")");
+                return sb.toString();                
             }
         }
         
@@ -2037,12 +2043,12 @@ public class ConvertJavaToIDL {
         } else {
             
             if ( unittest ) {
-                sb.append( "\n# cheesy unittest temporary\n");
-                sb.append( "pro assertEquals, a, b \n" );
+                sb.append( "\n; cheesy unittest temporary\n");
+                sb.append("pro ").append(the_class_name).append("::assertEquals, a, b \n");
                 sb.append( "    if ( not a eq b ) then stop, 'a ne b'\n");
                 sb.append( "end\n" );        
                 sb.append( "\n" );
-                sb.append( "pro assertArrayEquals, a, b\n");
+                sb.append("pro ").append(the_class_name).append("::assertArrayEquals, a, b\n");
                 sb.append( "    if len(a) eq len(b) then begin\n");
                 sb.append( "        for i=0,n_elements(a)-1 do begin\n");
                 sb.append( "            if ( a[i] ne b[i] ) then stop, string(format='a[%d] ne [%d]',i,i)\n" );
@@ -2052,7 +2058,7 @@ public class ConvertJavaToIDL {
                 sb.append( "    endelse\n" );
                 sb.append( "end\n" );
                 sb.append( "\n" );
-                sb.append( "pro fail, msg\n" );
+                sb.append("pro ").append(the_class_name).append("::fail, msg\n");
                 sb.append( "    print, msg\n" );
                 sb.append( "    stop, 'fail: '+msg\n" );
                 sb.append( "end\n" );
