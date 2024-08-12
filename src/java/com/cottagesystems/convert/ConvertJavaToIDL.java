@@ -820,7 +820,7 @@ public class ConvertJavaToIDL {
          */
         String clasType="";  
         System.err.println( "doConvertMethodCallExpr "+clas+ " " +name);
-        if ( name.equals("assertEquals") ) {
+        if ( name.equals("fromWeekOfYear") ) {
             System.err.println("here stop");
         }
         if ( clas instanceof NameExpr ) {
@@ -1319,10 +1319,21 @@ public class ConvertJavaToIDL {
                 } else {
                     MethodDeclaration mm= this.getCurrentScopeMethods().get(name);
                     if ( mm==null ) {
-                        if ( onlyStatic && clasName.equals(theClassName) )  {
-                            return indent            + javaNameToIdlName( name ) + "("+ utilFormatExprList(args) +")";
+                        // is this a ExpressionStmt?
+                        StackTraceElement[] ss= new Exception().getStackTrace();
+                        boolean exprStmt=ss[2].getMethodName().equals("doConvertExpressionStmt");
+                        if ( exprStmt ) {
+                            if ( onlyStatic && clasName.equals(theClassName) )  {
+                                return indent            + javaNameToIdlName( name ) + ","+ utilFormatExprList(args);
+                            } else {
+                                return indent + clasName +"."+javaNameToIdlName( name )+ ","+ utilFormatExprList(args);
+                            }
                         } else {
-                            return indent + clasName +"."+javaNameToIdlName( name )+ "("+ utilFormatExprList(args) +")";
+                            if ( onlyStatic && clasName.equals(theClassName) )  {
+                                return indent            + javaNameToIdlName( name ) + "("+ utilFormatExprList(args)+")";
+                            } else {
+                                return indent + clasName +"."+javaNameToIdlName( name )+ "("+ utilFormatExprList(args)+")";
+                            }
                         }
                     } else {
                         if ( onlyStatic && clasName.equals(theClassName) )  {
