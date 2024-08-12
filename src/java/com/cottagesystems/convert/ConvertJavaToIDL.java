@@ -323,6 +323,25 @@ public class ConvertJavaToIDL {
     }
 
     /**
+     * see if the two values are just integer constants which can be differenced.
+     * @param l2 an expression, e.g. "9"
+     * @param l1 an expression, e.g. "4"
+     * @return "" if we can't, the number otherwise, with "9" and "4" this would return "5".
+     * 
+     */
+    private String maybeGetLength( Expression l2, Expression l1 ) {
+        if ( l1 instanceof IntegerLiteralExpr ) {
+            IntegerLiteralExpr ex1= (IntegerLiteralExpr)l1;
+            if ( l2 instanceof IntegerLiteralExpr ) {
+                IntegerLiteralExpr ex2= (IntegerLiteralExpr)l2;
+                return String.valueOf( Integer.parseInt(ex2.getValue())-Integer.parseInt(ex1.getValue()) );
+            } else if ( Integer.parseInt(ex1.getValue())==0 ) {
+                return doConvert("",l2);
+            }
+        }
+        return "";
+    }
+    /**
      * wrap the methods in a dummy class to see if it compiles.  There's a goofy
      * this with this parser where I can't figure out how to get it to compile
      * just one method, so I have to create a class around it to get it to compile.
@@ -995,7 +1014,13 @@ public class ConvertJavaToIDL {
                     if ( args.size()==1 ) {
                         return "strmid("+doConvert(indent,clas)+","+ doConvert("",args.get(0))+")";
                     } else if ( args.size()==2 ) {
-                        return "strmid("+doConvert(indent,clas)+","+ doConvert("",args.get(0)) +","+ doConvert("",args.get(1))+"-1)";
+                        String slen= maybeGetLength( args.get(1), args.get(0) );
+                        if ( slen.length()>0 ) {
+                            return "strmid("+doConvert(indent,clas)+","+ doConvert("",args.get(0)) +","+ slen + ")";
+                        } else {
+                            String diff= doConvert("",args.get(1)) + "-" + doConvert("",args.get(0));
+                            return "strmid("+doConvert(indent,clas)+","+ doConvert("",args.get(0)) +","+ diff +")";
+                        }
                     }
                 case "length":
                     return "strlen("+doConvert(indent,clas)+")";
