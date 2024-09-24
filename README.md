@@ -7,7 +7,7 @@ translation.  (Autoplot's Java to Python converter was basically a bunch of rege
 this is already a huge improvement.)  Also we'd like to convert TimeUtil.java and URITemplates.java
 into Python for use in HAPI.
 
-See https://cottagesystems.com/JavaJythonConverter/ConvertServlet, where this is accessible.
+See https://cottagesystems.com/JavaJythonConverter/, where this is accessible.
 
 # Notes on use
 Do not expect for this to completely translate the code.  This is probably an impossible goal,
