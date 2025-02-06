@@ -2276,8 +2276,8 @@ public class ConvertJavaToIDL {
             
             if ( unittest ) {
                 sb.append("; Run the following code on the command line:\n");
-                sb.append("; o=obj_new('TimeUtilTest')    ");
-                sb.append("; o.runtests                   ");
+                sb.append("; o=obj_new('TimeUtilTest')    \n");
+                sb.append("; o.runtests                   \n");
                 sb.append("pro ").append(the_class_name).append("::RunTests\n");
                 sb.append("    Test = obj_new(\'").append(classOrInterfaceDeclaration.getName()).append("\')\n");
                 for ( Node n : classOrInterfaceDeclaration.getChildrenNodes() ) {
