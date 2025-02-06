@@ -1920,6 +1920,8 @@ public class ConvertJavaToIDL {
                 item="0";
             } else if ( arrayCreationExpr.getType().equals( ASTHelper.CHAR_TYPE )) {
                 item= "''";
+            } else if ( arrayCreationExpr.getType().toString().equals( "String" ) ) { // TODO: no kludgey 
+                item= "''";
             } else {
                 item= "None";
             }
@@ -2082,7 +2084,7 @@ public class ConvertJavaToIDL {
                 sb.append( "end\n" );        
                 sb.append( "\n" );
                 sb.append("pro ").append(the_class_name).append("::assertArrayEquals, a, b\n");
-                sb.append( "    if len(a) eq len(b) then begin\n");
+                sb.append( "    if n_elements(a) eq n_elements(b) then begin\n");
                 sb.append( "        for i=0,n_elements(a)-1 do begin\n");
                 sb.append( "            if a[i] ne b[i] then stop, string(format='a[%d] ne [%d]',i,i)\n" );
                 sb.append( "        endfor\n" );
@@ -2274,6 +2276,8 @@ public class ConvertJavaToIDL {
             
             if ( unittest ) {
                 sb.append("; Run the following code on the command line:\n");
+                sb.append("; o=obj_new('TimeUtilTest')    ");
+                sb.append("; o.runtests                   ");
                 sb.append("pro ").append(the_class_name).append("::RunTests\n");
                 sb.append("    Test = obj_new(\'").append(classOrInterfaceDeclaration.getName()).append("\')\n");
                 for ( Node n : classOrInterfaceDeclaration.getChildrenNodes() ) {
@@ -2444,7 +2448,7 @@ public class ConvertJavaToIDL {
                 msg= args.get(0);
             }
         }
-        return indent + "stop, "+ doConvert("",msg);
+        return indent + "stop, !error_state.msg";
     }
 
     private String doConvertWhileStmt(String indent, WhileStmt whileStmt) {
@@ -2707,6 +2711,7 @@ public class ConvertJavaToIDL {
             sb.append( doConvert( indent, tryStmt.getFinallyBlock() ) );
         }
         sb.append( indent ).append( "endelse\n");
+        sb.append( indent ).append( "catch, /cancel\n");
         return sb.toString();
     }
 
