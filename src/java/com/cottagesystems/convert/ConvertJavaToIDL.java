@@ -2023,7 +2023,7 @@ public class ConvertJavaToIDL {
             }
             case not: {
                 String n= doConvert("",unaryExpr.getExpr());
-                return indent + "not "+n;
+                return indent + "not" +"("+n+")" ;
             } 
             default:
                 throw new IllegalArgumentException("not supported: "+unaryExpr);
@@ -2078,13 +2078,13 @@ public class ConvertJavaToIDL {
             if ( unittest ) {
                 sb.append( "\n; cheesy unittest temporary\n");
                 sb.append("pro ").append(the_class_name).append("::assertEquals, a, b \n");
-                sb.append( "    if ( not a eq b ) then stop, 'a ne b'\n");
+                sb.append( "    if not ( a eq b ) then stop, 'a ne b'\n");
                 sb.append( "end\n" );        
                 sb.append( "\n" );
                 sb.append("pro ").append(the_class_name).append("::assertArrayEquals, a, b\n");
                 sb.append( "    if len(a) eq len(b) then begin\n");
                 sb.append( "        for i=0,n_elements(a)-1 do begin\n");
-                sb.append( "            if ( a[i] ne b[i] ) then stop, string(format='a[%d] ne [%d]',i,i)\n" );
+                sb.append( "            if a[i] ne b[i] then stop, string(format='a[%d] ne [%d]',i,i)\n" );
                 sb.append( "        endfor\n" );
                 sb.append( "    endif else begin\n" );
                 sb.append( "        stop, 'arrays are different lengths'\n");
