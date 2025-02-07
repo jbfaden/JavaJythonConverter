@@ -936,7 +936,7 @@ public class ConvertJavaToIDL {
                 case "containsKey": // Note that unlike Java, getting a key which doesn't exist is a runtime error.
                     return indent + doConvert("",clas) + ".HasKey(" + doConvert("",args.get(0)) + ")" ;
                 case "remove":
-                    return indent + doConvert("",clas) + ".Remove(" + doConvert("",args.get(0)) + ")";
+                    return indent + doConvert("",clas) + ".Remove," + doConvert("",args.get(0));
                 case "addAll":
                     return indent + doConvert("",clas) + ".update(" + doConvert("",args.get(0)) + ")";
                 case "size":
@@ -1422,7 +1422,7 @@ public class ConvertJavaToIDL {
                 result= indent + "(" + doConvert( "", ((EnclosedExpr)n).getInner() ) + ")";
                 break;
             case "NullLiteralExpr":
-                result= indent + "None";
+                result= indent + "obj_new()";
                 break;
             case "BooleanLiteralExpr":
                 result= indent + ( ((BooleanLiteralExpr)n).getValue() ? "1" : "0" );
@@ -1963,7 +1963,7 @@ public class ConvertJavaToIDL {
                 String f= fieldAccessExpr.getField();
                 switch (f) {
                     case "EMPTY_MAP":
-                        return indent + "DICTIONARY()";
+                        return indent + "HASH()";
                     case "EMPTY_SET":
                         return indent + "HASH()"; // Jython 2.2 does not have sets.
                     case "EMPTY_LIST":
@@ -2613,7 +2613,7 @@ public class ConvertJavaToIDL {
                     return sb.toString();
                 } else {
                     if ( objectCreationExpr.getType().getName().equals("HashMap") ) { 
-                        return indent + "DICTIONARY()";
+                        return indent + "HASH()";
                     } else if ( objectCreationExpr.getType().getName().equals("ArrayList") ) { 
                         return indent + "LIST()";
                     } else if ( objectCreationExpr.getType().getName().equals("HashSet") ) {
