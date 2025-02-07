@@ -1248,7 +1248,7 @@ public class ConvertJavaToIDL {
             }    
             return sb.toString();
         } else if ( name.equals("length") && args==null ) {
-            return indent + "length("+ doConvert("",clas)+")";
+            return indent + "strlen("+ doConvert("",clas)+")";
         } else if ( name.equals("equals") && args.size()==1 ) {
             return indent + doConvert(indent,clas)+" eq "+ utilFormatExprList(args);
         } else if ( name.equals("arraycopy") && clasType.equals("System") ) {
