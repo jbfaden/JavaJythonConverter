@@ -1163,7 +1163,7 @@ public class ConvertJavaToIDL {
         if ( clasType.equals("Integer") ) {
             switch ( name ) {
                 case "parseInt":
-                    return "int("+ doConvert( "", args.get(0) ) +")";
+                    return "long("+ doConvert( "", args.get(0) ) +")";
             }
         }
         if ( clasType.equals("Pattern") ) {
