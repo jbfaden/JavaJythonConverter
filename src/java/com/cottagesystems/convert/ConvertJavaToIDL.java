@@ -1839,12 +1839,13 @@ public class ConvertJavaToIDL {
         Type variableType= foreachStmt.getVariable().getType();
         localVariablesStack.push( new HashMap<>(localVariablesStack.peek()) );
         localVariablesStack.peek().put( variableName,variableType );
-        b.append( indent ).append("for ").append(variableName).append(" in ").append(doConvert("",foreachStmt.getIterable() )).append(":\n");
+        b.append( indent ).append("foreach ").append(variableName).append(", ").append(doConvert("",foreachStmt.getIterable() )).append(" do begin\n");
         if ( foreachStmt.getBody() instanceof ExpressionStmt ) {
             b.append(indent).append(s4).append( doConvert( "", foreachStmt.getBody() ) ).append("\n");
         } else {
             b.append( doConvert( indent, foreachStmt.getBody() ) );
         }
+        b.append( indent ).append( "end" );
         localVariablesStack.pop( );
         return b.toString();
     }
