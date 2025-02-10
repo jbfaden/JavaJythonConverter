@@ -877,7 +877,7 @@ public class ConvertJavaToIDL {
                 String n= doConvert("",clas);
                 String i0= doConvert("",args.get(0));
                 String ins= doConvert("",args.get(1));
-                return indent + n + " = ''.join( ( " + n + "[0:"+ i0 + "], "+ins+", " + n + "["+i0+":] ) ) ; J2J expr -> assignment"; // expr becomes assignment, this will cause problems
+                return indent + n + " = strmid( "+n+",0," + i0 + ") + " + ins + "strmid( "+n+","+i0+") ; J2J expr -> assignment"; // expr becomes assignment, this will cause problems
             }
         }
         if ( clasType.equals("Collections") ) {
@@ -1052,7 +1052,7 @@ public class ConvertJavaToIDL {
                     return "strcmp(" + doConvert(indent,clas)+","+ utilFormatExprList(args) +",/FOLD_CASE)";
                     
                 case "trim":
-                    return doConvert(indent,clas)+".strip()";
+                    return "strtrim("+doConvert(indent,clas)+",2)";
                 case "replace":
                     String search = doConvert("",args.get(0));
                     String replac = doConvert("",args.get(1));
