@@ -868,7 +868,7 @@ public class ConvertJavaToIDL {
             clasType= clasType.substring(0,i);
         }
         
-        if ( clasType.equals("StringBuilder") ) {
+        if ( clasType.equals("StringBuilder") ) { //TODO: https://github.com/jbfaden/JavaJythonConverter/issues/27
             if ( name.equals("append") ) {
                 return indent + doConvert("",clas) + " = " + doConvert("",clas) + " + " + utilAssertStr(args.get(0)) ;
             } else if ( name.equals("toString") ) {
