@@ -434,7 +434,11 @@ public class ConvertJavaToIDL {
                 sb.append(src);
                 
                 if ( hasMain ) {
-                    sb.append( javaNameToIdlName(theClassName) ).append(".main([])\n");
+                    if ( !isOnlyStatic() ) {
+                        sb.append( javaNameToIdlName(theClassName) ).append(".main([])\n");
+                    } else {
+                        sb.append("main([])\n");
+                    }
                 }
                 
                 src= sb.toString();
@@ -1845,7 +1849,7 @@ public class ConvertJavaToIDL {
         } else {
             b.append( doConvert( indent, foreachStmt.getBody() ) );
         }
-        b.append( indent ).append( "end" );
+        b.append( indent ).append( "end\n" );
         localVariablesStack.pop( );
         return b.toString();
     }
