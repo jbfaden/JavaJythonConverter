@@ -1073,7 +1073,7 @@ public class ConvertJavaToIDL {
                 case "replaceAll":
                     search= doConvert("",args.get(0));
                     replac= utilUnquoteReplacement( doConvert("",args.get(1)) );
-                    return indent + "StrJoin( StrSplit( "+ doConvert(indent,clas) + "," + search + ",/extract ), "+replac + ")";
+                    return indent + "StrJoin( StrSplit( "+ doConvert(indent,clas) + "," + search + ",/extract,/preserve_null' ), "+replac + ")";
                 case "replaceFirst":
                     search= doConvert("",args.get(0));
                     additionalClasses.put("function replaceFirst, input_str, target, replacement\n" +
