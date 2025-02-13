@@ -1598,6 +1598,7 @@ public class ConvertJavaToIDL {
 
     private String doConvertStringLiteralExpr(String indent,StringLiteralExpr stringLiteralExpr) {
         String s= stringLiteralExpr.getValue();
+        s= s.replaceAll("\\\\\\\\","\\\\");
         s= s.replaceAll("'","\\\\'");
         return "'" + s + "'";
     }
