@@ -2464,13 +2464,17 @@ public class ConvertJavaToIDL {
         StringBuilder sb= new StringBuilder(indent);
         sb.append( "WHILE ");
         sb.append( doConvert( "", whileStmt.getCondition() ) );
-        sb.append( " DO BEGIN\n" );
+        
         if ( whileStmt.getBody() instanceof ExpressionStmt ) {
-            sb.append( doConvert( indent+s4, whileStmt.getBody() ) );
+            sb.append( " DO " );
+            sb.append( doConvert( "", whileStmt.getBody() ) );
+            sb.append("\n");
         } else {
+            sb.append( " DO BEGIN\n" );
             sb.append( doConvert( indent, whileStmt.getBody() ) );
+            sb.append(indent).append("ENDWHILE\n");
         }
-        sb.append(indent).append("ENDWHILE\n");
+        
         return sb.toString();
     }
 
