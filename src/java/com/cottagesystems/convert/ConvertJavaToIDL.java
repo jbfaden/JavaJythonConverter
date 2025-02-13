@@ -912,11 +912,17 @@ public class ConvertJavaToIDL {
                 case "min":
                     return "(" + doConvert(indent,args.get(0)) + "<"+ doConvert(indent,args.get(1))+")";
                 case "floorDiv":
-                    return doConvert(indent,args.get(0)) + "/" + doConvert(indent,args.get(1));
+                    this.additionalClasses.put("function floorDiv, m, n\n"+
+                            "  return, floor(m/double(n))\n"+
+                            "end\n",Boolean.TRUE);
+                    return "floorDiv(" + doConvert(indent,args.get(0)) + ", " + doConvert(indent,args.get(1))+")";
                 case "floorMod":
+                    this.additionalClasses.put("function floorMod, m, n\n"+
+                            "  return, m-n*floor(m/double(n))\n"+
+                            "end\n",Boolean.TRUE);
                     String x= doConvert(indent,args.get(0));
                     String y= doConvert(indent,args.get(1));
-                    return "(" + x + " - " + y + " * ( "+x+"/"+y + ") )";
+                    return "floorMod(" + doConvert(indent,args.get(0)) + ", " + doConvert(indent,args.get(1))+")";
                 case "floor":
                 case "ceil":
                 case "round":
