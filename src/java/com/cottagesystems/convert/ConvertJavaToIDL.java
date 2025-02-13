@@ -920,8 +920,6 @@ public class ConvertJavaToIDL {
                     this.additionalClasses.put("function floorMod, m, n\n"+
                             "  return, m-n*floor(m/double(n))\n"+
                             "end\n",Boolean.TRUE);
-                    String x= doConvert(indent,args.get(0));
-                    String y= doConvert(indent,args.get(1));
                     return "floorMod(" + doConvert(indent,args.get(0)) + ", " + doConvert(indent,args.get(1))+")";
                 case "floor":
                 case "ceil":
