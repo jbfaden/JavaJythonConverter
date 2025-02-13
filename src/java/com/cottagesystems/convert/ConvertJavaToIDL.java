@@ -1076,9 +1076,14 @@ public class ConvertJavaToIDL {
                     return indent + "StrJoin( StrSplit( "+ doConvert(indent,clas) + "," + search + ",/extract ), "+replac + ")";
                 case "replaceFirst":
                     search= doConvert("",args.get(0));
+                    additionalClasses.put("function replaceFirst, input_str, target, replacement\n" +
+"    pos = STRPOS(input_str, target)\n" +
+"    IF pos EQ -1 THEN RETURN, input_str\n" +
+"    new_str = strmid( input_str, 0, pos ) + replacement + strmid(input_str,pos+STRLEN(target))\n" +
+"    RETURN, new_str\n" +
+"END",true);
                     replac= utilUnquoteReplacement( doConvert("",args.get(1)) );
-                    additionalImports.put("import re\n",Boolean.TRUE);
-                    return indent + "re.sub("+search+", "+replac+", "+doConvert("",clas)+",1)";
+                    return indent + "replaceFirst("+doConvert("",clas) + "," + search+", "+replac + ")";
                 case "valueOf":
                     return indent + "str("+doConvert("",args.get(0)) +")";
                 case "split":
