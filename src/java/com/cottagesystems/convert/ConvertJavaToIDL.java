@@ -288,11 +288,16 @@ public class ConvertJavaToIDL {
     private final Map<String,ImportDeclaration> javaImportDeclarations= new LinkedHashMap<>();
     
     /*** end, internal parsing state ***/
-
     private String utilFormatExprList( List<Expression> l ) {
+        return utilFormatExprList("",l);
+    }
+    
+    private String utilFormatExprList( String prefix, List<Expression> l ) {
         if ( l==null ) return "";
         if ( l.isEmpty() ) return "";
-        StringBuilder b= new StringBuilder( doConvert("",l.get(0)) );
+        if ( prefix==null ) prefix="";
+        StringBuilder b= new StringBuilder( prefix );
+        b.append( doConvert("",l.get(0)) );
         for ( int i=1; i<l.size(); i++ ) {
             b.append(", ");
             b.append(doConvert("",l.get(i)));
@@ -1011,8 +1016,8 @@ public class ConvertJavaToIDL {
                 case "format":
                     if ( clas.toString().equals("String") ) {
                         StringBuilder sb= new StringBuilder();
-                        sb.append(indent).append("string(format=").append(doConvert("",args.get(0))).append(",");
-                        sb.append( utilFormatExprList( args.subList(1, args.size() ) ) );
+                        sb.append(indent).append("string(format=").append(doConvert("",args.get(0)));
+                        sb.append( utilFormatExprList( ",", args.subList(1, args.size() ) ) );
                         sb.append(")");
                         return sb.toString();
                     } else {
@@ -1053,11 +1058,11 @@ public class ConvertJavaToIDL {
                 case "charAt":
                     return "strmid("+doConvert(indent,clas)+","+ doConvert("",args.get(0)) +",1)";
                 case "startsWith":
-                    return "("+doConvert(indent,clas)+")"+".startswith("+ utilFormatExprList(args) +")";
+                    return "("+doConvert(indent,clas)+")"+".startswith("+ utilFormatExprList("",args) +")";
                 case "endsWith":
-                    return doConvert(indent,clas)+".endswith("+ utilFormatExprList(args) +")";
+                    return doConvert(indent,clas)+".endswith("+ utilFormatExprList("",args) +")";
                 case "equalsIgnoreCase":
-                    return "strcmp(" + doConvert(indent,clas)+","+ utilFormatExprList(args) +",/FOLD_CASE)";
+                    return "strcmp(" + doConvert(indent,clas)+ utilFormatExprList(",",args) +",/FOLD_CASE)";
                     
                 case "trim":
                     return "strtrim("+doConvert(indent,clas)+",2)";
@@ -1304,13 +1309,13 @@ public class ConvertJavaToIDL {
                         boolean isStatic= ModifierSet.isStatic(mm.getModifiers() );
                         if ( isStatic ) {
                             if ( mm.getType() instanceof japa.parser.ast.type.VoidType ) {
-                                return indent + javaNameToIdlName( m.getName() ) + "." + javaNameToIdlName( name ) + ","+ utilFormatExprList(args);
+                                return indent + javaNameToIdlName( m.getName() ) + "." + javaNameToIdlName( name ) + utilFormatExprList(",",args);
                             } else {
                                 return indent + javaNameToIdlName( m.getName() ) + "." + javaNameToIdlName( name ) + "("+ utilFormatExprList(args) +")";
                             }
                         } else {
                             if ( mm.getType() instanceof japa.parser.ast.type.VoidType ) {
-                                return indent + "self." + javaNameToIdlName( name ) + "."+ utilFormatExprList(args);
+                                return indent + "self." + javaNameToIdlName( name ) + utilFormatExprList(",",args);
                             } else {
                                 return indent + "self." + javaNameToIdlName( name ) + "("+ utilFormatExprList(args) +")";
                             }
@@ -1332,29 +1337,30 @@ public class ConvertJavaToIDL {
                         boolean exprStmt=ss[2].getMethodName().equals("doConvertExpressionStmt");
                         if ( exprStmt ) {
                             if ( onlyStatic && clasName.equals(theClassName) )  {
-                                return indent            + javaNameToIdlName( name ) + ","+ utilFormatExprList(args);
+                                return indent            + javaNameToIdlName( name ) + utilFormatExprList(",",args);
                             } else {
-                                return indent + clasName +"."+javaNameToIdlName( name )+ ","+ utilFormatExprList(args);
+                                return indent + clasName +"."+javaNameToIdlName( name )+ utilFormatExprList(",",args);
                             }
                         } else {
                             if ( onlyStatic && clasName.equals(theClassName) )  {
-                                return indent            + javaNameToIdlName( name ) + "("+ utilFormatExprList(args)+")";
+                                return indent            + javaNameToIdlName( name ) + "("+ utilFormatExprList("",args)+")";
                             } else {
-                                return indent + clasName +"."+javaNameToIdlName( name )+ "("+ utilFormatExprList(args)+")";
+                                return indent + clasName +"."+javaNameToIdlName( name )+ "("+ utilFormatExprList("",args)+")";
                             }
                         }
                     } else {
                         if ( onlyStatic && clasName.equals(theClassName) )  {
                             if ( mm.getType() instanceof japa.parser.ast.type.VoidType ) {
-                                return indent            + javaNameToIdlName( name ) + ","+ utilFormatExprList(args);
+                                return indent            + javaNameToIdlName( name ) + utilFormatExprList(",",args);
                             } else {
-                                return indent            + javaNameToIdlName( name ) + "("+ utilFormatExprList(args) + ")";
+                                return indent            + javaNameToIdlName( name ) + "("+ utilFormatExprList("",args) + ")";
                             }
                         } else {
+                            String nn= clasName.replace("()","");
                             if ( mm.getType() instanceof japa.parser.ast.type.VoidType ) {
-                                return indent + clasName +"."+javaNameToIdlName( name )+ ","+ utilFormatExprList(args) ;
+                                return indent + nn +"."+javaNameToIdlName( name )+ utilFormatExprList(",",args) ;
                             } else {
-                                return indent + clasName +"."+javaNameToIdlName( name )+ "("+ utilFormatExprList(args) +")";
+                                return indent + nn +"."+javaNameToIdlName( name )+ "("+ utilFormatExprList("",args) +")";
                             }
                         }                        
                     }
@@ -1919,7 +1925,7 @@ public class ConvertJavaToIDL {
         if ( arrayCreationExpr.getInitializer()!=null ) {
             ArrayInitializerExpr ap= arrayCreationExpr.getInitializer();
             StringBuilder sb= new StringBuilder();
-            return "[" + utilFormatExprList( ap.getValues() ) + "]";
+            return "[" + utilFormatExprList( "",ap.getValues() ) + "]";
         } else {
             String item;
             if ( arrayCreationExpr.getType().equals( ASTHelper.BYTE_TYPE ) ||
@@ -2479,7 +2485,7 @@ public class ConvertJavaToIDL {
     }
 
     private String doConvertArrayInitializerExpr(String indent, ArrayInitializerExpr arrayInitializerExpr) {
-        return indent + "[" + utilFormatExprList( arrayInitializerExpr.getValues() ) + "]";
+        return indent + "[" + utilFormatExprList( "", arrayInitializerExpr.getValues() ) + "]";
     }
 
     
