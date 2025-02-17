@@ -812,9 +812,9 @@ public class ConvertJavaToIDL {
     /**
      * IDL classes sometimes need parenthesis around them, if it is an 
      * expression and not a name which is called.
-     * @param clas
-     * @param call
-     * @return 
+     * @param clas the object
+     * @param call the call
+     * @return the expression, possibly with needed parenthesis added.
      */
     private String safeMethodCall( Expression clas, String call ) {
         if ( clas instanceof NameExpr ) {
@@ -823,6 +823,21 @@ public class ConvertJavaToIDL {
             return "(" + doConvert("",clas) + ")." + call;
         }
     }
+    
+    /**
+     * IDL classes sometimes need parenthesis around them, if it is an 
+     * expression and not a name which is called.
+     * @param target the string for the object
+     * @param call the call
+     * @return the expression, possibly with needed parenthesis added.
+     */
+    private String safeMethodCall( String target, String call ) {
+        if ( !(target.contains(".") || target.contains("(") ) ) {
+            return target + "." + call;
+        } else {
+            return "(" + target + ")." + call;
+        }
+    }    
     
     /**
      * This is somewhat the "heart" of this converter, where Java library use is translated to IDL use.
@@ -1128,17 +1143,13 @@ public class ConvertJavaToIDL {
                     return "isDigit(" + s + ")"; 
                     
                 case "isSpace":
-                    s= doConvert( "",args.get(0) );
-                    if ( s.startsWith("string(byte(") && s.endsWith("))") ) {
-                        s= s.substring(4,s.length()-1);
-                    }
-                    return s + ".isspace()"; 
                 case "isWhitespace":
                     s= doConvert( "",args.get(0) );
                     if ( s.startsWith("string(byte(") && s.endsWith("))") ) {
                         s= s.substring(4,s.length()-1);
                     }
-                    return s + ".isspace()"; 
+                    return safeMethodCall(s,"isspace()");
+                    
                 case "isLetter":
                 case "isAlphabetic":
                     s= doConvert( "",args.get(0) );
