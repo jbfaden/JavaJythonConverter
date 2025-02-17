@@ -886,7 +886,7 @@ public class ConvertJavaToIDL {
                 String n= doConvert("",clas);
                 String i0= doConvert("",args.get(0));
                 String ins= doConvert("",args.get(1));
-                return indent + n + " = strmid( "+n+",0," + i0 + ") + " + ins + "strmid( "+n+","+i0+") ; J2J expr -> assignment"; // expr becomes assignment, this will cause problems
+                return indent + n + " = strmid( "+n+",0," + i0 + ") + " + ins + " + strmid( "+n+","+i0+") ; J2J expr -> assignment"; // expr becomes assignment, this will cause problems
             }
         }
         if ( clasType.equals("Collections") ) {
