@@ -1388,6 +1388,7 @@ public class ConvertJavaToIDL {
                             }
                         } else {
                             String nn= clasName.replace("()","");
+                            //TODO: mm is not the class, what is the class of clasName, and what is this return type?
                             if ( mm.getType() instanceof japa.parser.ast.type.VoidType ) {
                                 return indent + nn +"."+javaNameToIdlName( name )+ utilFormatExprList(",",args) ;
                             } else {
@@ -2828,6 +2829,9 @@ public class ConvertJavaToIDL {
      * @return 
      */
     private String javaNameToIdlName( String str ) {
+        if ( str.equals("fh1") ) {
+            System.err.println("here stop");
+        }
         String cov= this.nameMapForward.get(str);
         if ( cov==null ) {
             return str;
