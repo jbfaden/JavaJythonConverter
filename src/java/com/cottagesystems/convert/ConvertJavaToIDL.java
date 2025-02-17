@@ -810,6 +810,21 @@ public class ConvertJavaToIDL {
     }
     
     /**
+     * IDL classes sometimes need parenthesis around them, if it is an 
+     * expression and not a name which is called.
+     * @param clas
+     * @param call
+     * @return 
+     */
+    private String safeMethodCall( Expression clas, String call ) {
+        if ( clas instanceof NameExpr ) {
+            return doConvert("",clas) + "." + call;
+        } else {
+            return "(" + doConvert("",clas) + ")." + call;
+        }
+    }
+    
+    /**
      * This is somewhat the "heart" of this converter, where Java library use is translated to IDL use.
      * @param indent
      * @param methodCallExpr
@@ -1194,16 +1209,16 @@ public class ConvertJavaToIDL {
         }
         if ( clasType.equals("Pattern") 
                 && name.equals("matcher") ) {
-            return doConvert("",clas) + ".matcher(" + doConvert("",args.get(0) ) + ")";
+            return safeMethodCall( clas, "matcher(" + doConvert("",args.get(0) ) + ")" );
         }
         if ( clasType.equals("Matcher") ) {
             if ( name.equals("matches") ) {
-                return doConvert("",clas) + ".matches()";
+                return safeMethodCall( clas, "matches()" );
             } else if ( name.equals("find") ) {
                 if ( clas instanceof MethodCallExpr ) {
-                    return doConvert("",clas)+ ".find()";
+                    return safeMethodCall( clas, "find()" );
                 } else {
-                    return doConvert("",clas) + ".find()";
+                    return safeMethodCall( clas, "find()" );
                 }
             }
         }
