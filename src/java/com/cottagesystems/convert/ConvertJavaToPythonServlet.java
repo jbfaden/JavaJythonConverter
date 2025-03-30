@@ -1,7 +1,7 @@
 
 package com.cottagesystems.convert;
 
-import japa.parser.ParseException;
+import com.github.javaparser.ParseException;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -40,9 +40,9 @@ public class ConvertJavaToPythonServlet extends HttpServlet {
         }
         return fallback;
     }
-    
+
     private static String pid= getProcessId("000");
-    
+
     /**
      * Processes requests for both HTTP <code>GET</code> and <code>POST</code> methods.
      *
@@ -53,25 +53,25 @@ public class ConvertJavaToPythonServlet extends HttpServlet {
      */
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        
+
         String code= request.getParameter("code");
         String mode;
         //mode= request.getParameter("mode");
         mode= "edit";
-        
+
         if ( !"edit".equals(mode) ) {
             mode="view";
         }
-        
+
         if ( code==null ) {
             code="";
         }
-        
+
         boolean onlyStatic = "true".equals( request.getParameter("onlyStatic") );
         request.getParameterMap();
         String pythonTarget = request.getParameter("pythonTarget");
         if ( pythonTarget==null ) pythonTarget= PythonTarget.python_3_6.toString();
-                
+
         response.setContentType("text/html;charset=UTF-8");
 
         ConvertJavaToPython convert= new ConvertJavaToPython();
@@ -79,20 +79,20 @@ public class ConvertJavaToPythonServlet extends HttpServlet {
         convert.setPythonTarget(PythonTarget.valueOf(pythonTarget));
         convert.setUnittest( "true".equals( request.getParameter("unittest") ) );
         convert.setCamelToSnake( "true".equals( request.getParameter("camelToSnake") ));
-        
+
         String jythonCode;
-        
+
         if ( code.trim().length()==0 ) {
             // code= "class Simple {\n   public static void main( String[] args ) {\n      System.out.println(\"Hello\");\n   }\n}\n\n\n";
         }
-        
+
         try {
             jythonCode = convert.doConvert(code);
         } catch (ParseException ex) {
             jythonCode = "*** "+ex.getMessage()+" ***";
         }
-        
-        
+
+
         File dd= new File( "/tmp/javajython/"+pid+"/");
         if ( !dd.exists() ) {
             File pp= dd.getParentFile();
@@ -117,13 +117,13 @@ public class ConvertJavaToPythonServlet extends HttpServlet {
         try (FileOutputStream foa = new FileOutputStream( new File( dd, hash+".python")) ) {
             foa.write( jythonCode.getBytes() );
         }
-        
+
         try (PrintWriter out = response.getWriter()) {
             /* TODO output your page here. You may use following sample code. */
             out.println("<!DOCTYPE html>");
             out.println("<html>");
             out.println("<head>");
-            out.println("<title>Java to Python Converter</title>");            
+            out.println("<title>Java to Python Converter</title>");
             out.println("<link rel=\"stylesheet\" href=\"styles/default.min.css\">");
             out.println("</head>");
             out.println("<body>");
@@ -150,8 +150,8 @@ public class ConvertJavaToPythonServlet extends HttpServlet {
             }
             out.println("</td>");
             out.println("</tr></table>");
-            
-            if (  "edit".equals(mode) ) {            
+
+            if (  "edit".equals(mode) ) {
                 out.println( String.format( "<input type=\"checkbox\" id=\"onlyStatic\" name=\"onlyStatic\" value=\"true\" %s>Only Static Parts</input>",
                         convert.isOnlyStatic() ? "checked" : "" ) );
                 out.println( String.format( "<input type=\"checkbox\" id=\"unittest\" name=\"unittest\" value=\"true\" %s>Unit Test</input>",
@@ -159,9 +159,9 @@ public class ConvertJavaToPythonServlet extends HttpServlet {
                 out.println( String.format( "<input type=\"checkbox\" id=\"camelToSnake\" name=\"camelToSnake\" value=\"true\" %s>Camel to Snake</input>",
                         convert.isCamelToSnake() ? "checked" : "" ) );
                 out.println("<select name=\"pythonTarget\" id=\"pythonTarget\">");
-                out.println(String.format( "    <option value=\"jython_2_2\" %s>Jython 2.2</option>", 
+                out.println(String.format( "    <option value=\"jython_2_2\" %s>Jython 2.2</option>",
                     ( convert.getPythonTarget()==PythonTarget.jython_2_2 ? "selected=1" : ""  ) ) );
-                out.println(String.format( "    <option value=\"python_3_6\" %s>Python 3.6</option>", 
+                out.println(String.format( "    <option value=\"python_3_6\" %s>Python 3.6</option>",
                     ( convert.getPythonTarget()==PythonTarget.python_3_6 ? "selected=1" : ""  ) ) );
                 out.println("</select>");
                 out.println("<button id=\"clear\" value=\"clear\" onclick=\"javascript:document.getElementById('code').value=''\">Clear</button>");
@@ -176,7 +176,7 @@ public class ConvertJavaToPythonServlet extends HttpServlet {
                 out.println( convert.getPythonTarget() );
                 out.println("<input name=\"mode\" value=\"edit\" hidden=\"true\"></input><input type=\"submit\" value=\"edit\"></input>");
             }
-            out.println("</form>");        
+            out.println("</form>");
             out.println("Please note:<ul>\n");
             out.println("<li>The goal is to get something close to translated, but not perfect.\n");
             out.println("<li>The Java code must be working, this assumes that it is a functioning and correct code.\n");

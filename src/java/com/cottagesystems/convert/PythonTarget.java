@@ -6,6 +6,6 @@ package com.cottagesystems.convert;
  * @author jbf
  */
 public enum PythonTarget {
-    jython_2_2, 
+    jython_2_2,
     python_3_6
 }
