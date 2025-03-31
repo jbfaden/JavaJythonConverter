@@ -1,71 +1,70 @@
 
 package com.cottagesystems.convert;
 
+import com.cottagesystems.convert.ConversionUtils;
 import static com.cottagesystems.convert.ConvertJavaToPython.stringMethods;
-import japa.parser.ASTHelper;
-import japa.parser.ParseException;
-import japa.parser.ast.CompilationUnit;
-import japa.parser.ast.ImportDeclaration;
-import japa.parser.ast.Node;
-import japa.parser.ast.body.BodyDeclaration;
-import japa.parser.ast.body.ClassOrInterfaceDeclaration;
-import japa.parser.ast.body.ConstructorDeclaration;
-import japa.parser.ast.body.EmptyMemberDeclaration;
-import japa.parser.ast.body.EnumConstantDeclaration;
-import japa.parser.ast.body.EnumDeclaration;
-import japa.parser.ast.body.FieldDeclaration;
-import japa.parser.ast.body.InitializerDeclaration;
-import japa.parser.ast.body.MethodDeclaration;
-import japa.parser.ast.body.ModifierSet;
-import japa.parser.ast.body.MultiTypeParameter;
-import japa.parser.ast.body.Parameter;
-import japa.parser.ast.body.TypeDeclaration;
-import japa.parser.ast.body.VariableDeclarator;
-import japa.parser.ast.body.VariableDeclaratorId;
-import japa.parser.ast.comments.Comment;
-import japa.parser.ast.expr.AnnotationExpr;
-import japa.parser.ast.expr.ArrayAccessExpr;
-import japa.parser.ast.expr.ArrayCreationExpr;
-import japa.parser.ast.expr.ArrayInitializerExpr;
-import japa.parser.ast.expr.AssignExpr;
-import japa.parser.ast.expr.BinaryExpr;
-import japa.parser.ast.expr.BooleanLiteralExpr;
-import japa.parser.ast.expr.CastExpr;
-import japa.parser.ast.expr.CharLiteralExpr;
-import japa.parser.ast.expr.ConditionalExpr;
-import japa.parser.ast.expr.DoubleLiteralExpr;
-import japa.parser.ast.expr.EnclosedExpr;
-import japa.parser.ast.expr.Expression;
-import japa.parser.ast.expr.FieldAccessExpr;
-import japa.parser.ast.expr.IntegerLiteralExpr;
-import japa.parser.ast.expr.LongLiteralExpr;
-import japa.parser.ast.expr.MarkerAnnotationExpr;
-import japa.parser.ast.expr.MethodCallExpr;
-import japa.parser.ast.expr.NameExpr;
-import japa.parser.ast.expr.NullLiteralExpr;
-import japa.parser.ast.expr.ObjectCreationExpr;
-import japa.parser.ast.expr.StringLiteralExpr;
-import japa.parser.ast.expr.SuperExpr;
-import japa.parser.ast.expr.UnaryExpr;
-import japa.parser.ast.expr.VariableDeclarationExpr;
-import japa.parser.ast.stmt.BlockStmt;
-import japa.parser.ast.stmt.CatchClause;
-import japa.parser.ast.stmt.EmptyStmt;
-import japa.parser.ast.stmt.ExpressionStmt;
-import japa.parser.ast.stmt.ForStmt;
-import japa.parser.ast.stmt.ForeachStmt;
-import japa.parser.ast.stmt.IfStmt;
-import japa.parser.ast.stmt.ReturnStmt;
-import japa.parser.ast.stmt.Statement;
-import japa.parser.ast.stmt.SwitchEntryStmt;
-import japa.parser.ast.stmt.SwitchStmt;
-import japa.parser.ast.stmt.ThrowStmt;
-import japa.parser.ast.stmt.TryStmt;
-import japa.parser.ast.stmt.WhileStmt;
-import japa.parser.ast.type.ClassOrInterfaceType;
-import japa.parser.ast.type.PrimitiveType;
-import japa.parser.ast.type.ReferenceType;
-import japa.parser.ast.type.Type;
+import com.github.javaparser.JavaParser;
+import com.github.javaparser.ParseException;
+import com.github.javaparser.ast.CompilationUnit;
+import com.github.javaparser.ast.ImportDeclaration;
+import com.github.javaparser.ast.Node;
+import com.github.javaparser.ast.body.BodyDeclaration;
+import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
+import com.github.javaparser.ast.body.ConstructorDeclaration;
+import com.github.javaparser.ast.body.EnumConstantDeclaration;
+import com.github.javaparser.ast.body.EnumDeclaration;
+import com.github.javaparser.ast.body.FieldDeclaration;
+import com.github.javaparser.ast.body.InitializerDeclaration;
+import com.github.javaparser.ast.body.MethodDeclaration;
+import com.github.javaparser.ast.body.Parameter;
+import com.github.javaparser.ast.body.TypeDeclaration;
+import com.github.javaparser.ast.body.VariableDeclarator;
+import com.github.javaparser.ast.comments.Comment;
+import com.github.javaparser.ast.expr.AnnotationExpr;
+import com.github.javaparser.ast.expr.ArrayAccessExpr;
+import com.github.javaparser.ast.expr.ArrayCreationExpr;
+import com.github.javaparser.ast.expr.ArrayInitializerExpr;
+import com.github.javaparser.ast.expr.AssignExpr;
+import com.github.javaparser.ast.expr.BinaryExpr;
+import com.github.javaparser.ast.expr.BooleanLiteralExpr;
+import com.github.javaparser.ast.expr.CastExpr;
+import com.github.javaparser.ast.expr.CharLiteralExpr;
+import com.github.javaparser.ast.expr.ConditionalExpr;
+import com.github.javaparser.ast.expr.DoubleLiteralExpr;
+import com.github.javaparser.ast.expr.EnclosedExpr;
+import com.github.javaparser.ast.expr.Expression;
+import com.github.javaparser.ast.expr.FieldAccessExpr;
+import com.github.javaparser.ast.expr.IntegerLiteralExpr;
+import com.github.javaparser.ast.expr.LongLiteralExpr;
+import com.github.javaparser.ast.expr.MarkerAnnotationExpr;
+import com.github.javaparser.ast.expr.MethodCallExpr;
+import com.github.javaparser.ast.expr.NameExpr;
+import com.github.javaparser.ast.expr.NullLiteralExpr;
+import com.github.javaparser.ast.expr.ObjectCreationExpr;
+import com.github.javaparser.ast.expr.StringLiteralExpr;
+import com.github.javaparser.ast.expr.SuperExpr;
+import com.github.javaparser.ast.expr.UnaryExpr;
+import com.github.javaparser.ast.expr.VariableDeclarationExpr;
+import com.github.javaparser.ast.stmt.BlockStmt;
+import com.github.javaparser.ast.stmt.CatchClause;
+import com.github.javaparser.ast.stmt.EmptyStmt;
+import com.github.javaparser.ast.stmt.ExpressionStmt;
+import com.github.javaparser.ast.stmt.ForStmt;
+import com.github.javaparser.ast.stmt.ForEachStmt;
+import com.github.javaparser.ast.stmt.IfStmt;
+import com.github.javaparser.ast.stmt.ReturnStmt;
+import com.github.javaparser.ast.stmt.Statement;
+import com.github.javaparser.ast.stmt.SwitchEntry;
+import com.github.javaparser.ast.stmt.SwitchStmt;
+import com.github.javaparser.ast.stmt.ThrowStmt;
+import com.github.javaparser.ast.stmt.TryStmt;
+import com.github.javaparser.ast.stmt.WhileStmt;
+import com.github.javaparser.ast.type.ArrayType;
+import com.github.javaparser.ast.type.ClassOrInterfaceType;
+import com.github.javaparser.ast.type.PrimitiveType;
+import com.github.javaparser.ast.type.PrimitiveType.Primitive;
+import com.github.javaparser.ast.type.ReferenceType;
+import com.github.javaparser.ast.type.Type;
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -87,6 +86,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Stack;
+import java.util.Optional;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
@@ -105,7 +105,7 @@ public class ConvertJavaToJavascript {
         this.stackMethods= new Stack<>();
         this.stackClasses= new Stack<>();
         this.localVariablesStack = new Stack<>();
-        
+
         this.stack.push( new HashMap<>() );
         this.stackFields.push( new HashMap<>() );
         this.stackMethods.push( new HashMap<>() );
@@ -113,14 +113,15 @@ public class ConvertJavaToJavascript {
         this.localVariablesStack.push( new HashMap<>() );
     }
 
-    
+    JavaParser javaParser = new JavaParser();
+
     private static String s4="    ";
-    
+
     public String doConvert( String javasrc ) throws ParseException {
         ParseException throwMe;
         try {
             ByteArrayInputStream ins= new ByteArrayInputStream( javasrc.getBytes(Charset.forName("UTF-8")) );
-            CompilationUnit unit= japa.parser.JavaParser.parse(ins,"UTF-8");
+            CompilationUnit unit= ConversionUtils.extractParseResult(javaParser.parse(ins,Charset.forName("UTF-8")));
             String src= doConvert( "", unit );
             if ( !additionalImports.isEmpty() ) {
                 StringBuilder additionalImportsSrc= new StringBuilder();
@@ -140,31 +141,31 @@ public class ConvertJavaToJavascript {
                 }
                 src=  additionalClassesSrc.toString() + src;
             }
-            
+
             if ( hasMain ) {
                 StringBuilder sb = new StringBuilder(src);
                 sb.append( theClassName ).append(".main([])\n");
                 src= sb.toString();
             }
-            
+
             return src;
         } catch ( ParseException ex ) {
             throwMe= ex;
         }
-        
-        
+
+
         int numLinesIn=0;
-        
+
         try {
             String[] lines= javasrc.split("\n");
             numLinesIn= lines.length;
             int offset=0;
-            Expression parseExpression = japa.parser.JavaParser.parseExpression(javasrc);
+            Expression parseExpression = ConversionUtils.extractParseResult(javaParser.parseExpression(javasrc));
             StringBuilder bb= new StringBuilder( doConvert( "", parseExpression ) );
             int linesHandled=0;
-            while ( (linesHandled+parseExpression.getEndLine())<lines.length ) {
+            while ( (linesHandled+ConversionUtils.getEndLine(parseExpression))<lines.length ) {
                 int additionalLinesHandled=0;
-                for ( int i=0; i<parseExpression.getEndLine(); i++ ) {
+                for ( int i=0; i<ConversionUtils.getEndLine(parseExpression); i++ ) {
                     offset += lines[i].length() ;
                     offset += 1;
                     additionalLinesHandled++;
@@ -174,7 +175,7 @@ public class ConvertJavaToJavascript {
                     break;
                 }
                 linesHandled+= additionalLinesHandled;
-                parseExpression = japa.parser.JavaParser.parseExpression(javasrc.substring(offset));
+                parseExpression = ConversionUtils.extractParseResult(javaParser.parseExpression(javasrc.substring(offset)));
                 bb.append( "\n" ).append( doConvert( "", parseExpression ) );
             }
             String src= bb.toString();
@@ -192,11 +193,11 @@ public class ConvertJavaToJavascript {
                 }
             }
             sb.append(src);
-            
+
             if ( hasMain ) {
                 sb.append( theClassName ).append(".main([])\n");
             }
-            
+
             src= sb.toString();
 
             return src;
@@ -204,10 +205,10 @@ public class ConvertJavaToJavascript {
         } catch (ParseException ex1) {
             throwMe= ex1;
         }
-        
+
         try {
             if ( numLinesIn < 2 ) {
-                Statement parsed = japa.parser.JavaParser.parseStatement(javasrc);
+                Statement parsed = ConversionUtils.extractParseResult(javaParser.parseStatement(javasrc));
                 return doConvert("", parsed);
             }
         } catch (ParseException ex2) {
@@ -216,7 +217,7 @@ public class ConvertJavaToJavascript {
 
         try {
             if ( numLinesIn < 2 ) {
-                BodyDeclaration parsed = japa.parser.JavaParser.parseBodyDeclaration(javasrc);
+                BodyDeclaration parsed = ConversionUtils.extractParseResult(javaParser.parseBodyDeclaration(javasrc));
                 return doConvert("", parsed);
             }
         } catch (ParseException ex3 ) {
@@ -224,22 +225,22 @@ public class ConvertJavaToJavascript {
         }
 
         try {
-            Statement parsed = japa.parser.JavaParser.parseBlock(javasrc);
+            Statement parsed = ConversionUtils.extractParseResult(javaParser.parseBlock(javasrc));
             return doConvert("", parsed);
         } catch ( ParseException ex ) {
             throwMe =ex;
         }
-        
+
         try {
             String ssrc= utilMakeClass(javasrc);
             ByteArrayInputStream ins= new ByteArrayInputStream( ssrc.getBytes(Charset.forName("UTF-8")) );
-            CompilationUnit unit= japa.parser.JavaParser.parse(ins,"UTF-8");
+            CompilationUnit unit= ConversionUtils.extractParseResult(javaParser.parse(ins,Charset.forName("UTF-8")));
             String src= doConvert( "", unit );
             src= utilUnMakeClass(src);
-            
+
             if ( additionalImports!=null ) {
                 StringBuilder sb= new StringBuilder();
-                
+
                 for ( Map.Entry<String,Boolean> e: additionalImports.entrySet() ) {
                     if ( e.getValue() ) {
                         sb.append( e.getKey() );
@@ -260,7 +261,7 @@ public class ConvertJavaToJavascript {
         }
 
         throw throwMe;
-                
+
     }
 
     /**
@@ -269,7 +270,7 @@ public class ConvertJavaToJavascript {
      * @param n the node, which might be an expression, or a block of statements, or an entire program.
      * @return the Jython/Python code converted as much as possible.
      */
-    private String doConvert( String indent, Node n ) { 
+    private String doConvert( String indent, Node n ) {
         if ( n==null ) {
             throw new IllegalArgumentException("n cannot be null.");
         }
@@ -278,7 +279,7 @@ public class ConvertJavaToJavascript {
         }
         String simpleName= n.getClass().getSimpleName();
 
-        
+
         String result="<J2J243 "+simpleName+">";
 
 //        if ( simpleName.equals("NameExpr") && n.toString().contains("DAY_OFFSET") ) {
@@ -300,7 +301,7 @@ public class ConvertJavaToJavascript {
             case "NameExpr":
                 result= doConvertNameExpr(indent,(NameExpr)n);
                 break;
-            case "EnclosedExpr": 
+            case "EnclosedExpr":
                 result= indent + "(" + doConvert( "", ((EnclosedExpr)n).getInner() ) + ")";
                 break;
             case "NullLiteralExpr":
@@ -364,7 +365,7 @@ public class ConvertJavaToJavascript {
                 result= doConvertWhileStmt(indent,(WhileStmt)n);
                 break;
             case "SwitchStmt":
-                result= doConvertSwitchStmt(indent,(SwitchStmt)n);                
+                result= doConvertSwitchStmt(indent,(SwitchStmt)n);
                 break;
             case "ReturnStmt":
                 result= doConvertReturnStmt(indent,(ReturnStmt)n);
@@ -380,9 +381,6 @@ public class ConvertJavaToJavascript {
                 break;
             case "ReferenceType":
                 result= doConvertReferenceType(indent,(ReferenceType)n);
-                break;
-            case "MultiTypeParameter":
-                result= doConvertMultiTypeParameter(indent,(MultiTypeParameter)n);
                 break;
             case "ThrowStmt":
                 result= doConvertThrowStmt(indent,(ThrowStmt)n);
@@ -436,16 +434,13 @@ public class ConvertJavaToJavascript {
                 result= doConvertClassOrInterfaceType(indent,(ClassOrInterfaceType)n);
                 break;
             case "Parameter":
-                result= indent + ((Parameter)n).getId().getName(); // TODO: varargs, etc
+                result= indent + ((Parameter)n).getNameAsString(); // TODO: varargs, etc
                 break;
-            case "ForeachStmt":
-                result= doConvertForeachStmt(indent,(ForeachStmt)n);
+            case "ForEachStmt":
+                result= doConvertForEachStmt(indent,(ForEachStmt)n);
                 break;
             case "EmptyStmt":
                 result= doConvertEmptyStmt(indent,(EmptyStmt)n);
-                break;
-            case "VariableDeclaratorId":
-                result= indent + ((VariableDeclaratorId)n).getName();
                 break;
             case "SuperExpr":
                 SuperExpr se= (SuperExpr)n;
@@ -460,14 +455,14 @@ public class ConvertJavaToJavascript {
         //}
         return result;
     }
-    
+
     private String doConvertCompilationUnit(String indent, CompilationUnit compilationUnit) {
-        
+
         pushScopeStack(false);
 
         StringBuilder sb= new StringBuilder();
-        
-        List<Node> nodes= compilationUnit.getChildrenNodes();
+
+        List<Node> nodes= compilationUnit.getChildNodes();
         for ( int i=0; i<nodes.size(); i++ ) {
             Node n = nodes.get(i);
             if ( unittest && n instanceof ImportDeclaration ) {
@@ -479,22 +474,24 @@ public class ConvertJavaToJavascript {
                 }
             }
             if ( n instanceof ImportDeclaration ) {
-                javaImports.put(((ImportDeclaration)n).getName().getName(), false );
-                javaImportDeclarations.put(((ImportDeclaration)n).getName().getName(), (ImportDeclaration)n );
+                // TODO: should we get the full import path or just the identifier (last segment)?
+                String importName = ((ImportDeclaration)n).getName().asString();
+                javaImports.put(importName, false );
+                javaImportDeclarations.put(importName, (ImportDeclaration)n );
             } else {
                 sb.append( doConvert( "", n ) ).append("\n");
             }
         }
-        
+
         //for ( Comment c: compilationUnit.getComments() ) {
         //    sb.append("# ").append(c.getContent()).append("\n");
         //}
-        
+
         popScopeStack();
-        
+
         return sb.toString();
     }
-    
+
     public static void main(String[] args ) throws ParseException, FileNotFoundException, MalformedURLException, IOException {
         ConvertJavaToJavascript c= new ConvertJavaToJavascript();
         //c.setOnlyStatic(false);
@@ -524,21 +521,21 @@ public class ConvertJavaToJavascript {
             new InputStreamReader(ins, StandardCharsets.UTF_8))
             .lines()
             .collect(Collectors.joining("\n"));
-        
+
         System.err.println( c.doConvert(text) );
     }
-    
+
     /**
      * wrap the methods in a dummy class to see if it compiles.  There's a goofy
      * this with this parser where I can't figure out how to get it to compile
      * just one method, so I have to create a class around it to get it to compile.
      * I'm sure I'm missing something, but for now this is my solution.
-     * 
-     * If the first line does not contain a brace, then the assumption is that 
+     *
+     * If the first line does not contain a brace, then the assumption is that
      * lines of code are to be wrapped to make a method.
      * @param javasrc
      * @return
-     * @throws ParseException 
+     * @throws ParseException
      */
     public String utilMakeClass( String javasrc ) throws ParseException {
         javasrc= javasrc.trim();
@@ -556,11 +553,11 @@ public class ConvertJavaToJavascript {
         String modSrc= "class Foo99 { \n"+javasrc + "}\n";
         return modSrc;
     }
-    
+
     /**
      * remove the extra lines we added and unindent
      * @param src
-     * @return 
+     * @return
      */
     public String utilUnMakeClass( String src ) {
         // pop off the "class Foo" we added to make it into a class
@@ -572,7 +569,7 @@ public class ConvertJavaToJavascript {
         src= src.substring(i+1);
         i= src.indexOf("\n");
         //if ( src.substring(0,i).contains("function foo99(") ) {
-        if ( src.substring(0,i).contains("foo99(") ) {            
+        if ( src.substring(0,i).contains("foo99(") ) {
             src= src.substring(i+1);
         }
         String[] ss= src.split("\n");
@@ -588,43 +585,43 @@ public class ConvertJavaToJavascript {
         }
         return sb.toString();
     }
-    
+
     Stack<Map<String,Type>> stack;
     Stack<Map<String,Type>> localVariablesStack;
-    
+
     Stack<Map<String,VariableDeclarationExpr>> stackVariables;
     Stack<Map<String,FieldDeclaration>> stackFields;
     Stack<Map<String,MethodDeclaration>> stackMethods;
     Stack<Map<String,TypeDeclaration>> stackClasses;
-    
+
     Map<String,String> nameMapForward= new HashMap<>();
     Map<String,String> nameMapReverse= new HashMap<>();
-    
+
     /**
      * return the current scope, which includes local variables.  Presently this just uses one scope,
      * but this should check for code blocks, etc.
-     * @return 
+     * @return
      */
     private Map<String,Type> getCurrentScope() {
         return stack.peek();
     }
-    
+
     /**
      * this contains both the static and non-static (class) variables.
-     * @return 
+     * @return
      */
     private Map<String,FieldDeclaration> getCurrentScopeFields() {
         return stackFields.peek();
     }
-    
+
     private Map<String,MethodDeclaration> getCurrentScopeMethods() {
         return stackMethods.peek();
     }
-    
+
     private Map<String,TypeDeclaration> getCurrentScopeClasses() {
         return stackClasses.peek();
     }
-    
+
     /**
      * introduce a new level
      */
@@ -641,7 +638,7 @@ public class ConvertJavaToJavascript {
         stackMethods.push( new HashMap<>(getCurrentScopeMethods()) );
         stackClasses.push( new HashMap<>(getCurrentScopeClasses()) );
     }
-    
+
     /**
      * pop that new level
      */
@@ -652,60 +649,60 @@ public class ConvertJavaToJavascript {
         stackClasses.pop();
         localVariablesStack.pop();
     }
-            
+
     /**
      * record the name of the class (e.g. TimeUtil) so that internal references can be corrected.
      */
     private String theClassName;
-    
+
     private final Stack<String> classNameStack= new Stack<>();
-    
+
     /**
      * record the method names, since Python will need to refer to "self" to call methods but Java does not.
      */
     private final Map<String,ClassOrInterfaceDeclaration> classMethods = new HashMap<>();
-    
+
     /**
      * return imported class names.
      */
     private final Map<String,Object> importedClasses = new HashMap<>();
-     
+
     /**
      * return imported methods, from star imports.
      */
     private final Map<String,Object> importedMethods = new HashMap<>();
-    
+
     /**
      * map from the import statement to a boolean.  If Boolean.TRUE, then use it.
      */
     private final Map<String,Boolean> additionalImports = new LinkedHashMap<>();
-    
+
     /**
      * map from the additional class code to a boolean.  If Boolean.TRUE, then use it.
      */
     private final Map<String,Boolean> additionalClasses = new LinkedHashMap<>();
-    
+
     private final Map<String,Boolean> javaImports= new LinkedHashMap<>();
-    
+
     private final Map<String,ImportDeclaration> javaImportDeclarations= new LinkedHashMap<>();
-    
+
     private boolean hasMain= false;
-    
+
     // Constants
-    private static final ReferenceType STRING_TYPE = ASTHelper.createReferenceType( "String", 0 );
+    private static final ReferenceType STRING_TYPE = new ClassOrInterfaceType( "String" );
     private static final ClassOrInterfaceType STRING_TYPE2 = new ClassOrInterfaceType("String");
-    
-    private static final AnnotationExpr DEPRECATED = new MarkerAnnotationExpr( new NameExpr("Deprecated") );
-    
+
+    private static final AnnotationExpr DEPRECATED = new MarkerAnnotationExpr("Deprecated");
+
     /*** end, internal parsing state ***/
 
     private boolean onlyStatic = false;
-    
+
     public static final String PROP_ONLYSTATIC = "onlyStatic";
 
     /**
      * true indicates that only static methods are to be pulled out of the class.
-     * @return 
+     * @return
      */
     public boolean isOnlyStatic() {
         return onlyStatic;
@@ -713,7 +710,7 @@ public class ConvertJavaToJavascript {
 
     /**
      * true indicates that only static methods are to be pulled out of the class.
-     * @param onlyStatic 
+     * @param onlyStatic
      */
     public void setOnlyStatic(boolean onlyStatic) {
         this.onlyStatic = onlyStatic;
@@ -723,7 +720,7 @@ public class ConvertJavaToJavascript {
 
     /**
      * true indicates this should write additional code to make a unittest suite
-     * @return 
+     * @return
      */
     public boolean isUnittest() {
         return unittest;
@@ -731,19 +728,20 @@ public class ConvertJavaToJavascript {
 
     /**
      * true indicates this should write additional code to make a unittest suite
-     * @param unittest 
+     * @param unittest
      */
     public void setUnittest(boolean unittest) {
         this.unittest = unittest;
     }
- 
-    private static String utilRewriteComments(String indent, Comment comments ) {
-        return utilRewriteComments( indent, comments, false );
+
+    private static String utilRewriteComments(String indent, Optional<Comment> commentsOptional ) {
+        return utilRewriteComments( indent, commentsOptional, false );
     }
-    
+
     // Utilities
-    private static String utilRewriteComments(String indent, Comment comments, boolean docs ) {
-        if ( comments==null ) return "";
+    private static String utilRewriteComments(String indent, Optional<Comment> commentsOptional, boolean docs ) {
+        if ( commentsOptional==null || !commentsOptional.isPresent()) return "";
+        Comment comments = commentsOptional.get();
         StringBuilder b= new StringBuilder();
         if ( docs ) b.append(indent).append("/**\n");
         String[] ss= comments.getContent().split("\n");
@@ -758,38 +756,38 @@ public class ConvertJavaToJavascript {
         }
         if (docs ) b.append(indent).append(" */\n");
         return b.toString();
-    }    
-    
+    }
+
     // end, Utilities
-    
-    
+
+
     private String doConvertClassOrInterfaceDeclaration(String indent, ClassOrInterfaceDeclaration classOrInterfaceDeclaration) {
         StringBuilder sb= new StringBuilder();
-        
-        String name = classOrInterfaceDeclaration.getName();
-        
+
+        String name = classOrInterfaceDeclaration.getName().asString();
+
         boolean makeInnerOuter= false;
-        
+
         if ( classNameStack.isEmpty() ) {
             theClassName= name;
         } else {
             makeInnerOuter= true; // JavaScript doesn't support inner classes, so bring it out and print a warning.
         }
-        
+
         classNameStack.push(name);
-        
+
         getCurrentScopeClasses().put( name, classOrInterfaceDeclaration );
-        
+
         pushScopeStack(false);
         getCurrentScope().put( "this", new ClassOrInterfaceType(name) );
-        
+
         if ( onlyStatic ) {
-            classOrInterfaceDeclaration.getChildrenNodes().forEach((n) -> {
+            classOrInterfaceDeclaration.getChildNodes().forEach((n) -> {
                 sb.append( doConvert(indent,n) ).append("\n");
             });
         } else {
-            
-            if ( unittest ) {     
+
+            if ( unittest ) {
                 sb.append( "// cheesy unittest temporary\n");
                 sb.append( "function assertEquals(a,b) {\n");
                 sb.append( "     if ( a!==b ) throw 'a!==b : ' + a + ' !== ' + b;\n");
@@ -813,15 +811,15 @@ public class ConvertJavaToJavascript {
             if ( comments.trim().length()>0 ) {
                 sb.append( comments );
             }
-            
+
             String className;
             className= name;
-            
-            if ( classOrInterfaceDeclaration.getExtends()!=null && classOrInterfaceDeclaration.getExtends().size()==1 ) { 
-                String extendName= doConvert( "", classOrInterfaceDeclaration.getExtends().get(0) );
+
+            if ( classOrInterfaceDeclaration.getExtendedTypes().size()==1 ) {
+                String extendName= doConvert( "", classOrInterfaceDeclaration.getExtendedTypes().get(0) );
                 sb.append( indent ).append("class " ).append( className ).append(" extends " ).append(extendName).append(" {\n");
-            } else if ( classOrInterfaceDeclaration.getImplements()!=null && classOrInterfaceDeclaration.getImplements().size()==1 ) { 
-                List<ClassOrInterfaceType> impls= classOrInterfaceDeclaration.getImplements();
+            } else if ( !classOrInterfaceDeclaration.getImplementedTypes().isEmpty() && classOrInterfaceDeclaration.getImplementedTypes().size()==1 ) {
+                List<ClassOrInterfaceType> impls= classOrInterfaceDeclaration.getImplementedTypes();
                 StringBuilder implementsName= new StringBuilder( doConvert( "", impls.get(0) ) );
                 for ( int i=1; i<impls.size(); i++ ) {
                     implementsName.append(",").append( doConvert( "", impls.get(i) ) );
@@ -833,21 +831,21 @@ public class ConvertJavaToJavascript {
 
             // check to see if any two methods can be combined.
             // https://github.com/jbfaden/JavaJythonConverter/issues/5
-            classOrInterfaceDeclaration.getChildrenNodes().forEach((n) -> {
+            classOrInterfaceDeclaration.getChildNodes().forEach((n) -> {
                 if ( n instanceof MethodDeclaration ) {
-                    classMethods.put( ((MethodDeclaration) n).getName(), classOrInterfaceDeclaration );
-                    getCurrentScopeMethods().put(((MethodDeclaration) n).getName(),(MethodDeclaration)n );
+                    classMethods.put( ((MethodDeclaration) n).getName().asString(), classOrInterfaceDeclaration );
+                    getCurrentScopeMethods().put(((MethodDeclaration) n).getName().asString(),(MethodDeclaration)n );
                 } else if ( n instanceof ClassOrInterfaceDeclaration ) {
                     ClassOrInterfaceDeclaration coid= (ClassOrInterfaceDeclaration)n;
-                    getCurrentScope().put( coid.getName(), new ClassOrInterfaceType(coid.getName()) );
+                    getCurrentScope().put( coid.getNameAsString(), new ClassOrInterfaceType(coid.getNameAsString()) );
                 }
             });
-            
+
             // check for unique names
             Map<String,Node> nn= new HashMap<>();
-            for ( Node n: classOrInterfaceDeclaration.getChildrenNodes() ) {
+            for ( Node n: classOrInterfaceDeclaration.getChildNodes() ) {
                 if ( n instanceof ClassOrInterfaceType ) {
-                    String name1= ((ClassOrInterfaceType)n).getName();
+                    String name1= ((ClassOrInterfaceType)n).getName().asString();
                     if ( nn.containsKey(name1) ) {
                         sb.append(indent).append(s4).append("// J2J: Name is used twice in class: ")
                                 .append(className).append(" ").append(name1).append("\n");
@@ -855,7 +853,7 @@ public class ConvertJavaToJavascript {
                     nn.put( name1, n );
                 } else if ( n instanceof FieldDeclaration ) {
                     for ( VariableDeclarator vd : ((FieldDeclaration)n).getVariables() ) {
-                        String name1= vd.getId().getName();
+                        String name1= vd.getNameAsString();
                         if ( nn.containsKey(name1) ) {
                             sb.append(indent).append(s4).append("// J2J: Name is used twice in class: ")
                                 .append(className).append(" ").append(name1).append("\n");
@@ -869,7 +867,7 @@ public class ConvertJavaToJavascript {
                             continue;
                         }
                     }
-                    String name1= md.getName();
+                    String name1= md.getName().asString();
                     if ( nn.containsKey(name1) ) {
                             sb.append(indent).append(s4).append("// J2J: Name is used twice in class: ")
                                 .append(className).append(" ").append(name1).append("\n");
@@ -879,11 +877,9 @@ public class ConvertJavaToJavascript {
                     System.err.println("Not supported: "+n);
                 }
             }
-            
-            for ( Node n : classOrInterfaceDeclaration.getChildrenNodes() ) {
+
+            for ( Node n : classOrInterfaceDeclaration.getChildNodes() ) {
                 if ( n instanceof ClassOrInterfaceType ) {
-                    // skip this strange node
-                } else if ( n instanceof EmptyMemberDeclaration ) {
                     // skip this strange node
                 } else if ( n instanceof ConstructorDeclaration ) {
                     if ( unittest ) {
@@ -903,28 +899,28 @@ public class ConvertJavaToJavascript {
                     sb.append( doConvert( indent+s4, n ) ).append("\n");
                 }
             };
-            
+
             if ( unittest ) {
                 sb.append( indent ).append( "}" ).append("\n");
                 sb.append("test = new ").append(classOrInterfaceDeclaration.getName()).append("();\n");
-                for ( Node n : classOrInterfaceDeclaration.getChildrenNodes() ) {
-                    if ( n instanceof MethodDeclaration 
-                            && ((MethodDeclaration)n).getName().startsWith("test") 
-                            && ((MethodDeclaration)n).getParameters()==null ) {
-                        sb.append("test.").append(((MethodDeclaration) n).getName()).append("();\n");
+                for ( Node n : classOrInterfaceDeclaration.getChildNodes() ) {
+                    if ( n instanceof MethodDeclaration
+                            && ((MethodDeclaration)n).getNameAsString().startsWith("test")
+                            && ((MethodDeclaration)n).getParameters().isEmpty() ) {
+                        sb.append("test.").append(((MethodDeclaration) n).getNameAsString()).append("();\n");
                     }
                 }
             }
-            
-        
+
+
         }
-        
+
         if ( !onlyStatic && !unittest) {
             sb.append( indent ).append( "}" ).append("\n");
         }
         popScopeStack();
         classNameStack.pop();
-        
+
         if ( makeInnerOuter ) {
             String outerClass= unindent( indent, sb.toString() );
             additionalClasses.put( outerClass, true );
@@ -932,51 +928,49 @@ public class ConvertJavaToJavascript {
         } else {
             return sb.toString();
         }
-        
+
     }
 
     private String doConvertMethodDeclaration(String indent, MethodDeclaration methodDeclaration) {
-        boolean isStatic= ModifierSet.isStatic(methodDeclaration.getModifiers() );
-        
+        boolean isStatic= ConversionUtils.isStaticMethod(methodDeclaration);
+
         if ( onlyStatic && !isStatic ) {
             return "";
         } else if ( isStatic ) {
-            if ( methodDeclaration.getName().equals("main") ) {
+            if ( methodDeclaration.getNameAsString().equals("main") ) {
                 hasMain= true;
             }
         }
-        
-        if ( methodDeclaration.getAnnotations()!=null ) {
-            for ( AnnotationExpr a : methodDeclaration.getAnnotations() ) {
-                if ( a.getName().getName().equals("Deprecated") ) {
+
+        for ( AnnotationExpr a : methodDeclaration.getAnnotations() ) {
+                if ( a.getName().asString().equals("Deprecated") ) {
                     return "";
                 }
-            }
-        }        
+        }
 
         StringBuilder sb= new StringBuilder();
         String comments= utilRewriteComments( indent, methodDeclaration.getComment(), true );
         if ( comments.trim().length()>0 ) {
             sb.append( comments );
         }
-        
+
         if ( isStatic  && !onlyStatic ) {
             //sb.append( indent ).append( "@staticmethod\n" );
         }
-        
-        String methodName= methodDeclaration.getName();
+
+        String methodName= methodDeclaration.getName().asString();
         if ( isStatic ) {
             sb.append( indent ).append("static ").append( methodName ) .append("(");
         } else {
             sb.append( indent ).append( methodName ) .append("(");
         }
         boolean comma= false;
-        
+
         pushScopeStack(false);
 
         if ( methodDeclaration.getParameters()!=null ) {
-            for ( Parameter p: methodDeclaration.getParameters() ) { 
-                String name= p.getId().getName();
+            for ( Parameter p: methodDeclaration.getParameters() ) {
+                String name= p.getName().asString();
                 String pythonParameterName;
                 pythonParameterName= name;
 
@@ -990,30 +984,30 @@ public class ConvertJavaToJavascript {
             }
         }
         sb.append( ") {\n" );
-        
-        if ( methodDeclaration.getBody()!=null ) {
-            sb.append( doConvert( indent+s4, methodDeclaration.getBody() ) );  
+
+        if ( methodDeclaration.getBody().isPresent() ) {
+            sb.append( doConvert( indent+s4, methodDeclaration.getBody().get() ) );
         } else {
             // nothing needed
         }
-        
+
         sb.append( indent ).append( "}\n" );
-        
+
         popScopeStack();
-        
+
         if ( isStatic && !onlyStatic ) {
             // nothing special needed here like with python
         }
         return sb.toString();
-        
+
     }
 
     private String doConvertBlockStmt(String indent, BlockStmt blockStmt) {
         pushScopeStack(true);
-        
+
         StringBuilder result= new StringBuilder();
-        
-        List<Statement> statements= blockStmt.getStmts();
+
+        List<Statement> statements= blockStmt.getStatements();
         if ( statements==null ) {
             popScopeStack();
             return "";
@@ -1031,12 +1025,12 @@ public class ConvertJavaToJavascript {
                 if ( !l.trim().startsWith("#") ) lines++;
             }
         }
-        
+
         popScopeStack();
         return result.toString();
-        
+
     }
-    
+
     private String doConvertExpressionStmt(String indent, ExpressionStmt expressionStmt) {
         StringBuilder sb= new StringBuilder();
         if ( expressionStmt.getComment()!=null ) {
@@ -1045,29 +1039,30 @@ public class ConvertJavaToJavascript {
         sb.append( doConvert( indent, expressionStmt.getExpression() ) ).append(";");
         return sb.toString();
     }
-    
+
     private String doConvertVariableDeclarationExpr(String indent, VariableDeclarationExpr variableDeclarationExpr) {
         StringBuilder b= new StringBuilder();
-        
-        for ( int i=0; i<variableDeclarationExpr.getVars().size(); i++ ) {
+
+        for ( int i=0; i<variableDeclarationExpr.getVariables().size(); i++ ) {
             if ( i>0 ) b.append("\n");
-            VariableDeclarator v= variableDeclarationExpr.getVars().get(i);
-            String s= v.getId().getName();
-             if ( v.getInit()!=null && v.getInit().toString().startsWith("Logger.getLogger") ) {
+            VariableDeclarator v= variableDeclarationExpr.getVariables().get(i);
+            String s= v.getNameAsString();
+             if ( v.getInitializer().isPresent() && v.getInitializer().get().toString().startsWith("Logger.getLogger") ) {
                 //addLogger();
-                localVariablesStack.peek().put(s,ASTHelper.createReferenceType("Logger",0) );
+                localVariablesStack.peek().put(s,new ClassOrInterfaceType("Logger") );
                 return indent + "// J2J: "+variableDeclarationExpr.toString().trim();
             }
-            if ( v.getInit()!=null 
-                    && ( v.getInit() instanceof ArrayInitializerExpr ) 
-                    && ( variableDeclarationExpr.getType() instanceof PrimitiveType ) ) {
-                Type t= ASTHelper.createReferenceType( ((PrimitiveType)variableDeclarationExpr.getType()), 1 );
+            if ( v.getInitializer().isPresent()
+                    && ( v.getInitializer().get() instanceof ArrayInitializerExpr )
+                    && ( v.getType() instanceof PrimitiveType ) ) {
+                Type t= new ArrayType(((PrimitiveType)v.getType()));
+                // TODO: could we also just v.getType() for t here?
                 localVariablesStack.peek().put( s, t );
             } else {
-                localVariablesStack.peek().put( s, variableDeclarationExpr.getType() );
+                localVariablesStack.peek().put( s, v.getType() );
             }
-            if ( v.getInit()!=null ) {
-                b.append( indent ).append("var ").append(s).append(" = ").append(doConvert("",v.getInit()) );
+            if ( v.getInitializer().isPresent() ) {
+                b.append( indent ).append("var ").append(s).append(" = ").append(doConvert("",v.getInitializer().get()) );
             } else {
                 b.append( indent ).append("var ").append(s);
             }
@@ -1078,43 +1073,33 @@ public class ConvertJavaToJavascript {
     private String doConvertForStmt(String indent, ForStmt forStmt) {
         StringBuilder b= new StringBuilder();
         localVariablesStack.push( new HashMap<>(localVariablesStack.peek()) );
-        
-        List<Expression> init = forStmt.getInit();
-        VariableDeclarationExpr init1= null;
-        VariableDeclaratorId v=null;
-        if ( init!=null && init.size()==1 && init.get(0) instanceof VariableDeclarationExpr ) {
-            init1= (VariableDeclarationExpr)init.get(0);
-            if (init1.getVars().size()!=1 ) {
-                init1= null;
-            } else {
-                v= (init1.getVars().get(0)).getId();
-            }
-        }
-        BinaryExpr compare= forStmt.getCompare() instanceof BinaryExpr ? ((BinaryExpr)forStmt.getCompare()) : null;
+
+        BinaryExpr compare= (forStmt.getCompare().isPresent() && forStmt.getCompare().get() instanceof BinaryExpr) ? ((BinaryExpr)forStmt.getCompare().get()) : null;
         List<Expression> update= forStmt.getUpdate();
         UnaryExpr update1= null;
         if ( update.size()==1 && update.get(0) instanceof UnaryExpr ) {
             update1= (UnaryExpr)update.get(0);
-            if ( !(update1.getOperator()==UnaryExpr.Operator.posIncrement 
-                    || update1.getOperator()==UnaryExpr.Operator.preIncrement 
-                    || update1.getOperator()==UnaryExpr.Operator.posDecrement 
-                    || update1.getOperator()==UnaryExpr.Operator.preDecrement  ) ) {
+            if ( !(update1.getOperator()==UnaryExpr.Operator.POSTFIX_INCREMENT
+                    || update1.getOperator()==UnaryExpr.Operator.PREFIX_INCREMENT
+                    || update1.getOperator()==UnaryExpr.Operator.POSTFIX_DECREMENT
+                    || update1.getOperator()==UnaryExpr.Operator.PREFIX_DECREMENT  ) ) {
                 update1= null;
             }
         }
-        
+
         StringBuilder sinit=  new StringBuilder();
-        forStmt.getInit().forEach((e) -> {
+        forStmt.getInitialization().forEach((e) -> {
             sinit.append(",").append( doConvert( "", e ) );
         });
-        
-        String scompare= doConvert( "", forStmt.getCompare() );
+
+        // TODO: avoid dying here if compare not present?
+        String scompare= doConvert( "", forStmt.getCompare().get() );
         StringBuilder sincrement= new StringBuilder();
         forStmt.getUpdate().forEach((e) -> {
             sincrement.append(",").append( doConvert( "", e ) );
         });
-        
-        b.append( indent ).append("for ( ").append(sinit.substring(1)).append("; ").append(scompare).append("; ") 
+
+        b.append( indent ).append("for ( ").append(sinit.substring(1)).append("; ").append(scompare).append("; ")
                 .append(sincrement.substring(1)). append(")");
 
         if ( forStmt.getBody() instanceof BlockStmt ) {
@@ -1125,7 +1110,7 @@ public class ConvertJavaToJavascript {
         } else {
             b.append( doConvert( indent + s4, forStmt.getBody() ) );
         }
-                
+
         localVariablesStack.pop();
         return b.toString();
 
@@ -1134,21 +1119,21 @@ public class ConvertJavaToJavascript {
     private String doConvertAssignExpr(String indent, AssignExpr assign) {
         String target= doConvert( "", assign.getTarget() );
         AssignExpr.Operator operator= assign.getOperator();
-        
+
         switch (operator) {
-            case minus:
+            case MINUS:
                 return indent + target + " -= " + doConvert( "", assign.getValue() );
-            case plus:
+            case PLUS:
                 return indent + target + " += " + doConvert( "", assign.getValue() );
-            case star:
+            case MULTIPLY:
                 return indent + target + " *= " + doConvert( "", assign.getValue() );
-            case slash:
+            case DIVIDE:
                 return indent + target + " /= " + doConvert( "", assign.getValue() );
-            case or:
+            case BINARY_OR:
                 return indent + target + " |= " + doConvert( "", assign.getValue() );
-            case and:
+            case BINARY_AND:
                 return indent + target + " &= " + doConvert( "", assign.getValue() );
-            case assign:
+            case ASSIGN:
                 return indent + target + " = " + doConvert( "", assign.getValue() );
             default:
                 return indent + target + " ??? " + doConvert( "", assign.getValue() ) + " (J2J AssignExpr not supported)";
@@ -1156,14 +1141,13 @@ public class ConvertJavaToJavascript {
     }
 
     private String doConvertNameExpr(String indent, NameExpr nameExpr) {
-        nameExpr.getBeginLine();
-        String name= nameExpr.getName();
+        String name= nameExpr.getName().asString();
         if ( getCurrentScope().containsKey(name) ) {
             if ( localVariablesStack.peek().containsKey(name) ) {
                 return name;
             } else if ( getCurrentScopeFields().containsKey(name) ) {
                 FieldDeclaration decl= getCurrentScopeFields().get(name); // The problem is Java will figure out the scope, JavaScript needs the class name
-                if ( ModifierSet.isStatic( decl.getModifiers() ) ) {
+                if ( ConversionUtils.isStaticField(decl) ) {
                     return theClassName + "." +nameExpr.getName();
                 } else {
                     return "this." + name;
@@ -1173,77 +1157,41 @@ public class ConvertJavaToJavascript {
             }
         } else if ( getCurrentScopeFields().containsKey(name) ) {
             FieldDeclaration decl = getCurrentScopeFields().get(name);
-            boolean isStatic= ModifierSet.isStatic(decl.getModifiers() );
+            boolean isStatic= ConversionUtils.isStaticField(decl);
             if ( isStatic ) {
                 return indent + theClassName + "." + name; //TODO: usually correct, nested classes.
             } else {
                 return indent + "this" + "." + name; //TODO: usually correct, nested classes.
             }
-            
+
         } else {
             return indent + nameExpr.getName();
         }
-    }
-    
-    /**
-     * return true if integer division should be used.
-     * //TODO: verify short
-     * @param exprType
-     * @return true if it's null or it's an integer and integer division should be used.
-     */
-    private boolean isIntegerType(Type exprType) {
-        if ( exprType==null ) {
-            return false;
-        }
-        return exprType.equals(ASTHelper.INT_TYPE)
-                || exprType.equals(ASTHelper.LONG_TYPE) 
-                || exprType.equals(ASTHelper.SHORT_TYPE );
     }
 
     /**
      * return true if the type is a String or char.
      * // TODO: think about whether char is really a string type.  This is for Java, right?
      * @param exprType
-     * @return 
+     * @return
      */
     private boolean isStringType(Type exprType) {
         if ( exprType==null ) {
             return false;
         }
-        return exprType.equals(STRING_TYPE) || exprType.equals(ASTHelper.CHAR_TYPE);
+        return exprType.equals(STRING_TYPE) || exprType.equals(new PrimitiveType(Primitive.CHAR));
     }
-        
-    /**
-     * return the type of binary expressions +, -, /, *
-     * @param leftType
-     * @param rightType
-     * @return null or the resolved type.
-     */
-    private Type utilBinaryExprType(Type leftType, Type rightType) {
-        if ( leftType!=null && leftType.equals(rightType) ) {
-            return leftType;
-        }
-        if ( ( leftType==ASTHelper.DOUBLE_TYPE || leftType==ASTHelper.FLOAT_TYPE ) 
-            && ( isIntegerType(rightType) || rightType==ASTHelper.BYTE_TYPE ) ) {
-            return leftType;
-        }
-        if ( ( rightType==ASTHelper.DOUBLE_TYPE || rightType==ASTHelper.FLOAT_TYPE ) 
-            && ( isIntegerType(leftType) || leftType==ASTHelper.BYTE_TYPE ) ) {
-            return rightType;
-        }
-        return null;
-    }
-        
+
     /**
      * guess the class type, and return null if there is no guess.
      * @param clas
-     * @return 
+     * @return
      */
     private Type guessType( Expression clas ) {
         if ( clas instanceof NameExpr ) {
-            String clasName= ((NameExpr)clas).getName();
+            String clasName= ((NameExpr)clas).getName().asString();
             if ( Character.isUpperCase(clasName.charAt(0)) ) { // Yup, we're assuming that upper case refers to a class
-                return ASTHelper.createReferenceType( clasName,0 );
+                new ClassOrInterfaceType( clasName );
             } else if ( localVariablesStack.peek().containsKey(clasName) ) {
                 return localVariablesStack.peek().get(clasName);
             } else if ( getCurrentScope().containsKey(clasName) ) {
@@ -1257,107 +1205,106 @@ public class ConvertJavaToJavascript {
             return guessType(expr.getInner());
         } else if ( clas instanceof UnaryExpr ) {
             UnaryExpr ue= ((UnaryExpr)clas);
-            return guessType(ue.getExpr());
+            return guessType(ue.getExpression());
         } else if ( clas instanceof BinaryExpr ) {
             BinaryExpr be= ((BinaryExpr)clas);
             Type leftType= guessType( be.getLeft() );
             Type rightType= guessType( be.getRight() );
-            if ( be.getOperator()==BinaryExpr.Operator.and ||
-                    be.getOperator()==BinaryExpr.Operator.or || 
-                    be.getOperator()==BinaryExpr.Operator.equals ||
-                    be.getOperator()==BinaryExpr.Operator.notEquals ||
-                    be.getOperator()==BinaryExpr.Operator.greater ||
-                    be.getOperator()==BinaryExpr.Operator.greaterEquals ||
-                    be.getOperator()==BinaryExpr.Operator.less ||
-                    be.getOperator()==BinaryExpr.Operator.lessEquals ) {
-                return ASTHelper.BOOLEAN_TYPE;
+            if ( be.getOperator()==BinaryExpr.Operator.AND ||
+                    be.getOperator()==BinaryExpr.Operator.OR ||
+                    be.getOperator()==BinaryExpr.Operator.EQUALS ||
+                    be.getOperator()==BinaryExpr.Operator.NOT_EQUALS ||
+                    be.getOperator()==BinaryExpr.Operator.GREATER ||
+                    be.getOperator()==BinaryExpr.Operator.GREATER_EQUALS ||
+                    be.getOperator()==BinaryExpr.Operator.LESS||
+                    be.getOperator()==BinaryExpr.Operator.LESS_EQUALS) {
+                return new PrimitiveType(Primitive.BOOLEAN);
             }
-            if ( be.getOperator()==BinaryExpr.Operator.plus ) { // we automatically convert ints to strings.
+            if ( be.getOperator()==BinaryExpr.Operator.PLUS ) { // we automatically convert ints to strings.
                 if ( ( leftType!=null && leftType.equals(STRING_TYPE) ) ||
                         ( rightType!=null && rightType.equals(STRING_TYPE) ) ) {
                     return STRING_TYPE;
                 }
             }
-            
-            return utilBinaryExprType( leftType, rightType );
-            
+
+            return ConversionUtils.findBinaryExprType( leftType, rightType );
+
         } else if ( clas instanceof FieldAccessExpr ) {
-            String fieldName= ((FieldAccessExpr)clas).getField();
+            String fieldName= ((FieldAccessExpr)clas).getNameAsString();
             return getCurrentScope().get(fieldName);
         } else if ( clas instanceof ArrayAccessExpr ) {
             ArrayAccessExpr aae= (ArrayAccessExpr)clas;
             Type arrayType=  guessType( aae.getName() );
             if ( arrayType==null ) {
                 return null;
-            } else if ( arrayType instanceof ReferenceType && ((ReferenceType)arrayType).getArrayCount()==1 ) {
-                return ((ReferenceType) arrayType).getType();
+            } else if ( arrayType instanceof ArrayType && ((ArrayType)arrayType).getArrayLevel()==1 ) {
+                return ((ArrayType) arrayType).getElementType();
             } else {
                 return null;
             }
         } else if ( clas instanceof IntegerLiteralExpr ) {
-            return ASTHelper.INT_TYPE;
+            return new PrimitiveType(Primitive.INT);
         } else if ( clas instanceof CharLiteralExpr ) {
-            return ASTHelper.CHAR_TYPE;
+            return new PrimitiveType(Primitive.CHAR);
         } else if ( clas instanceof LongLiteralExpr ) {
-            return ASTHelper.LONG_TYPE;
+            return new PrimitiveType(Primitive.LONG);
         } else if ( clas instanceof DoubleLiteralExpr ) {
-            return ASTHelper.DOUBLE_TYPE;
+            return new PrimitiveType(Primitive.DOUBLE);
         } else if ( clas instanceof StringLiteralExpr ) {
             return STRING_TYPE;
         } else if ( clas instanceof MethodCallExpr ) {
             MethodCallExpr mce= (MethodCallExpr)clas;
             Type scopeType=null;
-            if ( mce.getScope()!=null ) scopeType= guessType(mce.getScope());
+            if ( mce.getScope().isPresent() ) scopeType= guessType(mce.getScope().get());
             MethodDeclaration md= getCurrentScopeMethods().get(mce.getName());
             if ( md!=null ) {
                 return md.getType();
             }
             if ( scopeType!=null ) {
                 if (  scopeType.toString().equals("Pattern") ) {
-                    if ( mce.getName().equals("matcher") ) {
-                        return ASTHelper.createReferenceType("Matcher", 0);
-                    } else if ( mce.getName().equals("quote" ) ) {
+                    if ( mce.getName().asString().equals("matcher") ) {
+                        return new ClassOrInterfaceType("Matcher");
+                    } else if ( mce.getName().asString().equals("quote" ) ) {
                         return STRING_TYPE;
-                    } else if ( mce.getName().equals("split") ) {
-                        return ASTHelper.createReferenceType("String", 1);
+                    } else if ( mce.getName().asString().equals("split") ) {
+                        return new ArrayType(new ClassOrInterfaceType("String"));
                     }
                 } else if ( scopeType.toString().equals("StringBuilder") ) {
-                    switch ( mce.getName() ) {
-                        case "toString":
+                    if ( mce.getNameAsString().equals("toString") ) {
                             return STRING_TYPE;
                     }
                 } else if ( scopeType.toString().equals("String") ) {
-                    switch ( mce.getName() ) {
-                        case "substring": 
-                        case "trim": 
-                        case "valueOf": 
-                        case "concat": 
-                        case "replace": 
-                        case "replaceAll": 
+                    switch ( mce.getNameAsString() ) {
+                        case "substring":
+                        case "trim":
+                        case "valueOf":
+                        case "concat":
+                        case "replace":
+                        case "replaceAll":
                         case "replaceFirst":
-                        case "toLowerCase": 
-                        case "toUpperCase": 
+                        case "toLowerCase":
+                        case "toUpperCase":
                             return STRING_TYPE;
-                        case "length": 
-                            return ASTHelper.INT_TYPE;
+                        case "length":
+                            return new PrimitiveType(Primitive.INT);
                         case "charAt":
-                            return ASTHelper.CHAR_TYPE;
+                            return new PrimitiveType(Primitive.CHAR);
                     }
                 } else if ( scopeType.toString().equals("Arrays") ) {
-                    switch ( mce.getName() ) {
+                    switch ( mce.getNameAsString() ) {
                         case "copyOfRange":
-                            return guessType( mce.getArgs().get(0) );
+                            return guessType( mce.getArguments().get(0) );
                     }
                 }
             }
-            switch ( mce.getName() ) { // TODO: consider t
-                case "charAt": return ASTHelper.CHAR_TYPE;
-                case "copyOfRange": return guessType( mce.getArgs().get(0) );
+            switch ( mce.getNameAsString() ) { // TODO: consider t
+                case "charAt": return new PrimitiveType(Primitive.CHAR);
+                case "copyOfRange": return guessType( mce.getArguments().get(0) );
             }
         }
         return null;
     }
-    
+
     private boolean utilIsAsciiString( Expression e ) {
         Type rightType = guessType(e);
         if ( STRING_TYPE.equals(rightType) ) {
@@ -1380,86 +1327,87 @@ public class ConvertJavaToJavascript {
         String right= doConvert(indent,b.getRight());
         Type leftType = guessType(b.getLeft());
         Type rightType = guessType(b.getRight());
-        
+
         if ( b.getLeft() instanceof MethodCallExpr && b.getRight() instanceof IntegerLiteralExpr ) {
             MethodCallExpr mce= (MethodCallExpr)b.getLeft();
-            if ( mce.getName().equals("compareTo") 
+            if ( mce.getName().asString().equals("compareTo")
                     && ((IntegerLiteralExpr)b.getRight()).toString().equals("0") ) {
-                Expression a0= mce.getArgs().get(0);
+                Expression a0= mce.getArguments().get(0);
+                // TODO: avoid duplication below.
                 if ( null!=b.getOperator() ) switch (b.getOperator()) {
-                    case greater:
-                        return doConvert("",mce.getScope()) + " > " + doConvert("",a0);
-                    case greaterEquals:
-                        return doConvert("",mce.getScope()) + " >= " + doConvert("",a0);
-                    case less:
-                        return doConvert("",mce.getScope()) + " < " + doConvert("",a0);
-                    case lessEquals:
-                        return doConvert("",mce.getScope()) + " <= " + doConvert("",a0);
-                    case equals:
-                        return doConvert("",mce.getScope()) + " == " + doConvert("",a0);
+                    case GREATER:
+                        return doConvert("",mce.getScope().get()) + " > " + doConvert("",a0);
+                    case GREATER_EQUALS:
+                        return doConvert("",mce.getScope().get()) + " >= " + doConvert("",a0);
+                    case LESS:
+                        return doConvert("",mce.getScope().get()) + " < " + doConvert("",a0);
+                    case LESS_EQUALS:
+                        return doConvert("",mce.getScope().get()) + " <= " + doConvert("",a0);
+                    case EQUALS:
+                        return doConvert("",mce.getScope().get()) + " == " + doConvert("",a0);
                     default:
                         break;
                 }
             }
         }
         BinaryExpr.Operator op= b.getOperator();
-        if (  rightType!=null && rightType.equals(ASTHelper.CHAR_TYPE) && left.startsWith("(") && left.endsWith(")") ) {
+        if (  rightType!=null && rightType.equals(new PrimitiveType(Primitive.CHAR)) && left.startsWith("(") && left.endsWith(")") ) {
             left= left.substring(4,left.length()-1);
         }
-        
+
         if ( leftType!=null && rightType!=null ) {
-            if ( leftType.equals(ASTHelper.CHAR_TYPE) && rightType.equals(ASTHelper.INT_TYPE) ) {
+            if ( leftType.equals(new PrimitiveType(Primitive.CHAR)) && rightType.equals(new PrimitiveType(Primitive.INT)) ) {
                 left= left + ".charCodeAt(0)";
             }
-            if ( leftType.equals(ASTHelper.INT_TYPE) && rightType.equals(ASTHelper.CHAR_TYPE) ) {
+            if ( leftType.equals(new PrimitiveType(Primitive.INT)) && rightType.equals(new PrimitiveType(Primitive.CHAR)) ) {
                 left= left + ".charCodeAt(0)";
             }
-            if ( rightType.equals(STRING_TYPE) 
-                    && leftType instanceof PrimitiveType 
-                    && !leftType.equals(ASTHelper.CHAR_TYPE) ) {
+            if ( rightType.equals(STRING_TYPE)
+                    && leftType instanceof PrimitiveType
+                    && !leftType.equals(new PrimitiveType(Primitive.CHAR)) ) {
                 //left= "("+left+")";
             }
-            if ( leftType.equals(STRING_TYPE) 
-                    && rightType instanceof PrimitiveType 
-                    && !rightType.equals(ASTHelper.CHAR_TYPE) ) {
+            if ( leftType.equals(STRING_TYPE)
+                    && rightType instanceof PrimitiveType
+                    && !rightType.equals(new PrimitiveType(Primitive.CHAR)) ) {
                 //right= "("+right+")";
             }
         }
-        
+
         if ( leftType!=null && !( b.getRight() instanceof NullLiteralExpr )
-                && leftType.equals(ASTHelper.createReferenceType("String", 0)) && rightType==null ) {
+                && leftType.equals(new ClassOrInterfaceType("String")) && rightType==null ) {
             right= "("+right+")";
         }
-        
+
         switch (op) {
-            case plus:
+            case PLUS:
                 return left + " + " + right;
-            case minus:
+            case MINUS:
                 return left + " - " + right;
-            case divide:
-                if ( isIntegerType( leftType ) && isIntegerType( rightType ) ) {
+            case DIVIDE:
+                if ( ConversionUtils.isIntegerType( leftType ) && ConversionUtils.isIntegerType( rightType ) ) {
                     return "Math.trunc(" +left + " / " + right + ")";
                 } else {
                     return left + " / " + right;
                 }
-            case times:
+            case MULTIPLY:
                 return left + " * " + right;
-            case greater:
+            case GREATER:
                 return left + " > " + right;
-            case less:
+            case LESS:
                 return left + " < " + right;
-            case greaterEquals:
-                return left + " >= " + right;                
-            case lessEquals:
+            case GREATER_EQUALS:
+                return left + " >= " + right;
+            case LESS_EQUALS:
                 return left + " <= " + right;
-            case and:
+            case AND:
                 return left + " && " + right;
-            case or:
+            case OR:
                 return left + " || " + right;
-            case equals:
+            case EQUALS:
                 if ( right.equals("null") ) {
                     return left + " === undefined || " + left + " === " + right;
-                } else if ( ASTHelper.INT_TYPE.equals(rightType) ) {
+                } else if ( new PrimitiveType(Primitive.INT).equals(rightType) ) {
                     return left + " === " + right;
                 } else {
                     if ( utilIsAsciiString(b.getLeft()) && utilIsAsciiString(b.getRight()) ) {
@@ -1468,10 +1416,10 @@ public class ConvertJavaToJavascript {
                         return left + " == " + right;
                     }
                 }
-            case notEquals:
+            case NOT_EQUALS:
                 if ( right.equals("null") ) {
                     return left + " !== undefined && " + left + " !== " + right;
-                } else if ( ASTHelper.INT_TYPE.equals(rightType) ) {
+                } else if ( new PrimitiveType(Primitive.INT).equals(rightType) ) {
                     return left + " !== " + right;
                 } else {
                     if ( utilIsAsciiString(b.getLeft()) && utilIsAsciiString(b.getRight()) ) {
@@ -1480,37 +1428,37 @@ public class ConvertJavaToJavascript {
                         return left + " !== " + right;
                     }
                 }
-            case remainder:
+            case REMAINDER:
                 return left + " % " + right;
             default:
                 throw new IllegalArgumentException("not supported: "+op);
         }
 
     }
-    
+
     private String doConvertUnaryExpr(String indent, UnaryExpr unaryExpr) {
-        String n= doConvert("",unaryExpr.getExpr()); 
+        String n= doConvert("",unaryExpr.getExpression());
         switch (unaryExpr.getOperator()) {
-            case preIncrement: {
+            case PREFIX_INCREMENT: {
                 return indent + "++" + n;
             }
-            case preDecrement: {
+            case PREFIX_DECREMENT: {
                 return indent + "--" + n;
             }
-            case posIncrement: {
+            case POSTFIX_INCREMENT: {
                 return indent + n + "++";
             }
-            case posDecrement: {
+            case POSTFIX_DECREMENT: {
                 return indent + n + "--";
             }
-            case positive: {
+            case PLUS: {
                 return indent + "+" + n;
             }
-            case negative: {
+            case MINUS: {
                 return indent + "-" + n;
             }
-            case not: {
-                if ( unaryExpr.getExpr() instanceof MethodCallExpr && ((MethodCallExpr)unaryExpr.getExpr()).getName().equals("equals") ) {
+            case LOGICAL_COMPLEMENT: {
+                if ( unaryExpr.getExpression() instanceof MethodCallExpr && ((MethodCallExpr)unaryExpr.getExpression()).getName().asString().equals("equals") ) {
                     if ( n.split("==").length==2 ) {
                         return indent + n.replaceAll("==","!="); // I will regret this some day.
                     } else {
@@ -1519,12 +1467,12 @@ public class ConvertJavaToJavascript {
                 } else {
                     return indent + "!(" + n + ")";
                 }
-            } 
+            }
             default:
                 throw new IllegalArgumentException("not supported: "+unaryExpr);
         }
     }
-    
+
     /**
      * wrap this with "str()" if this is not a string already.
      * @param e
@@ -1537,9 +1485,9 @@ public class ConvertJavaToJavascript {
         } else {
             return "String("+doConvert("",e)+")";
         }
-        
+
     }
-    
+
     /**
      * turn a quoted replacement string into an raw string.  This
      * is beyond my mental capacity because it's code not interpreted
@@ -1553,13 +1501,13 @@ public class ConvertJavaToJavascript {
             return s;
         }
         return s.replaceAll("\\\\", "");
-    }    
-    
+    }
+
     /**
      * convert the string into a Javascript regex expression.  For example,
      * '"[ab]{2}"' becomes '/[ab]{2}/'
      * @param s
-     * @return 
+     * @return
      */
     private String utilMakeRegex( String s ) {
         if ( !( s.startsWith("\"") && s.endsWith("\"")) ) {
@@ -1571,7 +1519,7 @@ public class ConvertJavaToJavascript {
         }
         return "/"+unquote+"/g";
     }
-    
+
     private String utilFormatExprList( List<Expression> l ) {
         if ( l==null ) return "";
         if ( l.isEmpty() ) return "";
@@ -1603,37 +1551,37 @@ public class ConvertJavaToJavascript {
             b.append(doConvert("",l.get(i)));
         }
         return b.toString();
-    }    
-    
+    }
+
     /**
      * This is somewhat the "heart" of this converter, where Java library use is translated to JavaScript use.
      * This is where most of the business happens, where language semantics differ.   This ought to be reviewed and
      * refactored to work more independently.
      * @param indent
      * @param methodCallExpr
-     * @return 
+     * @return
      */
     private String doConvertMethodCallExpr(String indent, MethodCallExpr methodCallExpr) {
-        Expression clas= methodCallExpr.getScope();
-        String name= methodCallExpr.getName();
-        List<Expression> args= methodCallExpr.getArgs();
-            
+        Expression clas= methodCallExpr.getScope().get();
+        String name= methodCallExpr.getName().asString();
+        List<Expression> args= methodCallExpr.getArguments();
+
         if ( name==null ) {
             name=""; // I don't think this happens
         }
-        
+
         /**
          * try to identify the class of the scope, which could be either a static or non-static method.
          */
         String clasType=""; // = guessType(clas);  TODO: these should be merged
         if ( clas instanceof NameExpr ) {
-            String contextName= ((NameExpr)clas).getName(); // sb in sb.append, or String in String.format.
+            String contextName= ((NameExpr)clas).getName().asString(); // sb in sb.append, or String in String.format.
             Type contextType= localVariablesStack.peek().get(contextName); // allow local variables to override class variables.
             if ( contextType==null ) contextType= getCurrentScope().get(contextName);
             if ( Character.isUpperCase(contextName.charAt(0)) ) { // Yup, we're assuming that upper case refers to a class
                 clasType= contextName;
-            } else if ( stringMethods.contains(name) 
-                    && ( contextType==null || contextType.equals(ASTHelper.createReferenceType("String", 0) )) ) {
+            } else if ( stringMethods.contains(name)
+                    && ( contextType==null || contextType.equals(new ClassOrInterfaceType("String") )) ) {
                 clasType= "String";
             } else if ( contextType!=null ) {
                 Type t= contextType;
@@ -1647,7 +1595,7 @@ public class ConvertJavaToJavascript {
             clasType= "String";
         } else if ( stringMethods.contains(name) ) {
             if ( name.equals("format") ) {
-                if ( ASTHelper.createReferenceType("String", 0).equals(guessType( clas )) ) {
+                if ( new ClassOrInterfaceType("String").equals(guessType( clas )) ) {
                     clasType= "String";
                 }
             } else {
@@ -1665,13 +1613,13 @@ public class ConvertJavaToJavascript {
         if ( name.equals("equals") && args.size()==1 ) {
             return indent + doConvert( "",clas ) + "==" + doConvert( "",args.get(0) );
         }
-        
+
         // remove diamond typing (Map<String,String> -> Map)
-        int i= clasType.indexOf("<"); 
+        int i= clasType.indexOf("<");
         if ( i>=0 ) {
             clasType= clasType.substring(0,i);
         }
-        
+
         if ( clasType.equals("Logger") ) {
             return indent + "// J2J (logger) "+methodCallExpr.toString();
         }
@@ -1706,7 +1654,7 @@ public class ConvertJavaToJavascript {
                 case "isAlphabetic": //TODO
                     s= doConvert( "",args.get(0) );
                     return "/[a-z]/i.test(" + s + ")";
-                default: 
+                default:
                     break;
             }
         }
@@ -1723,7 +1671,7 @@ public class ConvertJavaToJavascript {
                 case "toString": {
                     Type t= guessType(args.get(0));
                     String js;
-                    if ( t instanceof ReferenceType && ((ReferenceType)t).getArrayCount()==1 && isIntegerType(((ReferenceType)t).getType()) ) {
+                    if ( t instanceof ArrayType && ((ArrayType)t).getArrayLevel()==1 && ConversionUtils.isIntegerType(((ArrayType)t).getElementType()) ) {
                         js= "', '.join( map( str, "+doConvert("",args.get(0))+" ) )";
                     } else {
                         js= "', '.join("+doConvert("",args.get(0))+")";
@@ -1745,10 +1693,10 @@ public class ConvertJavaToJavascript {
                         "}\n", true );
                     return indent + String.format( "arrayequals( %s, %s )", doConvert("",args.get(0)), doConvert("",args.get(1)) );
                 }
-                case "asList": 
+                case "asList":
                     // since in Python we are treating lists and arrays as the same thing, do nothing.
                     return doConvert("",args.get(0));
-                
+
             }
         } else if ( clasType.equals("System") ) {
             switch (name) {
@@ -1815,7 +1763,7 @@ public class ConvertJavaToJavascript {
             if ( name.equals("format") ) {
                 additionalImports.put("// import sprintf.js\n",true);
                 if ( args.size()>1 ) {
-                    return "sprintf("+doConvert("",args.get(0))+","+utilFormatExprList( args.subList(1,args.size()) ) + ")"; 
+                    return "sprintf("+doConvert("",args.get(0))+","+utilFormatExprList( args.subList(1,args.size()) ) + ")";
                 }
             } else if ( name.equals("join") ) {
                 return doConvert("",args.get(0)) + ".join(" + doConvert("",args.get(1)) + ")";
@@ -1853,7 +1801,7 @@ public class ConvertJavaToJavascript {
         }
 
         if ( clasType.equals("HashMap") || clasType.equals("Map") ) {
-            
+
             switch (name) {
                 case "put":
                     return indent + doConvert("",clas) + ".set("+doConvert("",args.get(0))+", "+doConvert("",args.get(1))+")";
@@ -1865,12 +1813,12 @@ public class ConvertJavaToJavascript {
                     return indent + doConvert("",clas) + ".delete(" + doConvert("",args.get(0)) + ")";
                 case "size":
                     return indent + "len(" + doConvert("",clas) + ")";
-                    
+
                 default:
                     break;
             }
         }
-        
+
         if ( clasType.equals("HashSet") || clasType.equals("Set") ) {
             switch (name) {
                 case "contains":
@@ -1878,12 +1826,12 @@ public class ConvertJavaToJavascript {
                 case "add":
                     return indent + doConvert("",clas) + ".add("+doConvert("",args.get(0))+")";
                 case "remove":
-                    return indent + doConvert("",clas) + ".delete(" + doConvert("",args.get(0)) + ")";  
+                    return indent + doConvert("",clas) + ".delete(" + doConvert("",args.get(0)) + ")";
                 case "size":
-                    return indent + doConvert("",clas) + ".size()"; 
+                    return indent + doConvert("",clas) + ".size()";
             }
         }
-        
+
         if ( clasType.equals("ArrayList") || clasType.equals("List") ) {
             switch (name) {
                 case "size":
@@ -1895,7 +1843,7 @@ public class ConvertJavaToJavascript {
                         return indent + doConvert("",clas) + ".push("+doConvert("",args.get(0))+")";
                     }
                 case "remove":
-                    if ( guessType(args.get(0)).equals(ASTHelper.INT_TYPE) ) {
+                    if ( guessType(args.get(0)).equals(new PrimitiveType(Primitive.INT)) ) {
                         return indent + doConvert("",clas) + ".pop("+doConvert("",args.get(0))+")";
                     } else {
                         return indent + doConvert("",clas) + ".remove(" + doConvert("",args.get(0)) + ")";
@@ -1912,11 +1860,11 @@ public class ConvertJavaToJavascript {
                     break;
             }
         }
-        
+
         //if ( name.equals("normalizeTime") ) {
         //    System.err.println("line1647");
         //}
-        
+
         if ( clas==null ) {
             ClassOrInterfaceDeclaration m= classMethods.get(name);
             if ( m!=null ) {
@@ -1924,7 +1872,7 @@ public class ConvertJavaToJavascript {
                 if ( mm==null ) {
                     return indent + m.getName() + "." + name + "("+ utilFormatExprList(args) +")";
                 } else {
-                    boolean isStatic= ModifierSet.isStatic(mm.getModifiers() );
+                    boolean isStatic= ConversionUtils.isStaticMethod(mm);
                     if ( isStatic ) {
                         return indent + m.getName() + "." + name + "("+ utilFormatExprList(args) +")";
                     } else {
@@ -1933,7 +1881,7 @@ public class ConvertJavaToJavascript {
                 }
             } else {
                 return indent + name + "("+ utilFormatExprList(args) +")";
-            }                
+            }
         } else {
             String clasName = doConvert("",clas);
             if ( name.equals("append") && clas instanceof MethodCallExpr && args.size()==1 ) {
@@ -1955,7 +1903,7 @@ public class ConvertJavaToJavascript {
         }
 
     }
-    
+
     private static String javaNameToPythonName( String name ) {
         return name;
     }
@@ -1966,9 +1914,9 @@ public class ConvertJavaToJavascript {
 
     private String doConvertFieldAccessExpr(String indent, FieldAccessExpr fieldAccessExpr) {
         String s= doConvert( "", fieldAccessExpr.getScope() );
-                
+
         // test to see if this is an array and "length" of the array is accessed.
-        if ( fieldAccessExpr.getField().equals("length") ) {
+        if ( fieldAccessExpr.getName().asString().equals("length") ) {
             String inContext= s;
             if ( inContext.startsWith("this.") ) {
                 inContext= inContext.substring(5);
@@ -1977,18 +1925,18 @@ public class ConvertJavaToJavascript {
             if (t==null ) {
                 t= getCurrentScope().get(inContext);
             }
-            if ( t!=null && t instanceof ReferenceType && ((ReferenceType)t).getArrayCount()>0 ) { 
+            if ( t!=null && t instanceof ArrayType && ((ArrayType)t).getArrayLevel()>0 ) {
                 return indent + s + ".length"; // don't change
             }
         }
-        
+
         if ( onlyStatic && !classNameStack.isEmpty() && s.equals(classNameStack.peek()) ) {
-            return fieldAccessExpr.getField();
-        } else if ( !classNameStack.isEmpty() && s.equals(classNameStack.peek()) ) {            
-            return doConvert("",fieldAccessExpr.getScope()) + "."+  fieldAccessExpr.getField();
+            return fieldAccessExpr.getName().asString();
+        } else if ( !classNameStack.isEmpty() && s.equals(classNameStack.peek()) ) {
+            return doConvert("",fieldAccessExpr.getScope()) + "."+  fieldAccessExpr.getName().asString();
         } else {
             if ( s.equals("Collections") ) {
-                String f= fieldAccessExpr.getField();
+                String f= fieldAccessExpr.getName().asString();
                 switch (f) {
                     case "EMPTY_MAP":
                         return indent + "new Map()";
@@ -2000,17 +1948,17 @@ public class ConvertJavaToJavascript {
                         break;
                 }
             }
-            return indent + s + "." + fieldAccessExpr.getField();
+            return indent + s + "." + fieldAccessExpr.getName().asString();
         }
 
     }
-    
+
     private String doConvertArrayCreationExpr(String indent, ArrayCreationExpr arrayCreationExpr) {
-        if ( arrayCreationExpr.getInitializer()!=null ) {
-            return doConvert( indent, arrayCreationExpr.getInitializer() );
+        if ( arrayCreationExpr.getInitializer().isPresent() ) {
+            return doConvert( indent, arrayCreationExpr.getInitializer().get() );
         } else {
-            if ( arrayCreationExpr.getDimensions()!=null && arrayCreationExpr.getDimensions().size()==1 ) {
-                Expression e1= arrayCreationExpr.getDimensions().get(0);
+            if ( arrayCreationExpr.getLevels().size()==1 ) {
+                Expression e1= arrayCreationExpr.getLevels().get(0).getDimension().orElse(null);
                 if ( e1 instanceof IntegerLiteralExpr ) {
                     int len= Integer.parseInt(((IntegerLiteralExpr)e1).getValue());
                     // aa= Array.apply(null, Array(50)).map(function (x, i) { return 0; });
@@ -2025,10 +1973,11 @@ public class ConvertJavaToJavascript {
                         sb.append("]");
                         return sb.toString();
                     }
-                } else if ( e1 instanceof NameExpr && getCurrentScopeFields().containsKey(((NameExpr)e1).getName()) ) {
+                } else if ( e1 instanceof NameExpr && getCurrentScopeFields().containsKey(((NameExpr)e1).getNameAsString()) ) {
                     FieldDeclaration fd= getCurrentScopeFields().get(((NameExpr)e1).getName());
-                    if ( fd.getType().equals(ASTHelper.INT_TYPE) && ModifierSet.isStatic( fd.getModifiers() ) ) {
-                        int len= Integer.parseInt( fd.getVariables().get(0).getInit().toString() );
+                    Type fieldType = ConversionUtils.getFieldType(fd);
+                    if ( fieldType.equals(new PrimitiveType(Primitive.INT)) && ConversionUtils.isStaticField(fd) ) {
+                        int len= Integer.parseInt( fd.getVariables().get(0).getInitializer().get().toString() );
                         if ( len>7 ) {
                             return "Array.apply(null, Array("+len + ")).map(function (x, i) { return 0; })";
                         } else {
@@ -2041,65 +1990,66 @@ public class ConvertJavaToJavascript {
                             return sb.toString();
                         }
                     }
-                        
+
                     return indent + "[]";
                 } else if ( e1 instanceof NameExpr ) {
-                    return "Array.apply(null, Array("+((NameExpr) e1).getName() + ")).map(function (x, i) { return 0; })";
+                    return "Array.apply(null, Array("+((NameExpr) e1).getNameAsString() + ")).map(function (x, i) { return 0; })";
                 } else if ( e1 instanceof FieldAccessExpr ) {
-                    return "Array.apply(null, Array("+doConvert("",e1) + ")).map(function (x, i) { return 0; })";                    
+                    return "Array.apply(null, Array("+doConvert("",e1) + ")).map(function (x, i) { return 0; })";
                 }
-            }  
+            }
         }
         return indent + "[]";
     }
-    
+
     private String doConvertArrayInitializerExpr(String indent, ArrayInitializerExpr arrayInitializerExpr) {
         return indent + "[" + utilFormatExprList( arrayInitializerExpr.getValues() ) + "]";
-    }    
+    }
 
     private String doConvertReturnStmt(String indent, ReturnStmt returnStmt) {
-        if ( returnStmt.getExpr()==null ) {
+        if ( !returnStmt.getExpression().isPresent() ) {
             return indent + "return;";
         } else {
-            return indent + "return " + doConvert("", returnStmt.getExpr()) + ";";
-        }        
+            return indent + "return " + doConvert("", returnStmt.getExpression().get()) + ";";
+        }
     }
 
     private String doConvertConditionalExpr(String indent, ConditionalExpr conditionalExpr) {
-        return indent + doConvert("",conditionalExpr.getCondition()) + " ? " + 
-                doConvert("",conditionalExpr.getThenExpr()) + " : " + 
+        return indent + doConvert("",conditionalExpr.getCondition()) + " ? " +
+                doConvert("",conditionalExpr.getThenExpr()) + " : " +
                 doConvert("",conditionalExpr.getElseExpr());
     }
 
     private String doConvertIfStmt(String indent, IfStmt ifStmt) {
-        if ( ifStmt.getElseStmt()!=null ) {
+        if ( ifStmt.getElseStmt().isPresent() ) {
+            Statement elseStmt = ifStmt.getElseStmt().get();
             if ( ifStmt.getThenStmt() instanceof BlockStmt ) {
-                if ( ifStmt.getElseStmt() instanceof BlockStmt ) {
+                if ( elseStmt instanceof BlockStmt ) {
                     return indent + "if (" + doConvert("",ifStmt.getCondition()) +
                             ") {\n" + doConvert(indent+s4,ifStmt.getThenStmt() ) + indent + "} else "
-                            + "{\n" + doConvert(indent+s4,ifStmt.getElseStmt() ) + indent + "}\n";
-                            
+                            + "{\n" + doConvert(indent+s4,elseStmt ) + indent + "}\n";
+
                 } else {
-                    if ( ifStmt.getElseStmt() instanceof IfStmt ) {
-                        String elseStuff= doConvert(indent,ifStmt.getElseStmt() ); // this will start with indent, but we remove it
+                    if ( elseStmt instanceof IfStmt ) {
+                        String elseStuff= doConvert(indent,elseStmt ); // this will start with indent, but we remove it
                         elseStuff= elseStuff.substring(indent.length());
                         return indent + "if (" + doConvert("",ifStmt.getCondition()) +
                             ") {\n" + doConvert(indent+s4,ifStmt.getThenStmt() ) + indent + "} else "
-                            + elseStuff + indent + "\n";                        
+                            + elseStuff + indent + "\n";
                     } else {
                         return indent + "if (" + doConvert("",ifStmt.getCondition()) +
                             ") {\n" + doConvert(indent+s4,ifStmt.getThenStmt() ) + indent + "} else "
-                            + "{\n" + doConvert(indent+s4,ifStmt.getElseStmt() ) + indent + "}\n";
+                            + "{\n" + doConvert(indent+s4,elseStmt ) + indent + "}\n";
                     }
                 }
-            } else if ( ifStmt.getElseStmt() instanceof BlockStmt || ifStmt.getElseStmt() instanceof IfStmt ) {
+            } else if ( elseStmt instanceof BlockStmt || elseStmt instanceof IfStmt ) {
                 return indent + "if (" + doConvert("",ifStmt.getCondition()) +
                             ") {\n" + doConvert(indent+s4,ifStmt.getThenStmt() ) + indent + "\n" + indent + "} else "
-                            + "{\n" + doConvert(indent+s4,ifStmt.getElseStmt() ) + indent + "}\n";
+                            + "{\n" + doConvert(indent+s4,elseStmt ) + indent + "}\n";
             } else {
                 return indent + "if (" + doConvert("",ifStmt.getCondition()) +
-                    ") " + doConvert("",ifStmt.getThenStmt() ) + "" + 
-                    " else " + doConvert("",ifStmt.getElseStmt() );
+                    ") " + doConvert("",ifStmt.getThenStmt() ) + "" +
+                    " else " + doConvert("",elseStmt );
             }
         } else {
             if ( ifStmt.getThenStmt() instanceof BlockStmt ) {
@@ -2119,10 +2069,10 @@ public class ConvertJavaToJavascript {
 
     private String doConvertObjectCreationExpr(String indent, ObjectCreationExpr objectCreationExpr) {
         if ( objectCreationExpr.getType().toString().equals("StringBuilder") ) {
-            if ( objectCreationExpr.getArgs()!=null ) {
-                if ( objectCreationExpr.getArgs().size()==1 ) {
-                    Expression e= objectCreationExpr.getArgs().get(0);
-                    if ( ASTHelper.INT_TYPE.equals(guessType(e)) ) { // new StringBuilder(100);
+            if ( objectCreationExpr.getArguments()!=null ) {
+                if ( objectCreationExpr.getArguments().size()==1 ) {
+                    Expression e= objectCreationExpr.getArguments().get(0);
+                    if ( new PrimitiveType(Primitive.INT).equals(guessType(e)) ) { // new StringBuilder(100);
                         return "\"\"";
                     } else {
                         return indent + utilAssertStr(e);
@@ -2134,84 +2084,80 @@ public class ConvertJavaToJavascript {
                 return indent + "\"\"";
             }
         } else if ( objectCreationExpr.getType().toString().endsWith("Exception") ) {
-            if ( objectCreationExpr.getArgs()==null ) {
+            if ( objectCreationExpr.getArguments()==null ) {
                 return indent + "\"Error\"";
             } else {
-                return indent + doConvert("",objectCreationExpr.getArgs().get(0));
+                return indent + doConvert("",objectCreationExpr.getArguments().get(0));
             }
         } else {
             String qualifiedName= null; // TODO: leftover from Python converter
             if ( qualifiedName!=null ) {
-                return indent + "new " + qualifiedName + "("+ utilFormatExprList(objectCreationExpr.getArgs())+ ")";
+                return indent + "new " + qualifiedName + "("+ utilFormatExprList(objectCreationExpr.getArguments())+ ")";
             } else {
-                if ( objectCreationExpr.getAnonymousClassBody()!=null ) {
+                if ( objectCreationExpr.getAnonymousClassBody().isPresent() ) {
                     StringBuilder sb= new StringBuilder();
-                    String body= doConvert( indent, objectCreationExpr.getAnonymousClassBody().get(0) );
-                    sb.append(indent).append(objectCreationExpr.getType()).append("(").append(utilFormatExprList(objectCreationExpr.getArgs())).append(")"); 
+                    String body= doConvert( indent, objectCreationExpr.getAnonymousClassBody().get().get(0) );
+                    sb.append(indent).append(objectCreationExpr.getType()).append("(").append(utilFormatExprList(objectCreationExpr.getArguments())).append(")");
                     sb.append("*** // J2J: This is extended in an anonymous inner class ***");
                     return sb.toString();
                 } else {
-                    if ( objectCreationExpr.getType().getName().equals("HashMap") ) { 
+                    if ( objectCreationExpr.getType().getNameAsString().equals("HashMap") ) {
                         return indent + "new Map()";
-                    } else if ( objectCreationExpr.getType().getName().equals("ArrayList") ) { 
+                    } else if ( objectCreationExpr.getType().getName().asString().equals("ArrayList") ) {
                         return indent + "new Array()";
-                    } else if ( objectCreationExpr.getType().getName().equals("HashSet") ) {
-                        return indent + "new Set()"; 
+                    } else if ( objectCreationExpr.getType().getName().asString().equals("HashSet") ) {
+                        return indent + "new Set()";
                     } else {
-                        if ( javaImports.keySet().contains( objectCreationExpr.getType().getName() ) ) {
-                            javaImports.put( objectCreationExpr.getType().getName(), true );
+                        if ( javaImports.keySet().contains( objectCreationExpr.getType().getNameAsString() ) ) {
+                            javaImports.put( objectCreationExpr.getType().getNameAsString(), true );
                         }
-                        if ( objectCreationExpr.getType().getName().equals("String") ) {
-                            if ( objectCreationExpr.getArgs().size()==1 ) {
-                                Expression e= objectCreationExpr.getArgs().get(0);
+                        if ( objectCreationExpr.getType().getName().asString().equals("String") ) {
+                            if ( objectCreationExpr.getArguments().size()==1 ) {
+                                Expression e= objectCreationExpr.getArguments().get(0);
                                 Type t= guessType(e);
-                                if ( t instanceof ReferenceType 
-                                        && t.equals(ASTHelper.createReferenceType(ASTHelper.CHAR_TYPE,1) ) ) {
+                                if ( t instanceof ReferenceType
+                                        && t.equals(new ArrayType(new PrimitiveType(Primitive.CHAR)) ) ) {
                                     return indent + doConvert("",e) + ".join( \"\" )";
-                                } else if ( t.equals(ASTHelper.createReferenceType("StringBuilder",0) ) ) {
+                                } else if ( t.equals(new ClassOrInterfaceType("StringBuilder") ) ) {
                                     return  doConvert("",e); // these are just strings.
                                 }
                             }
                         }
-                        return indent + "new " + objectCreationExpr.getType().getName() + "("+ utilFormatExprList(objectCreationExpr.getArgs()) + ")"; 
+                        return indent + "new " + objectCreationExpr.getType().getName() + "("+ utilFormatExprList(objectCreationExpr.getArguments()) + ")";
                     }
                 }
             }
-        }        
+        }
     }
 
     private String doConvertFieldDeclaration(String indent, FieldDeclaration fieldDeclaration) {
-        boolean s= ModifierSet.isStatic( fieldDeclaration.getModifiers() ); 
+        boolean s= ConversionUtils.isStaticField(fieldDeclaration);
         StringBuilder sb= new StringBuilder();
-        
+
         List<VariableDeclarator> vv= fieldDeclaration.getVariables();
         sb.append( utilRewriteComments( indent, fieldDeclaration.getComment(), true ) );
-        if ( vv!=null ) {
-            for ( VariableDeclarator v: vv ) {
-                VariableDeclaratorId id= v.getId();
-                String name= id.getName();
-                
-                if ( v.getInit()!=null && v.getInit().toString().startsWith("Logger.getLogger") ) {
-                    getCurrentScope().put( name, ASTHelper.createReferenceType("Logger", 0) );
-                    //addLogger();
-                    sb.append( indent ).append("// J2J: ").append(fieldDeclaration.toString());
-                    continue;
-                }
-                
-                getCurrentScope().put( name,fieldDeclaration.getType() );
-                getCurrentScopeFields().put( name,fieldDeclaration);
+        for ( VariableDeclarator v: vv ) {
+            String name= v.getNameAsString();
 
-                String modifiers= s ? "static " : "";
-                
-                if ( v.getInit()==null ) {
-                    sb.append( indent ).append(modifiers).append( name ).append(";\n");
-                } else {
-                    sb.append( indent ).append(modifiers).append(name).append(" = ").append( doConvert( "",v.getInit() ) ).append(";\n");
-                    
-                }
+            if ( v.getInitializer().isPresent() && v.getInitializer().get().toString().startsWith("Logger.getLogger") ) {
+                getCurrentScope().put( name, new ClassOrInterfaceType("Logger") );
+                //addLogger();
+                sb.append( indent ).append("// J2J: ").append(fieldDeclaration.toString());
+                continue;
+            }
+
+            getCurrentScope().put( name,ConversionUtils.getFieldType(fieldDeclaration) );
+            getCurrentScopeFields().put( name,fieldDeclaration);
+
+            String modifiers= s ? "static " : "";
+
+            if ( v.getInitializer().isPresent() ) {
+                sb.append( indent ).append(modifiers).append(name).append(" = ").append( doConvert( "",v.getInitializer().get() ) ).append(";\n");
+            } else {
+                sb.append( indent ).append(modifiers).append( name ).append(";\n");
             }
         }
-        return sb.toString();        
+        return sb.toString();
     }
 
     private String doConvertSwitchStmt(String indent, SwitchStmt switchStmt) {
@@ -2220,21 +2166,21 @@ public class ConvertJavaToJavascript {
         b.append( doConvert("",switchStmt.getSelector()) ).append(") {\n");
         String nextIndent= indent + s4;
         String nextNextIndent = nextIndent + s4;
-        for ( SwitchEntryStmt ses: switchStmt.getEntries() ) {
-            Expression label= ses.getLabel();
-            String slabel;
-            if ( label==null ) {
+        for ( SwitchEntry ses: switchStmt.getEntries() ) {
+            List<Expression> labels= ses.getLabels();
+            List<Statement> statements= ses.getStatements();
+            if ( labels.isEmpty() ) {
                 b.append( nextIndent ).append( "default:\n");
             } else {
-                slabel= doConvert("",ses.getLabel());
-                b.append( nextIndent ).append( "case ").append( slabel ).append(":\n");
-            }
-            
-            if ( ses.getStmts()!=null ) {
-                for ( Statement s : ses.getStmts() ) {
-                    b.append( doConvert( nextNextIndent,s) );
-                    b.append( "\n" );
+                for ( Expression label : labels ) {
+                    String slabel= doConvert("",label);
+                    b.append( nextIndent ).append( "case ").append( slabel ).append(":\n");
                 }
+            }
+
+            for ( Statement s : ses.getStatements() ) {
+                b.append( doConvert( nextNextIndent,s) );
+                b.append( "\n" );
             }
         }
         b.append( indent ).append("}\n");
@@ -2242,7 +2188,7 @@ public class ConvertJavaToJavascript {
     }
 
     private String doConvertThrowStmt(String indent, ThrowStmt throwStmt) {
-        return indent + "throw "+ doConvert("",throwStmt.getExpr()) + ";";
+        return indent + "throw "+ doConvert("",throwStmt.getExpression()) + ";";
     }
 
     private String readFromFile(URL resource) {
@@ -2290,14 +2236,14 @@ public class ConvertJavaToJavascript {
         if ( params.trim().length()>0 ) sb.append(params);
         sb.append(") {\n");
         if ( constructorDeclaration.getParameters()!=null ) {
-            for ( Parameter p: constructorDeclaration.getParameters() ) { 
-                String name= p.getId().getName();
+            for ( Parameter p: constructorDeclaration.getParameters() ) {
+                String name= p.getName().asString();
                 localVariablesStack.peek().put( name, p.getType() );
             }
         }
-        sb.append( doConvert(indent+s4,constructorDeclaration.getBlock()) );
+        sb.append( doConvert(indent+s4,constructorDeclaration.getBody()) );
         sb.append( indent ).append("}\n");
-        
+
         return sb.toString();
     }
 
@@ -2306,43 +2252,46 @@ public class ConvertJavaToJavascript {
         sb.append( indent ).append( "try {\n");
         sb.append( doConvert( indent+s4, tryStmt.getTryBlock() ) );
         int count=0;
-        for ( CatchClause cc: tryStmt.getCatchs() ) {
+        for ( CatchClause cc: tryStmt.getCatchClauses() ) {
             count++;
-            String id= doConvert( "",cc.getExcept().getId() );
+            String id= cc.getParameter().getNameAsString();
             sb.append(indent).append("} catch (").append(id).append(") {");
             if ( count==1 ) {
                 sb.append("\n");
             } else {
                 sb.append(" // J2J: these must be combined\n");
             }
-            
-            sb.append( doConvert( indent+s4, cc.getCatchBlock() ) );
+
+            sb.append( doConvert( indent+s4, cc.getBody() ) );
         }
-        if ( tryStmt.getFinallyBlock()!=null ) {
+        if ( tryStmt.getFinallyBlock().isPresent() ) {
             sb.append( indent ).append( "} finally {\n");
-            sb.append( doConvert( indent+s4, tryStmt.getFinallyBlock() ) );
+            sb.append( doConvert( indent+s4, tryStmt.getFinallyBlock().get() ) );
         }
         sb.append(indent).append("}\n");
         return sb.toString();
     }
 
-    private String doConvertMultiTypeParameter(String indent, MultiTypeParameter multiTypeParameter) {
-        return indent + utilFormatTypeList( multiTypeParameter.getTypes() );
-    }
-
     private String doConvertReferenceType(String indent, ReferenceType referenceType) {
-        switch (referenceType.getArrayCount()) {
-            case 0:
-                return referenceType.getType().toString();
-            case 1:
-                return referenceType.getType().toString()+"[]";
-            case 2:
-                return referenceType.getType().toString()+"[][]";
-            case 3:
-                return referenceType.getType().toString()+"[][][]";
-            default:
-                return "***" + referenceType.toString() +"***";
+        // TODO: what should we return for non-ArrayTypes here?
+        if (!(referenceType instanceof ArrayType)) {
+            return "***J2J" + referenceType.toString() +"***J2J";
         }
+        ArrayType arrayType = (ArrayType) referenceType;
+        String typeName = referenceType.getElementType().toString();
+        switch (arrayType.getArrayLevel()) {
+            case 0:
+                return typeName;
+            case 1:
+                return typeName+"[]";
+            case 2:
+                return typeName+"[][]";
+            case 3:
+                return typeName+"[][][]";
+            default:
+                return "***J2J" + referenceType.toString() +"***J2J";
+        }
+
     }
 
     private String doConvertCastExpr(String indent, CastExpr castExpr) {
@@ -2352,11 +2301,11 @@ public class ConvertJavaToJavascript {
                 type= "str";
                 break;
             case "char":
-                if ( isIntegerType(guessType(castExpr.getExpr())) ) {
+                if ( ConversionUtils.isIntegerType(guessType(castExpr.getExpression())) ) {
                     type = "chr";
                 } else {
                     type = "str";
-                }   
+                }
                 break;
             case "int":
                 type= "int";
@@ -2368,28 +2317,28 @@ public class ConvertJavaToJavascript {
                 type = ""; // (FieldHandler)fh
                 break;
         }
-        String scastExpr= doConvert("", castExpr.getExpr() );
-        
-        Type argType= guessType(castExpr.getExpr());
+        String scastExpr= doConvert("", castExpr.getExpression() );
+
+        Type argType= guessType(castExpr.getExpression());
         if ( argType!=null ) {
-            if ( argType.equals( ASTHelper.DOUBLE_TYPE ) ) {
+            if ( argType.equals( new PrimitiveType(Primitive.DOUBLE) ) ) {
                 if ( type.equals("int") || type.equals("long") ) {
                     return indent + "Math.trunc( "+scastExpr+" )";
                 }
-            } else if ( argType.equals( ASTHelper.INT_TYPE ) ) {
+            } else if ( argType.equals( new PrimitiveType(Primitive.INT) ) ) {
                 if ( type.equals("chr") ) {
                     return indent + "String.fromCharCode( "+scastExpr+" )";
                 }
             }
             return indent + scastExpr;
         } else {
-            if ( type.equals("int") || type.equals("long") ) { 
+            if ( type.equals("int") || type.equals("long") ) {
                 return indent + "Math.trunc( "+scastExpr+" )";
             } else {
                 return indent + type + "(" + scastExpr + ")";
             }
         }
-        
+
     }
 
     private String doConvertClassOrInterfaceType(String indent, ClassOrInterfaceType classOrInterfaceType) {
@@ -2401,7 +2350,7 @@ public class ConvertJavaToJavascript {
      * If one of the lines doesn't start with the indent, then no lines are indented.
      * @param indent
      * @param code
-     * @return 
+     * @return
      */
     private String unindent(String indent, String code) {
         String[] ss= code.split("\n",-2);
@@ -2419,26 +2368,26 @@ public class ConvertJavaToJavascript {
         return String.join( "\n", ss );
     }
 
-    private String doConvertForeachStmt(String indent, ForeachStmt foreachStmt) {
-        String vv= foreachStmt.getVariable().getVars().get(0).getId().getName();
+    private String doConvertForEachStmt(String indent, ForEachStmt ForEachStmt) {
+        String vv= ForEachStmt.getVariable().getVariables().get(0).getNameAsString();
         StringBuilder sb= new StringBuilder(indent);
-        sb.append( doConvert( "", foreachStmt.getIterable() ) );
+        sb.append( doConvert( "", ForEachStmt.getIterable() ) );
         sb.append(".forEach( function ( ").append(vv).append(" ) {\n ");
-        sb.append(  doConvert( indent + s4, foreachStmt.getBody() ) );
+        sb.append(  doConvert( indent + s4, ForEachStmt.getBody() ) );
         sb.append( indent ).append("}, this )");
         return sb.toString();
     }
 
     private String doConvertEnumDeclaration(String indent, EnumDeclaration enumDeclaration) {
         StringBuilder builder= new StringBuilder();
-        if ( true ) {        
-            
-            getCurrentScopeClasses().put( enumDeclaration.getName(), enumDeclaration );
-            
+        if ( true ) {
+
+            getCurrentScopeClasses().put( enumDeclaration.getNameAsString(), enumDeclaration );
+
             builder.append(indent).append("class ").append(enumDeclaration.getName()).append(" {\n");
             List<EnumConstantDeclaration> ll = enumDeclaration.getEntries();
-            
-            for ( Node n: enumDeclaration.getChildrenNodes() ) {
+
+            for ( Node n: enumDeclaration.getChildNodes() ) {
                 if ( n instanceof ConstructorDeclaration ) {
                     String params= utilFormatParameterList( ((ConstructorDeclaration)n).getParameters() );
                     builder.append(indent).append(s4 + "compare( o1, o2 ) {\n");
@@ -2448,15 +2397,15 @@ public class ConvertJavaToJavascript {
             }
 
             for ( EnumConstantDeclaration l : ll ) {
-                String args = utilFormatExprList(l.getArgs()); 
+                String args = utilFormatExprList(l.getArguments());
                 args= "";// we drop the args
                 builder.append(indent).append(s4).append("static ").append(l.getName()).append(" = new ")
                         .append(enumDeclaration.getName()).append("(").append(args).append(")") .append(";\n");
                 String methodName=null;
-                if ( l.getArgs()!=null && l.getArgs().get(0).getChildrenNodes()!=null ) {
-                    for ( Node n: l.getArgs().get(0).getChildrenNodes() ) {
+                if ( !l.getArguments().isEmpty() && !l.getArguments().get(0).getChildNodes().isEmpty() ) {
+                    for ( Node n: l.getArguments().get(0).getChildNodes() ) {
                         if ( n instanceof MethodDeclaration ) {
-                            methodName= ((MethodDeclaration)n).getName();
+                            methodName= ((MethodDeclaration)n).getNameAsString();
                             builder.append( doConvert( indent, n ) );
                         }
                     }
@@ -2465,15 +2414,15 @@ public class ConvertJavaToJavascript {
                     builder.append(indent).append(enumDeclaration.getName()).append(".").append(l.getName()).append(".")
                             .append(methodName).append('=').append(methodName).append(";\n");
                 }
-                
+
             }
             builder.append("}\n");
-            
+
         } else {
             List<EnumConstantDeclaration> ll = enumDeclaration.getEntries();
             for ( EnumConstantDeclaration l : ll ) {
                 builder.append(indent).append( "def " ).append(enumDeclaration.getName()).append("_").append(l.getName()) .append(":\n");
-                if ( l.getClassBody()!=null ) {            
+                if ( l.getClassBody()!=null ) {
                     if ( l.getClassBody().size()==1 ) {
                         builder.append( doConvert(indent,l.getClassBody().get(0)) );
                     }
@@ -2495,5 +2444,5 @@ public class ConvertJavaToJavascript {
     private String doConvertEmptyStmt(String indent, EmptyStmt emptyStmt) {
         return "";
     }
-    
+
 }
