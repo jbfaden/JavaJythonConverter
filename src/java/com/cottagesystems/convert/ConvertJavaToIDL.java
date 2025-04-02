@@ -1616,6 +1616,12 @@ public class ConvertJavaToIDL {
             case "EmptyStmt":
                 result= doConvertEmptyStmt(indent,(EmptyStmt)n);
                 break;
+            case "Modifier":
+                result= "";
+                break;
+            case "SimpleName":
+                result= "";
+                break;                   
             case "VariableDeclarator":
                 result= indent + ((VariableDeclarator)n).getName().toString();
                 break;
