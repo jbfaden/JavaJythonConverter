@@ -6,6 +6,7 @@ import com.github.javaparser.JavaParser;
 import com.github.javaparser.ParseException;
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.ImportDeclaration;
+import com.github.javaparser.ast.Modifier;
 import com.github.javaparser.ast.Node;
 import com.github.javaparser.ast.body.BodyDeclaration;
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
@@ -2254,6 +2255,8 @@ public class ConvertJavaToIDL {
                                 .append(pythonName).append(" ").append(name1).append("\n");
                     }
                     nn.put( name + "_" + name1, n );
+                } else if ( n instanceof Modifier ) {
+                    // do nothing
                 } else {
                     System.err.println("Not supported: "+n);
                 }
