@@ -1553,6 +1553,12 @@ public class ConvertJavaToPython {
             case "EmptyStmt":
                 result= doConvertEmptyStmt(indent,(EmptyStmt)n);
                 break;
+            case "Modifier":
+                result= "";
+                break;
+            case "SimpleName":
+                result= "";
+                break;
             case "SuperExpr":
                 SuperExpr se= (SuperExpr)n;
                 if ( pythonTarget==PythonTarget.jython_2_2 ) {
@@ -2139,7 +2145,10 @@ public class ConvertJavaToPython {
                     }
                     sb.append( doConvert( indent+s4, n ) ).append("\n");
                 } else {
-                    sb.append( doConvert( indent+s4, n ) ).append("\n");
+                    String s= doConvert( indent+s4, n );
+                    if ( s.trim().length()>0 ) {
+                        sb.append( s ).append("\n");
+                    }
                 }
             };
 
