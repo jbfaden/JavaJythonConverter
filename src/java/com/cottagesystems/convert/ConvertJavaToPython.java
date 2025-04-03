@@ -1616,7 +1616,7 @@ public class ConvertJavaToPython {
 
     private String doConvertExpressionStmt(String indent, ExpressionStmt expressionStmt) {
         StringBuilder sb= new StringBuilder();
-        if ( expressionStmt.getComment()!=null ) {
+        if ( expressionStmt.getComment().isPresent() ) {
             sb.append( utilRewriteComments(indent, expressionStmt.getComment() ) );
         }
         sb.append( doConvert( indent, expressionStmt.getExpression() ) );
