@@ -100,7 +100,7 @@ import java.util.stream.Collectors;
  */
 public class ConvertJavaToIDL {
 
-    public static final String VERSION = "20240217b";
+    public static final String VERSION = "20250403a";
 
     private JavaParser javaParser = new JavaParser();
 

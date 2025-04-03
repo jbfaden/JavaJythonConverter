@@ -200,9 +200,6 @@ public class ConvertJavaToIDLServlet extends HttpServlet {
             out.println("<li>Several statements are made into a method similarly.\n");
             out.println("<li>I am a Java developer with limited time, see <a href='https://github.com/jbfaden/JavaJythonConverter'>GitHub project</a> to provide feedback\n");
             out.println("<hr>");
-            out.println("<a href='ConvertJavaToPythonServlet'>Python Conversion</a>");
-            out.println("<a href='ConvertJavaToJavascriptServlet'>JavaScript Conversion</a>");
-            out.println("<a href='ConvertJavaToIDLServlet'>IDL Conversion</a>");
             out.println("<a href='index.jsp'>Home</a>");
             out.println("<small>"+ConvertJavaToIDL.VERSION+"</small><br>");
             out.println("</body>");

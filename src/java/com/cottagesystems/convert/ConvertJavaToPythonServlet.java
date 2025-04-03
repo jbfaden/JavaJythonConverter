@@ -188,8 +188,6 @@ public class ConvertJavaToPythonServlet extends HttpServlet {
             out.println("<li>This currently targets Jython 2.2 and Python 3.6.\n");
             out.println("<li>I am a Java developer who knows enough Python to cause problems, see <a href='https://github.com/jbfaden/JavaJythonConverter'>GitHub project</a> to provide feedback\n");
             out.println("<hr>");
-            out.println("<a href='ConvertJavaToPythonServlet'>Python Conversion</a>");
-            out.println("<a href='ConvertJavaToJavascriptServlet'>JavaScript Conversion</a>");
             out.println("<a href='index.jsp'>Home</a>");
             out.println("</body>");
             out.println("</html>");
