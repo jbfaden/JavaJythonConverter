@@ -1042,7 +1042,7 @@ public class ConvertJavaToJavascript {
 
     private String doConvertExpressionStmt(String indent, ExpressionStmt expressionStmt) {
         StringBuilder sb= new StringBuilder();
-        if ( expressionStmt.getComment()!=null ) {
+        if ( expressionStmt.getComment().isPresent() ) {
             sb.append(indent).append("//").append(utilRewriteComments(indent, expressionStmt.getComment() ));
         }
         sb.append( doConvert( indent, expressionStmt.getExpression() ) ).append(";");
