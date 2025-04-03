@@ -1,0 +1,55 @@
+<html>
+    <head>
+        <link rel="stylesheet" href="styles/default.min.css">
+        <title>Syntax Highlite Test</title>
+    </head>
+        
+    <body>
+        
+        <script language="javascript" src="highlight.min.js"></script>
+        <script>hljs.highlightAll();</script>
+
+        <table>
+            <tr>
+            <td valign='top'>
+        <pre><code class="language-java">
+package test;
+
+/**
+ * Demo foreach statement
+ * @author jbf
+ */
+public class ForeachDemo {
+    public static void main( String[] args ) {
+        for ( String s : new String[] { "a", "b", "c" } ) {
+            System.err.println(s);
+        }
+    }
+}
+</code>
+        </pre>
+            </td>
+            <td valign='top'>
+        <pre><code class="language-python">import sys
+
+
+# Demo foreach statement
+# @author jbf
+class ForeachDemo:
+    @staticmethod
+    def main(args):
+        for s in [ 'a','b','c' ]:
+            sys.stderr.write(s+'\n')
+
+
+ForeachDemo.main([])
+</code>
+        </pre>
+            </td>                
+            </tr>
+                
+            </table>
+            </form>
+    </body>
+        
+</html>
