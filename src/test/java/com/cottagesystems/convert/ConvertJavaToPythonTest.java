@@ -12,12 +12,24 @@ class ConvertJavaToPythonTest {
 
     private final ConvertJavaToPython converter = new ConvertJavaToPython();
 
+    public ConvertJavaToPythonTest() {
+        converter.setUnittest(false);
+    }
+
     @Test
     void testAssignment() throws ParseException {
         assertEquals("x = 3", converter.doConvert("x=3"));
         assertLinesMatch(
             Arrays.asList("times = [0] * 7"),
             Arrays.asList(converter.doConvert("int[] times= new int[7];")));
+    }
+
+    @Test
+    void testComments() throws ParseException {
+        // TODO: we're getting extra trailing newlines in output.
+        assertEquals("# hi", converter.doConvert("// hi").replace("\n", ""));
+        // TODO: avoid trailing spaces.
+        assertEquals("# bye ", converter.doConvert("/* bye */").replace("\n", ""));
     }
 
     @Test
@@ -49,5 +61,27 @@ class ConvertJavaToPythonTest {
         assertEquals("'XYZ' + ' pizza'", converter.doConvert("\"XYZ\" + \" pizza\""));
     }
 
+    @Test
+    void testForLoop() throws ParseException {
+        String javaProgram = "class Summer {\n" +
+        "  // Sum 'em\n" +
+        "  public static int sum(int[] x) {\n" +
+        "    int sum = 0;\n" +
+        "    for (int i = 0; i < x.length; i++) {\n" +
+        "      sum += x[i];" +
+        "    }\n" +
+        "    return sum;" +
+        "  }\n" +
+        "};";
+        // TODO: avoid inserting extra blank at beginning?
+        List<String> expectedPython = Arrays.asList("",
+            "# Sum 'em",
+            "def sum(x):",
+            "    sum = 0",
+            "    for i in range(0, len(x)):",
+            "        sum += x[i]",
+            "    return sum");
+        assertEquals(expectedPython, Arrays.asList(converter.doConvert(javaProgram).split("\n+")));
+    }
 }
 

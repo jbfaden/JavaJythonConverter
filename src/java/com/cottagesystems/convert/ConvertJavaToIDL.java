@@ -1628,6 +1628,12 @@ public class ConvertJavaToIDL {
             case "SuperExpr":
                 result= indent + "super()";
                 break;
+            case "LineComment":
+                result= ";" + ((Comment)n).getContent().replace("\n", "");
+                break;
+            case "BlockComment":
+                result= utilRewriteComments(indent, Optional.of((Comment)n));
+                break;
             default:
                 result= indent + "*** "+simpleName + "*** " + n.toString() + "*** end "+simpleName + "****";
                 break;

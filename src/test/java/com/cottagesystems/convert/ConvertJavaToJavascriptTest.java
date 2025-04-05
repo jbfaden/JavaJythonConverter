@@ -22,6 +22,13 @@ class ConvertJavaToJavascriptTest {
     }
 
     @Test
+    void testComments() throws ParseException {
+        // TODO: we're getting extra trailing newlines in output.
+        assertEquals("// hi", converter.doConvert("// hi").replace("\n", ""));
+        assertEquals("/** bye  */", converter.doConvert("/* bye */").replace("\n", ""));
+    }
+
+    @Test
     void testArithmeticOps() throws ParseException {
         assertEquals("-x * y + z / 2 - 5", converter.doConvert("-x*y+z/2-5"));
     }
@@ -52,7 +59,8 @@ class ConvertJavaToJavascriptTest {
 
     @Test
     void testForLoop() throws ParseException {
-        String javaProgram = "class Summer {\n" +
+        String javaProgram = "// Sum 'em\n" +
+        "class Summer {\n" +
         "  public static int sum(int[] x) {\n" +
         "    int sum = 0;\n" +
         "    for (int i = 0; i < x.length; i++) {\n" +
@@ -61,7 +69,11 @@ class ConvertJavaToJavascriptTest {
         "    return sum;" +
         "  }\n" +
         "};";
-        List<String> expectedJavaScript = Arrays.asList("class Summer {",
+        List<String> expectedJavaScript = Arrays.asList(
+            "/**",
+            " Sum 'em",
+            " */",
+            "class Summer {",
             "    static sum(x) {",
             "        var sum = 0;",
             "        for ( var i = 0; i < x.length; i++) {",
@@ -70,6 +82,38 @@ class ConvertJavaToJavascriptTest {
             "        return sum;",
             "    }",
         "}");
+        assertEquals(expectedJavaScript, Arrays.asList(converter.doConvert(javaProgram).split("\n+")));
+    }
+
+    @Test
+    void testIfElse() throws ParseException {
+        // TODO: maintain comments on branches of if-else.
+        // TODO: maintain indent level for comments.
+        // TODO: render one-line comments from Java same in JavaScript.
+        String javaProgram =
+        "class Maxer {\n" +
+        "  // Returns the bigger one.\n" +
+        "  public static int max(int x, int y) {\n" +
+        "    if (x > y) {\n" +
+        "      return x;  // x is bigger\n" +
+        "    } else {\n" +
+        "      return y; // y is bigger\n" +
+        "    }\n" +
+        "  }\n" +
+        "};";
+        List<String> expectedJavaScript = Arrays.asList(
+            "class Maxer {",
+            "    /**",
+            " Returns the bigger one.",
+            "     */",
+            "    static max(x, y) {",
+            "        if (x > y) {",
+            "            return x;",
+            "        } else {",
+            "            return y;",
+            "        }",
+            "    }",
+            "}");
         assertEquals(expectedJavaScript, Arrays.asList(converter.doConvert(javaProgram).split("\n+")));
     }
 }
