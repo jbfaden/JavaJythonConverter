@@ -452,6 +452,12 @@ public class ConvertJavaToJavascript {
                 SuperExpr se= (SuperExpr)n;
                 result= indent + "super()";
                 break;
+            case "LineComment":
+                result= "//" + ((Comment)n).getContent().replace("\n", "");
+                break;
+            case "BlockComment":
+                result= utilRewriteComments(indent, Optional.of((Comment)n), /*docs=*/true);
+                break;
             default:
                 result= indent + "*** "+simpleName + "*** " + n.toString() + "*** end "+simpleName + "****";
                 break;

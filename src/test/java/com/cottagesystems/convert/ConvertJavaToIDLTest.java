@@ -1,3 +1,5 @@
+import java.util.Arrays;
+import java.util.List;
 
 import com.cottagesystems.convert.ConvertJavaToIDL;
 import com.github.javaparser.ParseException;
@@ -12,6 +14,13 @@ class ConvertJavaToIDLTest {
     @Test
     void testAssignment() throws ParseException {
         assertEquals("x = 3", converter.doConvert("x=3"));
+    }
+
+    @Test
+    void testComments() throws ParseException {
+        // TODO: we're getting extra trailing newlines in output.
+        assertEquals("; hi\n", converter.doConvert("// hi"));
+        assertEquals(";+\n;bye\n;-\n\n", converter.doConvert("/* bye */"));
     }
 
     @Test
@@ -43,5 +52,34 @@ class ConvertJavaToIDLTest {
         assertEquals("'XYZ' + ' pizza'", converter.doConvert("\"XYZ\" + \" pizza\""));
     }
 
+    @Test
+    void testForLoop() throws ParseException {
+        String javaProgram = "class Summer {\n" +
+        "  // Sum 'em\n" +
+        "  public static int sum(int[] x) {\n" +
+        "    int sum = 0;\n" +
+        "    // Yup\n" +
+        "    for (int i = 0; i < x.length; i++) {\n" +
+        "      sum += x[i];" +
+        "    }\n" +
+        "    return sum;" +
+        "  }\n" +
+        "};";
+        // TODO: avoid inserting extra blank at beginning of output.
+        // TODO: should we be keeping that internal comment also?
+        List<String> expectedPython = Arrays.asList(
+            "",
+            ";+",
+            ";Sum 'em",
+            ";-",
+            "function sum, x",
+            "    sum = 0",
+            "    for i=0,n_elements(x)-1 do begin",
+            "        sum += x[i]",
+            "    endfor",
+            "    return, sum",
+            "end");
+        assertEquals(expectedPython, Arrays.asList(converter.doConvert(javaProgram).split("\n+")));
+    }
 }
 
