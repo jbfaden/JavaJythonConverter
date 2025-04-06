@@ -6,6 +6,7 @@ import com.github.javaparser.ParseException;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertLinesMatch;
 
 class ConvertJavaToIDLTest {
 
@@ -79,7 +80,55 @@ class ConvertJavaToIDLTest {
             "    endfor",
             "    return, sum",
             "end");
-        assertEquals(expectedPython, Arrays.asList(converter.doConvert(javaProgram).split("\n+")));
+        assertLinesMatch(expectedPython, Arrays.asList(converter.doConvert(javaProgram).split("\n+")));
+    }
+
+    @Test
+    void testSwitch() throws ParseException {
+        String javaProgram = "class Selector {\n" +
+        "  // Select!\n" +
+        "  public static int select(String x, int a, int b) {\n" +
+        "    int result = -1;\n" +
+        "    switch(x) {\n" +
+        "      case \"A\":\n" +
+        "      case \"a\":\n" +
+        "        result = a;\n" +
+        "        break;\n" +
+        "      case \"B\":\n" +
+        "      case \"b\":\n" +
+        "        result = b;\n" +
+        "        break;\n" +
+        "      default:\n" +
+        "        result = -100;\n" +
+        "    }\n" +
+        "    return result;\n" +
+        "  }\n" +
+        "}";
+        // TODO: avoid inserting extra blank at beginning?
+        List<String> expectedPython = Arrays.asList("",
+            ";+",
+            ";Select!",
+            ";-",
+            "function select, x, a, b",
+            "    result = -1",
+            "    SWITCH x OF",
+            "        'A':",
+            "        'a': BEGIN",
+            "            result = a",
+            "            break",
+            "        END",
+            "        'B':",
+            "        'b': BEGIN",
+            "            result = b",
+            "            break",
+            "        END",
+            "        ELSE: BEGIN",
+            "            result = -100",
+            "        END",
+            "    ENDSWITCH",
+            "    return, result",
+            "end");
+            assertLinesMatch(expectedPython, Arrays.asList(converter.doConvert(javaProgram).split("\n+")));
     }
 }
 

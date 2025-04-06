@@ -81,8 +81,8 @@ class ConvertJavaToJavascriptTest {
             "        }",
             "        return sum;",
             "    }",
-        "}");
-        assertEquals(expectedJavaScript, Arrays.asList(converter.doConvert(javaProgram).split("\n+")));
+            "}");
+        assertLinesMatch(expectedJavaScript, Arrays.asList(converter.doConvert(javaProgram).split("\n+")));
     }
 
     @Test
@@ -114,7 +114,53 @@ class ConvertJavaToJavascriptTest {
             "        }",
             "    }",
             "}");
-        assertEquals(expectedJavaScript, Arrays.asList(converter.doConvert(javaProgram).split("\n+")));
+        assertLinesMatch(expectedJavaScript, Arrays.asList(converter.doConvert(javaProgram).split("\n+")));
+    }
+
+    @Test
+    void testSwitch() throws ParseException {
+        String javaProgram = "class Selector {\n" +
+        "  // Select!\n" +
+        "  public static int select(String x, int a, int b) {\n" +
+        "    int result = -1;\n" +
+        "    switch(x) {\n" +
+        "      case \"A\":\n" +
+        "      case \"a\":\n" +
+        "        result = a;\n" +
+        "        break;\n" +
+        "      case \"B\":\n" +
+        "      case \"b\":\n" +
+        "        result = b;\n" +
+        "        break;\n" +
+        "      default:\n" +
+        "        result = -1;\n" +
+        "    }\n" +
+        "    return result;\n" +
+        "  }\n" +
+        "}";
+        List<String> expectedJavaScript = Arrays.asList(
+        "class Selector {",
+        "    /**",
+        " Select!",
+        "     */",
+        "    static select(x, a, b) {",
+        "        var result = -1;",
+        "        switch (x) {",
+        "            case \"A\":",
+        "            case \"a\":",
+        "                result = a;",
+        "                break",
+        "            case \"B\":",
+        "            case \"b\":",
+        "                result = b;",
+        "                break",
+        "            default:",
+        "                result = -1;",
+        "        }",
+        "        return result;",
+        "    }",
+        "}");
+        assertLinesMatch(expectedJavaScript, Arrays.asList(converter.doConvert(javaProgram).split("\n+")));
     }
 }
 

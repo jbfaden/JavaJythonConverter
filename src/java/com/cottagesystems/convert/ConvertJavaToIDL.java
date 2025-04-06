@@ -2568,6 +2568,9 @@ public class ConvertJavaToIDL {
         return b.toString();
     }
 
+    /**
+     * See https://www.nv5geospatialsoftware.com/docs/SWITCH.html.
+     */
     private String doConvertSwitchStmt(String indent, SwitchStmt switchStmt) {
          StringBuilder b= new StringBuilder();
         b.append( indent ).append( "SWITCH " );
@@ -2578,18 +2581,29 @@ public class ConvertJavaToIDL {
             List<Expression> labels= ses.getLabels();
             List<Statement> statements= ses.getStatements();
             // If there are no labels, that indicates this is a `default` entry.
-            // Otherwise, there may be multiple labels. We handle that currently
-            // by repeating the entry's body.
+            // Otherwise, there may be multiple labels.
             if ( labels.isEmpty() ) {
-                b.append( nextIndent ).append( "ELSE: BEGIN\n");
-                b.append(doConvertSwitchStmtBodyEnd(indent, statements));
+                b.append( nextIndent ).append( "ELSE:");
             } else {
-                // TODO: Does IDL support multiple labels for a single switch entry?
+                boolean afterFirst = false;
                 for ( Expression label : labels ) {
+                    if (afterFirst) {
+                        b.append("\n");
+                    }
+                    afterFirst = true;
                     String slabel= doConvert("",label);
-                    b.append( nextIndent ).append( "").append( slabel ).append(": BEGIN\n");
-                    doConvertSwitchStmtBodyEnd(indent, statements);
+                    b.append( nextIndent ).append( slabel ).append(":");
                 }
+            }
+            if (!statements.isEmpty()) {
+                b.append(" BEGIN\n");
+                for ( Statement s : statements ) {
+                    b.append( doConvert( nextNextIndent, s) );
+                    b.append( "\n" );
+                }
+                b.append( nextIndent ).append( "END\n" );
+            } else {
+                b.append("\n");
             }
         }
         b.append( indent ).append("ENDSWITCH\n");
