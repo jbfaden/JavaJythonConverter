@@ -81,7 +81,43 @@ class ConvertJavaToPythonTest {
             "    for i in range(0, len(x)):",
             "        sum += x[i]",
             "    return sum");
-        assertEquals(expectedPython, Arrays.asList(converter.doConvert(javaProgram).split("\n+")));
+        assertLinesMatch(expectedPython, Arrays.asList(converter.doConvert(javaProgram).split("\n+")));
+    }
+
+    @Test
+    void testSwitch() throws ParseException {
+        String javaProgram = "class Selector {\n" +
+        "  // Select!\n" +
+        "  public static int select(String x, int a, int b) {\n" +
+        "    int result = -1;\n" +
+        "    switch(x) {\n" +
+        "      case \"A\":\n" +
+        "      case \"a\":\n" +
+        "        result = a;\n" +
+        "        break;\n" +
+        "      case \"B\":\n" +
+        "      case \"b\":\n" +
+        "        result = b;\n" +
+        "        break;\n" +
+        "      default:\n" +
+        "        result = -1;\n" +
+        "    }\n" +
+        "    return result;\n" +
+        "  }\n" +
+        "}";
+        // TODO: avoid inserting extra blank at beginning?
+        List<String> expectedPython = Arrays.asList("",
+            "# Select!",
+            "def select(x, a, b):",
+            "    result = -1",
+            "    if x == 'A' or x == 'a':",
+            "        result = a",
+            "    elif x == 'B' or x == 'b':",
+            "        result = b",
+            "    else:",
+            "        result = -1",
+            "    return result");
+        assertLinesMatch(expectedPython, Arrays.asList(converter.doConvert(javaProgram).split("\n+")));
     }
 }
 
