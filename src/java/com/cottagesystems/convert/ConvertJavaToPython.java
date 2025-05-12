@@ -35,6 +35,7 @@ import com.github.javaparser.ast.expr.ArrayAccessExpr;
 import com.github.javaparser.ast.expr.ArrayCreationExpr;
 import com.github.javaparser.ast.expr.ArrayInitializerExpr;
 import com.github.javaparser.ast.expr.AssignExpr.Operator;
+import static com.github.javaparser.ast.expr.BinaryExpr.Operator.REMAINDER;
 import com.github.javaparser.ast.expr.BooleanLiteralExpr;
 import com.github.javaparser.ast.expr.CastExpr;
 import com.github.javaparser.ast.expr.Name;
@@ -654,6 +655,8 @@ public class ConvertJavaToPython {
                 return left + " != " + right;
             case REMAINDER:
                 return left + " % " + right;
+            case LEFT_SHIFT:
+                return left + " << " + right;
             default:
                 throw new IllegalArgumentException("not supported: "+op);
         }
@@ -922,10 +925,27 @@ public class ConvertJavaToPython {
                     return "(" + x + " - " + y + " * ( "+x+"//"+y + ") )";
                 case "floor":
                 case "ceil":
+                case "cos":
+                case "sin":
+                case "tan":
+                case "acos":
+                case "asin":
+                case "atan":
+                case "sqrt":
+                case "log":
                     additionalImports.put("import math\n", true);
                     return "math." + name + "(" + doConvert(indent,args.get(0)) + ")";
+                case "log10":
+                    additionalImports.put("import math\n", true);
+                    return "math.log(" + doConvert(indent,args.get(0)) + ",10)";
                 case "round":
                     return name + "(" + doConvert(indent,args.get(0)) + ")";
+                case "toRadians":
+                    additionalImports.put("import math\n", true);
+                    return "math.radians(" + doConvert(indent,args.get(0)) + ")";
+                case "toDegrees":
+                    additionalImports.put("import math\n", true);
+                    return "math.degrees(" + doConvert(indent,args.get(0)) + ")";
                 default:
                     break;
             }
@@ -1957,6 +1977,16 @@ public class ConvertJavaToPython {
                         return indent + "[]";
                     default:
                         break;
+                }
+            } else if ( s.equals("Math") ) {
+                String f= fieldAccessExpr.getName().asString();
+                switch (f) {
+                    case "PI":
+                        additionalImports.put("import math\n", true);
+                        return "math.pi"; // there is a math.tau!
+                    case "E":
+                        additionalImports.put("import math\n", true);
+                        return "math.e";                
                 }
             }
             return indent + s + "." + fieldAccessExpr.getName().asString();
