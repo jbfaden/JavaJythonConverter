@@ -33,6 +33,11 @@ class ConvertJavaToPythonTest {
     }
 
     @Test
+    void testSlashSlashInString() throws ParseException {
+        assertEquals("x = 'https://autoplog.org/'", converter.doConvert("String x = \"https://autoplog.org/\";"));
+    }
+
+    @Test
     void testArithmeticOps() throws ParseException {
         assertEquals("-x * y + z / 2 - 5", converter.doConvert("-x*y+z/2-5"));
     }
@@ -117,6 +122,25 @@ class ConvertJavaToPythonTest {
             "    else:",
             "        result = -1",
             "    return result");
+        assertLinesMatch(expectedPython, Arrays.asList(converter.doConvert(javaProgram).split("\n+")));
+    }
+
+    @Test
+    void testFullClassWithSlashSlashInString() throws ParseException {
+        String javaProgram = "package test;\n" +
+        "public class TestServletPWD {\n" +
+        "  public static void main( String[] args ) {\n" +
+        "    String vapurl= \"https://github.com/autoplot/dev/blob/master/demos/2024/20240907/kodalith.vap\";\n" +
+        "    System.out.println(vapurl);\n" +
+        "  }\n" +
+        "}";
+        // Currently strips the class definition
+        List<String> expectedPython = Arrays.asList("",
+            "def main(args):",
+            "    vapurl = 'https://github.com/autoplot/dev/blob/master/demos/2024/20240907/kodalith.vap'",
+            "    print(vapurl)",
+            "if __name__ == '__main__':",
+            "    main([])");
         assertLinesMatch(expectedPython, Arrays.asList(converter.doConvert(javaProgram).split("\n+")));
     }
 }
